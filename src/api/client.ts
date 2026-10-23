@@ -1,4 +1,5 @@
-import type { AuthTokens, TokenStore } from '../lib/tokenStore';
+import { API_URL } from '../lib/config';
+import { tokenStore, type AuthTokens, type TokenStore } from '../lib/tokenStore';
 import { ApiError, NetworkError, problemToApiError } from './errors';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -107,3 +108,22 @@ export function createApiClient(config: ApiClientConfig): ApiFetch {
     return parse<T>(retry);
   };
 }
+
+const sessionExpiredListeners = new Set<() => void>();
+
+/** Subscribe to "refresh failed, user must sign in again". Returns an unsubscribe function. */
+export function addSessionExpiredListener(listener: () => void): () => void {
+  sessionExpiredListeners.add(listener);
+  return () => {
+    sessionExpiredListeners.delete(listener);
+  };
+}
+
+/** App-wide client: base URL from EXPO_PUBLIC_API_URL, tokens from SecureStore. */
+export const apiFetch: ApiFetch = createApiClient({
+  baseUrl: API_URL,
+  tokens: tokenStore,
+  onSessionExpired: () => {
+    sessionExpiredListeners.forEach((listener) => listener());
+  },
+});
