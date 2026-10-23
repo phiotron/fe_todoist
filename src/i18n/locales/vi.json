@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "password": "Mật khẩu",
+      "displayName": "Tên hiển thị"
+    },
+    "login": {
+      "title": "Đăng nhập",
+      "submit": "Đăng nhập",
+      "goToRegister": "Chưa có tài khoản? Đăng ký"
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "submit": "Đăng ký",
+      "goToLogin": "Đã có tài khoản? Đăng nhập"
+    },
+    "validation": {
+      "emailRequired": "Vui lòng nhập email",
+      "emailInvalid": "Email không hợp lệ",
+      "emailTooLong": "Email tối đa 254 ký tự",
+      "passwordRequired": "Vui lòng nhập mật khẩu",
+      "passwordLength": "Mật khẩu phải từ 8 đến 72 ký tự",
+      "displayNameRequired": "Vui lòng nhập tên hiển thị",
+      "displayNameTooLong": "Tên hiển thị tối đa 100 ký tự"
+    },
+    "errors": {
+      "invalidCredentials": "Email hoặc mật khẩu không đúng",
+      "emailTaken": "Email đã được dùng",
+      "sessionExpired": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại"
+    }
+  },
+  "errors": {
+    "offline": "Bạn đang offline, hãy kiểm tra kết nối mạng",
+    "network": "Không kết nối được máy chủ, vui lòng thử lại",
+    "unknown": "Đã có lỗi xảy ra, vui lòng thử lại"
+  },
+  "home": {
+    "greeting": "Xin chào {{name}}",
+    "signOut": "Đăng xuất"
+  }
+}
