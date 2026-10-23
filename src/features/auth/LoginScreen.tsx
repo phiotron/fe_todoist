@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { colors } from '../../lib/theme';
@@ -17,29 +17,39 @@ export function LoginScreen() {
   const [values, setValues] = useState<LoginValues>({ email: '', password: '' });
   const [errors, setErrors] = useState<AuthErrorView>({ fields: {} });
   const [submitting, setSubmitting] = useState(false);
+  // Synchronous lock: state updates are async, so two quick presses could both pass a state check.
+  const inFlight = useRef(false);
 
   async function onSubmit() {
+    if (inFlight.current) return;
+    inFlight.current = true;
     const fieldErrors = validateLogin(values);
     if (hasErrors(fieldErrors)) {
       setErrors({ fields: fieldErrors });
+      inFlight.current = false;
       return;
     }
     setErrors({ fields: {} });
     setSubmitting(true);
     try {
       await signIn({ email: values.email.trim(), password: values.password });
+      // On success keep the lock and the busy state until router.replace unmounts this screen.
       router.replace('/');
     } catch (error) {
       setErrors(describeAuthError(error, 'login', isOnline));
-    } finally {
       setSubmitting(false);
+      inFlight.current = false;
     }
   }
 
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>{t('auth.login.title')}</Text>
-      {expired ? <Text style={styles.notice}>{t('auth.errors.sessionExpired')}</Text> : null}
+      {expired ? (
+        <Text testID="login-expired-notice" accessibilityRole="alert" style={styles.notice}>
+          {t('auth.errors.sessionExpired')}
+        </Text>
+      ) : null}
       <AuthTextField
         testID="login-email"
         label={t('auth.fields.email')}
@@ -61,13 +71,15 @@ export function LoginScreen() {
         error={errors.fields.password}
       />
       {errors.form ? (
-        <Text testID="login-form-error" style={styles.formError}>
+        <Text testID="login-form-error" accessibilityRole="alert" style={styles.formError}>
           {errors.form}
         </Text>
       ) : null}
       <Pressable
         testID="login-submit"
         accessibilityRole="button"
+        accessibilityLabel={t('auth.login.submit')}
+        accessibilityState={{ busy: submitting, disabled: submitting }}
         disabled={submitting}
         onPress={onSubmit}
         style={[styles.button, submitting && styles.buttonDisabled]}

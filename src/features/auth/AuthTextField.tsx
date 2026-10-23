@@ -18,7 +18,7 @@ export function AuthTextField({ label, testID, error, ...inputProps }: AuthTextF
         {...inputProps}
       />
       {error ? (
-        <Text testID={`${testID}-error`} style={styles.fieldError}>
+        <Text testID={`${testID}-error`} accessibilityRole="alert" style={styles.fieldError}>
           {error}
         </Text>
       ) : null}

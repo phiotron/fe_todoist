@@ -1,9 +1,9 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import vi from '../../../i18n/locales/vi.json';
 import { tokenStore } from '../../../lib/tokenStore';
 import { authResponse } from '../../../test/fixtures';
-import { jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
+import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import { renderWithProviders } from '../../../test/render';
 import { LoginScreen } from '../LoginScreen';
 
@@ -18,6 +18,7 @@ async function fillAndSubmit(email: string, password: string) {
 
 describe('LoginScreen', () => {
   beforeEach(async () => {
+    jest.clearAllMocks();
     await tokenStore.clear();
   });
 
@@ -66,5 +67,64 @@ describe('LoginScreen', () => {
     await fillAndSubmit('an@example.com', 'fixture-pass-1');
 
     expect(await screen.findByText(vi.errors.network)).toBeTruthy();
+  });
+
+  it('sends only one request when submit is pressed twice in a row', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(jsonResponse(200, authResponse()));
+    await renderWithProviders(<LoginScreen />);
+    await fireEvent.changeText(screen.getByTestId('login-email'), 'an@example.com');
+    await fireEvent.changeText(screen.getByTestId('login-password'), 'fixture-pass-1');
+
+    // Two presses inside one act(): React cannot re-render the button as disabled in between.
+    const submit = screen.getByTestId('login-submit');
+    const click = { currentTarget: submit, target: submit, nativeEvent: {}, stopPropagation: () => undefined };
+    await act(async () => {
+      submit.props.onClick(click);
+      submit.props.onClick(click);
+    });
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(countRequests(fetchMock, '/auth/login')).toBe(1);
+  });
+
+  it('allows submitting again after a failure', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValueOnce(problem(401, 'Unauthorized')).mockResolvedValueOnce(jsonResponse(200, authResponse()));
+    await renderWithProviders(<LoginScreen />);
+
+    await fillAndSubmit('an@example.com', 'wrong-pass');
+    await screen.findByText(vi.auth.errors.invalidCredentials);
+    await fireEvent.press(screen.getByTestId('login-submit'));
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(countRequests(fetchMock, '/auth/login')).toBe(2);
+  });
+
+  it('exposes an accessible name and busy state on the submit button, and alert role on errors', async () => {
+    let resolveFetch: (response: Response) => void = () => undefined;
+    mockFetch().mockReturnValueOnce(new Promise<Response>((resolve) => (resolveFetch = resolve)));
+    await renderWithProviders(<LoginScreen />);
+    expect(screen.getByTestId('login-submit').props.accessibilityLabel).toBe(vi.auth.login.submit);
+
+    await fireEvent.changeText(screen.getByTestId('login-email'), 'an@example.com');
+    await fireEvent.changeText(screen.getByTestId('login-password'), 'wrong-pass');
+    // Do not await the press: the handler stays pending until the fetch resolves.
+    const submit = screen.getByTestId('login-submit');
+    const click = { currentTarget: submit, target: submit, nativeEvent: {}, stopPropagation: () => undefined };
+    await act(async () => {
+      submit.props.onClick(click);
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('login-submit').props.accessibilityState).toMatchObject({
+        busy: true,
+        disabled: true,
+      }),
+    );
+    expect(screen.getByTestId('login-submit').props.accessibilityLabel).toBe(vi.auth.login.submit);
+
+    resolveFetch(problem(401, 'Unauthorized'));
+    const formError = await screen.findByTestId('login-form-error');
+    expect(formError.props.accessibilityRole).toBe('alert');
   });
 });
