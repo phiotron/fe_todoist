@@ -96,7 +96,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setExpired(false);
       setStatus('signedOut');
     }
-  },[queryClient]);
+  }, [queryClient]);
 
   const value = useMemo<SessionContextValue>(
     () => ({ status, expired, signIn, signUp, signOut }),
