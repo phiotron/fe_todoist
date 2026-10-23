@@ -98,3 +98,34 @@ describe('apiFetch — request & response', () => {
     await expect(api('/api/v1/me')).rejects.toBeInstanceOf(NetworkError);
   });
 });
+
+describe('apiFetch — body handling', () => {
+  it('throws ApiError "Invalid response body" when a 2xx body is not JSON', async () => {
+    const { api, fetchMock } = setup();
+    fetchMock.mockResolvedValueOnce(textResponse(200, '<html>captive portal</html>'));
+
+    const error = await api('/api/v1/me').catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 200, title: 'Invalid response body' });
+  });
+
+  it('treats a whitespace-only 2xx body as empty', async () => {
+    const { api, fetchMock } = setup();
+    fetchMock.mockResolvedValueOnce(textResponse(200, '   '));
+
+    await expect(api('/api/v1/me')).resolves.toBeUndefined();
+  });
+
+  it('throws NetworkError when reading the body fails', async () => {
+    const { api, fetchMock } = setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      statusText: '',
+      text: () => Promise.reject(new TypeError('Network request failed')),
+    } as unknown as Response);
+
+    await expect(api('/api/v1/me')).rejects.toBeInstanceOf(NetworkError);
+  });
+});

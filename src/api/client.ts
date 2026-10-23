@@ -1,5 +1,5 @@
-import type { TokenStore } from '../lib/tokenStore';
-import { NetworkError, problemToApiError } from './errors';
+import type { AuthTokens, TokenStore } from '../lib/tokenStore';
+import { ApiError, NetworkError, problemToApiError } from './errors';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -18,7 +18,11 @@ export interface ApiClientConfig {
 
 export type ApiFetch = <T>(path: string, options?: ApiRequestOptions) => Promise<T>;
 
+export const REFRESH_PATH = '/api/v1/auth/refresh';
+
 export function createApiClient(config: ApiClientConfig): ApiFetch {
+  let refreshInFlight: Promise<boolean> | null = null;
+
   async function send(path: string, options: ApiRequestOptions, accessToken: string | null): Promise<Response> {
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
@@ -34,15 +38,72 @@ export function createApiClient(config: ApiClientConfig): ApiFetch {
     }
   }
 
+  /** A Response body can be read only once; a connection dropped mid-body is a network failure. */
+  async function readText(res: Response): Promise<string> {
+    try {
+      return await res.text();
+    } catch {
+      throw new NetworkError();
+    }
+  }
+
   async function parse<T>(res: Response): Promise<T> {
-    const text = await res.text();
+    const text = await readText(res);
     if (!res.ok) throw problemToApiError(res.status, res.statusText, text);
-    return (text ? JSON.parse(text) : undefined) as T;
+    if (!text.trim()) return undefined as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      // 2xx but not JSON, e.g. a captive-portal HTML page.
+      throw new ApiError({ status: res.status, title: 'Invalid response body' });
+    }
+  }
+
+  /** true = new pair stored; false = refresh token missing or rejected. Throws on network/5xx. */
+  async function refreshTokens(): Promise<boolean> {
+    const refreshToken = await config.tokens.getRefreshToken();
+    if (!refreshToken) return false;
+    const res = await send(REFRESH_PATH, { method: 'POST', body: { refreshToken } }, null);
+    if (res.status >= 500) throw problemToApiError(res.status, res.statusText, await readText(res));
+    if (!res.ok) return false;
+    const pair = await parse<AuthTokens | undefined>(res);
+    if (typeof pair?.accessToken !== 'string' || typeof pair.refreshToken !== 'string') {
+      throw new ApiError({ status: res.status, title: 'Invalid response body' });
+    }
+    await config.tokens.setTokens({ accessToken: pair.accessToken, refreshToken: pair.refreshToken });
+    return true;
+  }
+
+  /** All callers that hit 401 while a refresh is running share the same promise. */
+  function refreshOnce(): Promise<boolean> {
+    if (!refreshInFlight) {
+      refreshInFlight = refreshTokens().finally(() => {
+        refreshInFlight = null;
+      });
+    }
+    return refreshInFlight;
+  }
+
+  async function expireSession(): Promise<never> {
+    await config.tokens.clear();
+    config.onSessionExpired();
+    throw new ApiError({ status: 401, title: 'Session expired' });
   }
 
   return async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
     const useAuth = options.auth !== false;
-    const accessToken = useAuth ? await config.tokens.getAccessToken() : null;
-    return parse<T>(await send(path, options, accessToken));
+    const usedToken = useAuth ? await config.tokens.getAccessToken() : null;
+    const first = await send(path, options, usedToken);
+    if (first.status !== 401 || !useAuth) return parse<T>(first);
+
+    const current = await config.tokens.getAccessToken();
+    const rotatedMeanwhile = current !== null && current !== usedToken;
+    const refreshed = rotatedMeanwhile || (await refreshOnce());
+    if (!refreshed) return expireSession();
+
+    // The retry is a brand-new request/response; the 401 body is never read again.
+    const retry = await send(path, options, await config.tokens.getAccessToken());
+    if (retry.status === 401) return expireSession();
+    return parse<T>(retry);
   };
 }
