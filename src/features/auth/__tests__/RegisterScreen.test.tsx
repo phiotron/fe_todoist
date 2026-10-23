@@ -146,5 +146,27 @@ describe('RegisterScreen', () => {
     resolveFetch(problem(409, 'Conflict'));
     const fieldError = await screen.findByTestId('register-email-error');
     expect(fieldError.props.accessibilityRole).toBe('alert');
+    expect(fieldError.props.accessibilityLiveRegion).toBe('polite');
+    // The button is usable and no longer busy once the request failed.
+    expect(screen.getByTestId('register-submit').props.accessibilityState).toMatchObject({
+      busy: false,
+      disabled: false,
+    });
+  });
+
+  it('releases the submit lock after a client validation error so a corrected form can be sent', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(jsonResponse(201, authResponse()));
+    await renderWithProviders(<RegisterScreen />);
+
+    await fillAndSubmit('An', 'an@example.com', 'short');
+    expect(await screen.findByText(vi.auth.validation.passwordLength)).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await fireEvent.changeText(screen.getByTestId('register-password'), 'fixture-pass-1');
+    await fireEvent.press(screen.getByTestId('register-submit'));
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(countRequests(fetchMock, '/auth/register')).toBe(1);
   });
 });

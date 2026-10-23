@@ -78,7 +78,12 @@ export function RegisterScreen() {
         error={errors.fields.password}
       />
       {errors.form ? (
-        <Text testID="register-form-error" accessibilityRole="alert" style={styles.formError}>
+        <Text
+          testID="register-form-error"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          style={styles.formError}
+        >
           {errors.form}
         </Text>
       ) : null}

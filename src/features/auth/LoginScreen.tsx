@@ -46,7 +46,12 @@ export function LoginScreen() {
     <View style={styles.screen}>
       <Text style={styles.title}>{t('auth.login.title')}</Text>
       {expired ? (
-        <Text testID="login-expired-notice" accessibilityRole="alert" style={styles.notice}>
+        <Text
+          testID="login-expired-notice"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          style={styles.notice}
+        >
           {t('auth.errors.sessionExpired')}
         </Text>
       ) : null}
@@ -71,7 +76,12 @@ export function LoginScreen() {
         error={errors.fields.password}
       />
       {errors.form ? (
-        <Text testID="login-form-error" accessibilityRole="alert" style={styles.formError}>
+        <Text
+          testID="login-form-error"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          style={styles.formError}
+        >
           {errors.form}
         </Text>
       ) : null}

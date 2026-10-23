@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import vi from '../../../i18n/locales/vi.json';
 import { tokenStore } from '../../../lib/tokenStore';
+import { authApi } from '../../../api/auth';
 import { authResponse } from '../../../test/fixtures';
 import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import { renderWithProviders } from '../../../test/render';
@@ -126,5 +127,44 @@ describe('LoginScreen', () => {
     resolveFetch(problem(401, 'Unauthorized'));
     const formError = await screen.findByTestId('login-form-error');
     expect(formError.props.accessibilityRole).toBe('alert');
+    expect(formError.props.accessibilityLiveRegion).toBe('polite');
+    // The button is usable and no longer busy once the request failed.
+    expect(screen.getByTestId('login-submit').props.accessibilityState).toMatchObject({
+      busy: false,
+      disabled: false,
+    });
+  });
+
+  it('shows the session-expired notice as an alert after the refresh token is rejected', async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    mockFetch().mockResolvedValue(problem(401, 'Unauthorized'));
+    await renderWithProviders(<LoginScreen />);
+    expect(screen.queryByTestId('login-expired-notice')).toBeNull();
+
+    // A Bearer request gets 401, the refresh gets 401 too: the client fires the session-expired event.
+    await act(async () => {
+      await expect(authApi.me()).rejects.toMatchObject({ status: 401 });
+    });
+
+    const notice = await screen.findByTestId('login-expired-notice');
+    expect(notice.props.children).toBe(vi.auth.errors.sessionExpired);
+    expect(notice.props.accessibilityRole).toBe('alert');
+    expect(notice.props.accessibilityLiveRegion).toBe('polite');
+  });
+
+  it('releases the submit lock after a client validation error so a corrected form can be sent', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(jsonResponse(200, authResponse()));
+    await renderWithProviders(<LoginScreen />);
+
+    await fillAndSubmit('an@example.com', '');
+    expect(await screen.findByText(vi.auth.validation.passwordRequired)).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await fireEvent.changeText(screen.getByTestId('login-password'), 'fixture-pass-1');
+    await fireEvent.press(screen.getByTestId('login-submit'));
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(countRequests(fetchMock, '/auth/login')).toBe(1);
   });
 });
