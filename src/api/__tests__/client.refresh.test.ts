@@ -140,4 +140,80 @@ describe('apiFetch — 401 & refresh', () => {
     await expect(tokens.getRefreshToken()).resolves.toBe('ref-1');
     expect(onSessionExpired).not.toHaveBeenCalled();
   });
+
+  it('retries straight away, without refreshing, when another request already rotated the token', async () => {
+    const { api, fetchMock, tokens, onSessionExpired } = setup();
+    fetchMock.mockImplementationOnce(async () => {
+      await tokens.setTokens({ accessToken: 'acc-2', refreshToken: 'ref-2' });
+      return problem(401, 'Unauthorized');
+    });
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, { ok: true }));
+
+    await expect(api('/api/v1/me')).resolves.toEqual({ ok: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(countRequests(fetchMock, REFRESH_PATH)).toBe(0);
+    expect(requestAt(fetchMock, 0).headers.Authorization).toBe('Bearer acc-1');
+    expect(requestAt(fetchMock, 1).headers.Authorization).toBe('Bearer acc-2');
+    expect(onSessionExpired).not.toHaveBeenCalled();
+  });
+
+  it('starts a new refresh after a completed one when the new access token expires too', async () => {
+    const { api, fetchMock, onSessionExpired } = setup();
+    let validAccess = 'none';
+    fetchMock.mockImplementation(async (input, init) => {
+      const headers = (init?.headers ?? {}) as Record<string, string>;
+      if (String(input).endsWith(REFRESH_PATH)) {
+        const { refreshToken } = JSON.parse(String(init?.body)) as { refreshToken: string };
+        const n = Number(refreshToken.split('-')[1]) + 1;
+        validAccess = `acc-${n}`;
+        return jsonResponse(200, { accessToken: validAccess, refreshToken: `ref-${n}`, accessTokenExpiresIn: 900 });
+      }
+      return headers.Authorization === `Bearer ${validAccess}` ? jsonResponse(200, { ok: true }) : problem(401, 'Unauthorized');
+    });
+
+    await expect(api('/api/v1/a')).resolves.toEqual({ ok: true });
+    validAccess = 'expired-again';
+    await expect(api('/api/v1/b')).resolves.toEqual({ ok: true });
+
+    const refreshBodies = fetchMock.mock.calls
+      .map((_, i) => requestAt(fetchMock, i))
+      .filter((r) => r.url.endsWith(REFRESH_PATH))
+      .map((r) => r.body);
+    expect(refreshBodies).toEqual([{ refreshToken: 'ref-1' }, { refreshToken: 'ref-2' }]);
+    expect(onSessionExpired).not.toHaveBeenCalled();
+  });
+
+  it('can refresh again after a refresh that failed with a network error', async () => {
+    const { api, fetchMock, tokens } = setup();
+    let offline = true;
+    routeFetch(fetchMock, () => (offline ? new TypeError('Network request failed') : rotated()));
+
+    await expect(api('/api/v1/me')).rejects.toBeInstanceOf(NetworkError);
+    offline = false;
+    await expect(api('/api/v1/me')).resolves.toEqual({ ok: true });
+
+    expect(countRequests(fetchMock, REFRESH_PATH)).toBe(2);
+    await expect(tokens.getAccessToken()).resolves.toBe('acc-2');
+  });
+
+  it('notifies session expiry once for concurrent requests, then again for a later expiry', async () => {
+    const { api, fetchMock, tokens, onSessionExpired } = setup();
+    routeFetch(fetchMock, () => problem(401, 'Unauthorized'));
+
+    const results = await Promise.allSettled([api('/api/v1/a'), api('/api/v1/b'), api('/api/v1/c')]);
+
+    expect(results.map((r) => r.status)).toEqual(['rejected', 'rejected', 'rejected']);
+    for (const result of results) {
+      const reason = (result as PromiseRejectedResult).reason as unknown;
+      expect(reason).toBeInstanceOf(ApiError);
+      expect(reason).toMatchObject({ status: 401 });
+    }
+    expect(countRequests(fetchMock, REFRESH_PATH)).toBe(1);
+    expect(onSessionExpired).toHaveBeenCalledTimes(1);
+
+    await tokens.setTokens({ accessToken: 'acc-9', refreshToken: 'ref-9' });
+    await expect(api('/api/v1/d')).rejects.toMatchObject({ status: 401 });
+    expect(onSessionExpired).toHaveBeenCalledTimes(2);
+  });
 });

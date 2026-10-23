@@ -23,6 +23,7 @@ export const REFRESH_PATH = '/api/v1/auth/refresh';
 
 export function createApiClient(config: ApiClientConfig): ApiFetch {
   let refreshInFlight: Promise<boolean> | null = null;
+  let expiring: Promise<void> | null = null;
 
   async function send(path: string, options: ApiRequestOptions, accessToken: string | null): Promise<Response> {
     const headers: Record<string, string> = { Accept: 'application/json' };
@@ -85,9 +86,21 @@ export function createApiClient(config: ApiClientConfig): ApiFetch {
     return refreshInFlight;
   }
 
+  /** Concurrent failures of the same batch clear tokens and notify once; the guard resets afterwards. */
+  function expireOnce(): Promise<void> {
+    if (!expiring) {
+      expiring = (async () => {
+        await config.tokens.clear();
+        config.onSessionExpired();
+      })().finally(() => {
+        expiring = null;
+      });
+    }
+    return expiring;
+  }
+
   async function expireSession(): Promise<never> {
-    await config.tokens.clear();
-    config.onSessionExpired();
+    await expireOnce();
     throw new ApiError({ status: 401, title: 'Session expired' });
   }
 
@@ -124,6 +137,13 @@ export const apiFetch: ApiFetch = createApiClient({
   baseUrl: API_URL,
   tokens: tokenStore,
   onSessionExpired: () => {
-    sessionExpiredListeners.forEach((listener) => listener());
+    // Iterate a copy and isolate each subscriber: one bad listener must not block the others or mask the 401.
+    [...sessionExpiredListeners].forEach((listener) => {
+      try {
+        listener();
+      } catch {
+        // Swallowed on purpose.
+      }
+    });
   },
 });

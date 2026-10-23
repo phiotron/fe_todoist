@@ -6,8 +6,20 @@ import { addSessionExpiredListener } from '../client';
 import { ApiError } from '../errors';
 
 describe('authApi', () => {
+  // Every subscription goes through subscribe() so afterEach removes it even when a test fails.
+  const unsubscribers: Array<() => void> = [];
+  const subscribe = (listener: () => void) => {
+    const unsubscribe = addSessionExpiredListener(listener);
+    unsubscribers.push(unsubscribe);
+    return unsubscribe;
+  };
+
   beforeEach(async () => {
     await tokenStore.clear();
+  });
+
+  afterEach(() => {
+    unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe());
   });
 
   it('login posts credentials without a bearer token, even when one is stored', async () => {
@@ -69,15 +81,14 @@ describe('authApi', () => {
     mockFetch().mockResolvedValue(problem(401, 'Unauthorized'));
     const listener = jest.fn();
     const removed = jest.fn();
-    const unsubscribe = addSessionExpiredListener(listener);
-    addSessionExpiredListener(removed)();
+    subscribe(listener);
+    subscribe(removed)();
 
     await expect(authApi.me()).rejects.toBeInstanceOf(ApiError);
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(removed).not.toHaveBeenCalled();
     await expect(tokenStore.getAccessToken()).resolves.toBeNull();
-    unsubscribe();
   });
 
   it.each([
@@ -88,7 +99,7 @@ describe('authApi', () => {
     const fetchMock = mockFetch();
     fetchMock.mockResolvedValue(problem(401, 'Bad credentials'));
     const listener = jest.fn();
-    const unsubscribe = addSessionExpiredListener(listener);
+    subscribe(listener);
 
     await expect(call()).rejects.toMatchObject({ status: 401, title: 'Bad credentials' });
 
@@ -97,6 +108,22 @@ describe('authApi', () => {
     expect(requestAt(fetchMock, 0).headers.Authorization).toBeUndefined();
     expect(listener).not.toHaveBeenCalled();
     await expect(tokenStore.getAccessToken()).resolves.toBe('acc-1');
-    unsubscribe();
+  });
+
+  it('isolates session-expired listeners: a throwing one blocks neither the others nor the 401', async () => {
+    mockFetch().mockResolvedValue(problem(401, 'Unauthorized'));
+    const bad = jest.fn(() => {
+      throw new Error('listener bug');
+    });
+    const good = jest.fn();
+    subscribe(bad);
+    subscribe(good);
+
+    const error = await authApi.me().catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 401 });
+    expect(bad).toHaveBeenCalledTimes(1);
+    expect(good).toHaveBeenCalledTimes(1);
   });
 });
