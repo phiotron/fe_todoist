@@ -1,7 +1,15 @@
-import type { AuthResponse, LoginRequest, RegisterRequest, UserResponse } from './auth-types';
 import { apiFetch } from './client';
+import type { components } from './types.gen';
 
-export type { AuthResponse, LoginRequest, RegisterRequest, UserResponse } from './auth-types';
+type Schemas = components['schemas'];
+
+/** springdoc may mark response fields optional; the M0 contract guarantees they are always present. */
+type Strict<T> = { [K in keyof T]-?: Exclude<T[K], undefined> };
+
+export type UserResponse = Strict<Schemas['UserResponse']>;
+export type AuthResponse = Strict<Omit<Schemas['AuthResponse'], 'user'>> & { user: UserResponse };
+export type LoginRequest = Schemas['LoginRequest'];
+export type RegisterRequest = Schemas['RegisterRequest'];
 
 export const authApi = {
   login: (body: LoginRequest) =>
