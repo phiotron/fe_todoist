@@ -20,8 +20,10 @@ export const tokenStore: TokenStore = {
   getAccessToken: () => SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
   getRefreshToken: () => SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
   async setTokens({ accessToken, refreshToken }) {
-    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
+    // Refresh token first: the backend rotates it (the old one is revoked), so it must never be lost.
+    // "new refresh + old access" self-heals on the next 401; the reverse order would log the user out.
     await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
   },
   async clear() {
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
