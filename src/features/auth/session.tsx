@@ -61,6 +61,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const applyAuth = useCallback(
     async (response: AuthResponse) => {
+      // The previous user's cache (memory and persisted) must never reach the new user.
+      await wipeCaches(() => queryClient.clear());
       await tokenStore.setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken });
       queryClient.setQueryData(meQueryKey, response.user);
       setExpired(false);
@@ -86,11 +88,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch {
       // Offline, 401/5xx or session already gone: signing out on this device never depends on the server.
     }
-    await tokenStore.clear();
-    await wipeCaches(() => queryClient.clear());
-    setExpired(false);
-    setStatus('signedOut');
-  }, [queryClient]);
+    try {
+      // Caches first: they are wiped and the UI is signed out even if clearing tokens fails.
+      await wipeCaches(() => queryClient.clear());
+      await tokenStore.clear();
+    } finally {
+      setExpired(false);
+      setStatus('signedOut');
+    }
+  },[queryClient]);
 
   const value = useMemo<SessionContextValue>(
     () => ({ status, expired, signIn, signUp, signOut }),

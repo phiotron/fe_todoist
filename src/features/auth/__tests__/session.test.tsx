@@ -1,11 +1,12 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
+import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../../../api/auth';
 import { queryPersister } from '../../../lib/queryClient';
 import { tokenStore } from '../../../lib/tokenStore';
 import { authResponse, testUser } from '../../../test/fixtures';
 import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import { createTestQueryClient, createWrapper } from '../../../test/render';
-import { meQueryKey, useSession } from '../session';
+import { meQueryKey, useMe, useSession } from '../session';
 
 async function renderSession() {
   const queryClient = createTestQueryClient();
@@ -143,5 +144,134 @@ describe('SessionProvider', () => {
     await expect(tokenStore.getAccessToken()).resolves.toBeNull();
     expect(queryClient.getQueryData(meQueryKey)).toBeUndefined();
     expect(removeClientSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to signed out when SecureStore cannot be read at startup', async () => {
+    jest.mocked(SecureStore.getItemAsync).mockRejectedValueOnce(new Error('keystore unavailable'));
+    const { result } = await renderSession();
+    await waitFor(() => expect(result.current.status).toBe('signedOut'));
+    expect(result.current.expired).toBe(false);
+  });
+
+  it('signIn drops the previous user cache (memory and persisted) before caching the new user', async () => {
+    mockFetch().mockResolvedValueOnce(jsonResponse(200, authResponse('acc-2', 'ref-2')));
+    const { result, queryClient } = await renderSession();
+    await waitFor(() => expect(result.current.status).toBe('signedOut'));
+    queryClient.setQueryData(['tasks'], [{ id: 'previous-user-task' }]);
+
+    await act(async () => {
+      await result.current.signIn({ email: testUser.email, password: 'fixture-pass-1' });
+    });
+
+    expect(queryClient.getQueryData(['tasks'])).toBeUndefined();
+    expect(queryClient.getQueryData(meQueryKey)).toEqual(testUser);
+    expect(removeClientSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('signIn rejects and stays signed out without storing tokens when the server answers 401', async () => {
+    mockFetch().mockResolvedValue(problem(401, 'Unauthorized'));
+    const { result } = await renderSession();
+    await waitFor(() => expect(result.current.status).toBe('signedOut'));
+
+    await act(async () => {
+      await expect(
+        result.current.signIn({ email: testUser.email, password: 'fixture-wrong-1' }),
+      ).rejects.toMatchObject({ status: 401 });
+    });
+
+    expect(result.current.status).toBe('signedOut');
+    await expect(tokenStore.getAccessToken()).resolves.toBeNull();
+    await expect(tokenStore.getRefreshToken()).resolves.toBeNull();
+  });
+
+  it('signUp calls the register endpoint, stores tokens and clears a previous expired flag', async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    const { result } = await renderSession();
+    await waitFor(() => expect(result.current.status).toBe('signedIn'));
+    await act(async () => {
+      await expect(authApi.me()).rejects.toMatchObject({ status: 401 });
+    });
+    expect(result.current.expired).toBe(true);
+    expect(result.current.status).toBe('signedOut');
+
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, authResponse('acc-2', 'ref-2')));
+    await act(async () => {
+      await result.current.signUp({
+        email: testUser.email,
+        password: 'fixture-pass-1',
+        displayName: testUser.displayName,
+      });
+    });
+
+    const registerCall = fetchMock.mock.calls.length - 1;
+    expect(requestAt(fetchMock, registerCall).url).toMatch(/\/api\/v1\/auth\/register$/);
+    expect(result.current.status).toBe('signedIn');
+    expect(result.current.expired).toBe(false);
+    await expect(tokenStore.getAccessToken()).resolves.toBe('acc-2');
+    await expect(tokenStore.getRefreshToken()).resolves.toBe('ref-2');
+  });
+
+  it('signOut still ends signed out with caches cleared when clearing local tokens throws', async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    mockFetch().mockResolvedValueOnce(jsonResponse(204));
+    const clearSpy = jest.spyOn(tokenStore, 'clear').mockRejectedValueOnce(new Error('keystore failure'));
+    try {
+      const { result, queryClient } = await renderSession();
+      await waitFor(() => expect(result.current.status).toBe('signedIn'));
+      queryClient.setQueryData(meQueryKey, testUser);
+
+      await act(async () => {
+        await expect(result.current.signOut()).rejects.toThrow('keystore failure');
+      });
+
+      expect(result.current.status).toBe('signedOut');
+      expect(queryClient.getQueryData(meQueryKey)).toBeUndefined();
+      expect(removeClientSpy).toHaveBeenCalled();
+    } finally {
+      clearSpy.mockRestore();
+    }
+  });
+});
+
+describe('useMe', () => {
+  beforeEach(async () => {
+    await tokenStore.clear();
+  });
+
+  async function renderMe() {
+    const queryClient = createTestQueryClient();
+    const hook = await renderHook(() => ({ session: useSession(), me: useMe() }), {
+      wrapper: createWrapper(queryClient),
+    });
+    return { queryClient, ...hook };
+  }
+
+  it('does not call /me while signed out', async () => {
+    const fetchMock = mockFetch();
+    const { result } = await renderMe();
+    await waitFor(() => expect(result.current.session.status).toBe('signedOut'));
+
+    expect(result.current.me.fetchStatus).toBe('idle');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('signs out once with expired=true when /me gets 401 and the refresh is rejected (no refetch loop)', async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    const { result } = await renderMe();
+
+    await waitFor(() => expect(result.current.session.status).toBe('signedOut'));
+    expect(result.current.session.expired).toBe(true);
+    // Give any (unwanted) refetch a chance to happen before counting.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(countRequests(fetchMock, '/api/v1/me')).toBe(1);
+    expect(countRequests(fetchMock, '/api/v1/auth/refresh')).toBe(1);
+    expect(result.current.me.fetchStatus).toBe('idle');
   });
 });
