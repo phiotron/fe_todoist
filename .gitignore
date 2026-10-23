@@ -1,0 +1,39 @@
+# Bí mật — không bao giờ commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.mobileprovision
+*.secret.*
+google-services.json
+GoogleService-Info.plist
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Thư mục native sinh tự động (CNG) và file build
+android/
+ios/
+*.apk
+*.aab
+*.ipa
+
+# Kết quả test
+coverage/
+
+# IDE, hệ điều hành, tạm
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.*
