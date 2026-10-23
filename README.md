@@ -7,8 +7,8 @@ App di động Taskly, quản lý công việc kiểu Todoist. Backend nằm ở
 - **Thiết kế:** xem spec `docs/superpowers/specs/2026-10-23-taskly-design.md` trong repo tài liệu gốc
 
 ## Cần có
-- Node 22 LTS
-- Android Studio + một AVD (emulator), đã cài app **Expo Go** trên emulator
+- Node ≥ 22.13 (script `gen:api` dùng `--env-file-if-exists` và `import.meta.dirname`)
+- Android Studio + một AVD (emulator). Expo Go tự được cài lên emulator lần đầu bấm `a`
 - Backend đang chạy (xem README của repo `backend`)
 
 ## Chạy lần đầu
@@ -23,6 +23,7 @@ App di động Taskly, quản lý công việc kiểu Todoist. Backend nằm ở
 | Test | `npx jest` |
 | Kiểm tra kiểu | `npx tsc --noEmit` |
 | Sinh kiểu API từ backend | `npm run gen:api` |
+| Kiểm `openapi-typescript` còn sinh kiểu đúng (không cần backend) | `npm run gen:api:smoke` |
 
 ## Hợp đồng API với backend
 `src/api/types.gen.ts` được sinh từ OpenAPI của backend và **được commit vào repo này**, nên app build được mà
@@ -30,3 +31,8 @@ không cần backend đang chạy. Mỗi khi backend đổi API:
 1. Chạy `npm run gen:api`.
 2. Chạy `npx tsc --noEmit` để bắt chỗ lệch.
 3. Commit file sinh ra.
+
+**Vì sao `package.json` có `overrides`:** `openapi-typescript@7` khai báo peer `typescript ^5`, còn Expo SDK 58 dùng
+TypeScript 6. `overrides` ép nó dùng chung bản TypeScript của dự án. Sau mỗi lần nâng `typescript` hoặc
+`openapi-typescript`, chạy `npm run gen:api:smoke` để chắc việc sinh kiểu vẫn đúng; khi `openapi-typescript` hỗ trợ
+TypeScript 6 chính thức thì bỏ `overrides`.
