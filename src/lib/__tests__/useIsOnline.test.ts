@@ -13,7 +13,7 @@ describe('isOnlineState', () => {
 describe('useIsOnline', () => {
   it('follows NetInfo connectivity events', async () => {
     let emit: ((state: NetInfoState) => void) | undefined;
-    jest.mocked(NetInfo.addEventListener).mockImplementation((listener) => {
+    jest.mocked(NetInfo.addEventListener).mockImplementationOnce((listener) => {
       emit = listener;
       return jest.fn();
     });
