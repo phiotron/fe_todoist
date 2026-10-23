@@ -3,23 +3,46 @@
 App di động Taskly, quản lý công việc kiểu Todoist. Backend nằm ở repo riêng (`backend`).
 
 - **Stack:** React Native · Expo (TypeScript) · expo-router · TanStack Query · i18next
-- **Vòng 1:** demo chạy bằng Expo Go trên Android emulator
+- **Vòng 1:** demo chạy bằng **development build** (APK riêng `com.taskly.app`, dùng `expo-dev-client`) trên
+  Android emulator
 - **Thiết kế:** xem spec `docs/superpowers/specs/2026-10-23-taskly-design.md` trong repo tài liệu gốc
 
 ## Cần có
 - Node ≥ 22.13 (script `gen:api` dùng `--env-file-if-exists` và `import.meta.dirname`)
-- Android Studio + một AVD (emulator). Expo Go tự được cài lên emulator lần đầu bấm `a`
-- Backend đang chạy (xem README của repo `backend`)
+- Android Studio (Android SDK + JDK đi kèm) + một AVD (emulator) đang bật
+- `adb` nằm ở `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe` (thêm thư mục này vào `PATH`, hoặc gọi bằng
+  đường dẫn đầy đủ). `npx expo run:android` cần biến `ANDROID_HOME` trỏ tới `%LOCALAPPDATA%\Android\Sdk`.
+- Backend đang chạy ở cổng 8080 (xem README của repo `backend`)
 
-## Chạy lần đầu
+## Chạy app
+Thư mục `android/` do `npx expo run:android` sinh ra (CNG) và không commit.
+
+### Lần đầu (build + cài APK)
 1. Chép `.env.example` thành `.env`.
 2. Cài thư viện: `npm install`
-3. Chạy app: `npx expo start`, rồi bấm `a` để mở trên emulator.
+3. Chuyển cổng backend vào emulator: `adb reverse tcp:8080 tcp:8080`
+4. Build và cài app lên emulator: `npx expo run:android` (lần đầu Gradle có thể mất 10–20 phút).
+
+Chỉ cần build lại khi đổi thư viện native, plugin hoặc cấu hình native trong `app.json`.
+
+### Hằng ngày
+1. `adb reverse tcp:8080 tcp:8080`
+2. `npx expo start --dev-client` (hoặc `npm start`)
+3. Mở app **Taskly** trên emulator; app tự nối vào Metro (nếu không, bấm `a` trong cửa sổ Metro).
+
+### Kết nối backend từ emulator Android 17
+Emulator Android 17 (API 37) chặn app gọi `10.0.2.2` vì coi đó là mạng nội bộ — app phải có quyền
+`ACCESS_LOCAL_NETWORK` ([tài liệu](https://developer.android.com/privacy-and-security/local-network-permission)),
+nếu không kết nối kẹt ở `SYN_SENT`. Taskly không xin quyền này; thay vào đó app gọi `http://localhost:8080` và
+`adb reverse tcp:8080 tcp:8080` chuyển cổng 8080 của emulator về máy tính. Lệnh này mất tác dụng khi emulator tắt, nên
+**chạy lại mỗi lần bật emulator** (kiểm bằng `adb reverse --list`). Metro (cổng 8081) thường được Expo CLI tự
+`adb reverse`; nếu app không tải được bundle thì chạy thêm `adb reverse tcp:8081 tcp:8081`.
 
 ## Lệnh
 | Việc | Lệnh |
 |---|---|
-| Chạy | `npx expo start` |
+| Build + cài app lên emulator | `npx expo run:android` |
+| Chạy Metro cho development build | `npx expo start --dev-client` |
 | Test | `npx jest` |
 | Kiểm tra kiểu | `npx tsc --noEmit` |
 | Sinh kiểu API từ backend | `npm run gen:api` |
