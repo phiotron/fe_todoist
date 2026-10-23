@@ -39,7 +39,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gen:api": "node --env-file-if-exists=.env scripts/gen-api.mjs",
+    "gen:api:smoke": "node scripts/gen-api.smoke.mjs"
   },
   "private": true,
   "overrides": {
