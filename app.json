@@ -26,7 +26,8 @@
       "expo-router",
       "expo-status-bar",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      "./plugins/withAndroidBuildFixes"
     ],
     "scheme": "taskly"
   }
