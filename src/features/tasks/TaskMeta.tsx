@@ -6,6 +6,7 @@ import { describeDeadline, describeDue, nowLocal } from '../../lib/dates';
 import { formatDeadline, formatDueLabel } from '../../lib/dates/format';
 import { parseInstant } from '../../lib/dates/instant';
 import { palette, size, type } from '../../theme';
+import { TaskLabels } from '../labels/TaskLabels';
 import { progressLabel } from '../subtasks/tree';
 import { dueTone } from './dueTone';
 
@@ -54,6 +55,9 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
         <Feather name="list" size={size.iconSmall - 2} color={palette.mute} />
         <Text style={styles.text}>{progress}</Text>
       </View>
+    ) : null,
+    (task.labelIds?.length ?? 0) > 0 ? (
+      <TaskLabels key="labels" labelIds={task.labelIds} testID={`task-labels-${task.id}`} />
     ) : null,
     showProject && task.parentContent ? (
       <View key="parent" style={styles.item}>

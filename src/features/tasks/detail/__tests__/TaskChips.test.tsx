@@ -1,6 +1,7 @@
 import '../../../../i18n';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
+import { renderWithProviders } from '../../../../test/render';
 import { StyleSheet } from 'react-native';
 import { makeTask } from '../../../../test/m1Fixtures';
 import { palette } from '../../../../theme';
@@ -25,7 +26,7 @@ async function show(overrides: Parameters<typeof makeTask>[0] = {}) {
   const task = makeTask({ id: 't1', ...overrides });
   const onCommit = jest.fn();
   const onMove = jest.fn();
-  await render(<TaskChips task={task} draft={draftFromTask(task)} now={NOW} timeZone="Asia/Ho_Chi_Minh" onCommit={onCommit} onMove={onMove} />);
+  await renderWithProviders(<TaskChips task={task} draft={draftFromTask(task)} now={NOW} timeZone="Asia/Ho_Chi_Minh" onCommit={onCommit} onMove={onMove} />);
   return { onCommit, onMove };
 }
 
@@ -107,7 +108,7 @@ describe('TaskChips', () => {
     const task = makeTask({ id: 't1', dueDate: '2026-10-30', priority: 2 });
     const onCommit = jest.fn();
     const onMove = jest.fn();
-    await render(
+    await renderWithProviders(
       <TaskChips task={task} draft={draftFromTask(task)} now={NOW} timeZone="Asia/Ho_Chi_Minh" onCommit={onCommit} onMove={onMove} readOnly />,
     );
 

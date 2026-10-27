@@ -13,6 +13,7 @@ describe('task draft', () => {
       dueDatetime: null,
       durationMinutes: null,
       deadlineDate: null,
+      labelIds: [],
     });
   });
 

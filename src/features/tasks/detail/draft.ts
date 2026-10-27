@@ -1,4 +1,5 @@
 import type { Task, UpdateTaskRequest } from '../../../api/models';
+import { sameLabelIds } from '../../labels/labelDisplay';
 
 /** Everything the detail screen edits (spec 9.2 order: name, description, date, deadline, priority). */
 export interface TaskDraft {
@@ -9,6 +10,8 @@ export interface TaskDraft {
   dueDatetime: string | null;
   durationMinutes: number | null;
   deadlineDate: string | null;
+  /** M2: the whole label set (PATCH replaces it, spec 12.3). */
+  labelIds: string[];
 }
 
 export function draftFromTask(task: Task): TaskDraft {
@@ -20,6 +23,7 @@ export function draftFromTask(task: Task): TaskDraft {
     dueDatetime: task.dueDatetime,
     durationMinutes: task.durationMinutes,
     deadlineDate: task.deadlineDate,
+    labelIds: [...(task.labelIds ?? [])],
   };
 }
 
@@ -43,6 +47,7 @@ export function draftChanges(base: Task, draft: TaskDraft): Omit<UpdateTaskReque
     changes.durationMinutes = draft.durationMinutes;
   }
   if (draft.deadlineDate !== base.deadlineDate) changes.deadlineDate = draft.deadlineDate;
+  if (!sameLabelIds(draft.labelIds, base.labelIds ?? [])) changes.labelIds = [...draft.labelIds];
   return changes;
 }
 
