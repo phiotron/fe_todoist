@@ -1,3 +1,13 @@
 {
-  "quickAdd": {}
+  "quickAdd": {
+    "placeholder": "Tên công việc",
+    "subtaskPlaceholder": "Tên sub-task",
+    "description": "Mô tả",
+    "date": "Ngày",
+    "priority": "Ưu tiên",
+    "send": "Thêm công việc",
+    "added": "Đã thêm vào {{name}}",
+    "project": "Chọn dự án",
+    "closeSheet": "Đóng"
+  }
 }

@@ -58,9 +58,5 @@
       "projectSectionsTotal": "Dự án đã có tối đa {{max}} section (kể cả section đã lưu trữ)",
       "other": "Đã đạt giới hạn tối đa ({{max}})"
     }
-  },
-  "home": {
-    "greeting": "Xin chào {{name}}",
-    "signOut": "Đăng xuất"
   }
 }

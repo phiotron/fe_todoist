@@ -1,3 +1,25 @@
 {
-  "schedule": {}
+  "schedule": {
+    "title": "Ngày đến hạn",
+    "today": "Hôm nay",
+    "tomorrow": "Ngày mai",
+    "thisWeekend": "Cuối tuần này",
+    "nextWeek": "Tuần sau",
+    "noDate": "Không có ngày",
+    "time": "Giờ",
+    "none": "Không",
+    "removeTime": "Bỏ giờ",
+    "duration": "Thời lượng",
+    "previousMonth": "Tháng trước",
+    "nextMonth": "Tháng sau",
+    "priority": {
+      "title": "Ưu tiên",
+      "option": "Ưu tiên {{n}}"
+    },
+    "picker": {
+      "title": "Chọn dự án",
+      "noSection": "Không thuộc section",
+      "back": "Quay lại danh sách dự án"
+    }
+  }
 }
