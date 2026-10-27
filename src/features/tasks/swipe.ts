@@ -1,5 +1,9 @@
-/** Spec 9.2 swipe actions (M3 setting values). M1 handles COMPLETE, SCHEDULE, SELECT and NONE. */
-export type SwipeAction = 'COMPLETE' | 'SCHEDULE' | 'DELETE' | 'REMINDERS' | 'SELECT' | 'NONE';
+import { useMemo } from 'react';
+import type { SwipeAction } from '../settings/settingsModel';
+import { useSettingsContext } from '../settings/SettingsProvider';
+
+/** Spec 9.2 swipe actions: one source of truth, the setting values of the account (settingsModel). */
+export type { SwipeAction };
 
 export interface SwipeSettings {
   /** Swiping the row to the right. */
@@ -10,9 +14,12 @@ export interface SwipeSettings {
 
 export const DEFAULT_SWIPE: SwipeSettings = { right: 'COMPLETE', left: 'SCHEDULE' };
 
-/** M1: the spec defaults. M3 replaces the body with me/settings swipeRight / swipeLeft (same signature). */
+/** Swipe actions of the account (spec 9.2): right defaults to Complete, left to Schedule. */
 export function useSwipeSettings(): SwipeSettings {
-  return DEFAULT_SWIPE;
+  const settings = useSettingsContext()?.settings;
+  const left = settings?.swipeLeft ?? DEFAULT_SWIPE.left;
+  const right = settings?.swipeRight ?? DEFAULT_SWIPE.right;
+  return useMemo(() => ({ left, right }), [left, right]);
 }
 
 /**
