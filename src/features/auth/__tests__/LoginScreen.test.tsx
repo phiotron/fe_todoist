@@ -222,4 +222,14 @@ describe('LoginScreen', () => {
     expect(screen.getByTestId('login-email').props.submitBehavior).toBe('submit');
     expect(screen.getByTestId('login-email').props.onSubmitEditing).toEqual(expect.any(Function));
   });
+
+  it('opens the forgot-password screen from "Forgot your password?"', async () => {
+    mockFetch();
+    await renderWithProviders(<LoginScreen />);
+
+    expect(screen.getByText(vi.auth.login.forgotPassword)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('login-go-forgot'));
+
+    expect(router.push).toHaveBeenCalledWith('/forgot-password');
+  });
 });

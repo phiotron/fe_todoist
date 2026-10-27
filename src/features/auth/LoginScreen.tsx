@@ -121,6 +121,14 @@ export function LoginScreen() {
         )}
       </Pressable>
       <Pressable
+        testID="login-go-forgot"
+        accessibilityRole="link"
+        disabled={submitting}
+        onPress={() => router.push('/forgot-password')}
+      >
+        <Text style={styles.ghostLink}>{t('auth.login.forgotPassword')}</Text>
+      </Pressable>
+      <Pressable
         testID="login-go-register"
         accessibilityRole="link"
         disabled={submitting}
