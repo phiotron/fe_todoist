@@ -3,12 +3,13 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { KeyboardScreen } from '../../components/KeyboardScreen';
-import { palette } from '../../theme';
+import { useTheme } from '../../theme';
 import { useIsOnline } from '../../lib/useIsOnline';
+import { AuthLogo } from './AuthLogo';
 import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
 import { useSession } from './session';
-import { authStyles as styles } from './styles';
+import { useAuthStyles } from './styles';
 import { hasErrors, validateLogin, type LoginValues } from './validation';
 
 /** Leaves the auth screens for good: drop them from the stack so Android Back cannot return here. */
@@ -19,6 +20,8 @@ export function goHomeAfterAuth() {
 
 export function LoginScreen() {
   const { t } = useTranslation();
+  const styles = useAuthStyles();
+  const { palette } = useTheme();
   const { signIn, expired } = useSession();
   const isOnline = useIsOnline();
   const [values, setValues] = useState<LoginValues>({ email: '', password: '' });
@@ -52,6 +55,7 @@ export function LoginScreen() {
 
   return (
     <KeyboardScreen contentStyle={styles.screen}>
+      <AuthLogo />
       <Text style={styles.title}>{t('auth.login.title')}</Text>
       {expired ? (
         <Text

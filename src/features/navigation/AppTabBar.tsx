@@ -4,7 +4,8 @@ import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { layout, palette, size, type } from '../../theme';
+import { layout, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { TAB_DEFS, useNavTabs } from './navTabs';
 
 /**
@@ -15,6 +16,8 @@ export type AppTabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>[
 
 /** `TabBar.dc.html`: top line, icon 24 over an 11/600 label, accent for the current tab, 48 high touch targets. */
 export function AppTabBar({ state, emitter, navigateToTab }: AppTabBarProps) {
+  const styles = useThemedStyles(createAppTabBarStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const keys = useNavTabs();
@@ -53,14 +56,16 @@ export function AppTabBar({ state, emitter, navigateToTab }: AppTabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: 'row',
-    paddingTop: 6,
-    paddingHorizontal: 8,
-    borderTopWidth: 1,
-    borderTopColor: palette.line,
-    backgroundColor: palette.bg,
-  },
-  item: { flex: 1, minHeight: size.tabItem, alignItems: 'center', justifyContent: 'center', gap: 2 },
-});
+function createAppTabBarStyles(palette: Palette) {
+  return StyleSheet.create({
+    bar: {
+      flexDirection: 'row',
+      paddingTop: 6,
+      paddingHorizontal: 8,
+      borderTopWidth: 1,
+      borderTopColor: palette.line,
+      backgroundColor: palette.bg,
+    },
+    item: { flex: 1, minHeight: size.tabItem, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  });
+}

@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { authStyles } from '../../features/auth/styles';
+import { createAuthStyles } from '../../features/auth/styles';
 import { colors } from '../../lib/theme';
 import { AVATAR_COLORS, PROJECT_PALETTE, darkPalette, fonts, palette, radius, size, type, useTheme } from '..';
 
@@ -64,6 +64,7 @@ describe('design tokens (design-mobile/screens/taskly.css)', () => {
   it('maps the M0 colour names onto the tokens and styles the auth screens with them', () => {
     expect(colors.primary).toBe(palette.acc);
     expect(colors.danger).toBe(palette.warn);
+    const authStyles = createAuthStyles(palette);
     expect(StyleSheet.flatten(authStyles.title)?.fontFamily).toBe(fonts.bold);
     expect(StyleSheet.flatten(authStyles.button)?.backgroundColor).toBe(palette.acc);
   });

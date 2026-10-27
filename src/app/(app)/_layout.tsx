@@ -3,9 +3,12 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { SnackbarProvider } from '../../components/Snackbar';
 import { useSession } from '../../features/auth/session';
-import { palette } from '../../theme';
+import { useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 
 export default function SignedInLayout() {
+  const styles = useThemedStyles(createSignedInLayoutStyles);
+  const { palette } = useTheme();
   const { status } = useSession();
   if (status === 'loading') {
     return (
@@ -34,7 +37,9 @@ export default function SignedInLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-});
+function createSignedInLayoutStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  });
+}
