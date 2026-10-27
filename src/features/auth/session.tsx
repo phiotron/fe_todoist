@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { authApi, type AuthResponse, type LoginRequest, type RegisterRequest } from '../../api/auth';
-import { addSessionExpiredListener } from '../../api/client';
+import { addSessionExpiredListener, apiFetch } from '../../api/client';
 import { queryPersister } from '../../lib/queryClient';
 import { tokenStore } from '../../lib/tokenStore';
 
@@ -43,10 +43,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     tokenStore
       .getAccessToken()
       .then((token) => {
-        if (active) setStatus(token ? 'signedIn' : 'signedOut');
+        const next: SessionStatus = token ? 'signedIn' : 'signedOut';
+        // signIn/signOut may have finished first: only the initial 'loading' state is ours to replace.
+        if (active) setStatus((current) => (current === 'loading' ? next : current));
       })
       .catch(() => {
-        if (active) setStatus('signedOut');
+        if (active) setStatus((current) => (current === 'loading' ? 'signedOut' : current));
       });
     const unsubscribe = addSessionExpiredListener(() => {
       void wipeCaches(() => queryClient.clear());
@@ -61,6 +63,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const applyAuth = useCallback(
     async (response: AuthResponse) => {
+      // New epoch first: requests and refreshes of the previous session can no longer write or clear tokens.
+      await apiFetch.resetSession();
       // The previous user's cache (memory and persisted) must never reach the new user.
       await wipeCaches(() => queryClient.clear());
       await tokenStore.setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken });
@@ -89,6 +93,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       // Offline, 401/5xx or session already gone: signing out on this device never depends on the server.
     }
     try {
+      // Close the epoch before clearing: a refresh still on the wire must not write its tokens back afterwards.
+      await apiFetch.resetSession();
       // Caches first: they are wiped and the UI is signed out even if clearing tokens fails.
       await wipeCaches(() => queryClient.clear());
       await tokenStore.clear();

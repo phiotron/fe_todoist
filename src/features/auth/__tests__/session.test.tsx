@@ -1,8 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../../../api/auth';
+import { apiFetch } from '../../../api/client';
 import { queryPersister } from '../../../lib/queryClient';
 import { tokenStore } from '../../../lib/tokenStore';
+import { deferred } from '../../../test/deferred';
 import { authResponse, testUser } from '../../../test/fixtures';
 import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import { createTestQueryClient, createWrapper } from '../../../test/render';
@@ -232,6 +234,76 @@ describe('SessionProvider', () => {
     } finally {
       clearSpy.mockRestore();
     }
+  });
+  it('starts a new API session epoch before storing the tokens of a sign-in', async () => {
+    const order: string[] = [];
+    const resetSpy = jest.spyOn(apiFetch, 'resetSession').mockImplementation(async () => {
+      order.push('reset');
+    });
+    const realSet = tokenStore.setTokens;
+    const setSpy = jest.spyOn(tokenStore, 'setTokens').mockImplementation(async (pair) => {
+      order.push('setTokens');
+      await realSet(pair);
+    });
+    try {
+      mockFetch().mockResolvedValueOnce(jsonResponse(200, authResponse()));
+      const { result } = await renderSession();
+      await waitFor(() => expect(result.current.status).toBe('signedOut'));
+
+      await act(async () => {
+        await result.current.signIn({ email: testUser.email, password: 'fixture-pass-1' });
+      });
+
+      expect(order).toEqual(['reset', 'setTokens']);
+    } finally {
+      resetSpy.mockRestore();
+      setSpy.mockRestore();
+    }
+  });
+
+  it('closes the API session epoch before clearing tokens on sign-out', async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    const order: string[] = [];
+    const resetSpy = jest.spyOn(apiFetch, 'resetSession').mockImplementation(async () => {
+      order.push('reset');
+    });
+    const realClear = tokenStore.clear;
+    const clearSpy = jest.spyOn(tokenStore, 'clear').mockImplementation(async () => {
+      order.push('clear');
+      await realClear();
+    });
+    try {
+      mockFetch().mockResolvedValueOnce(jsonResponse(204));
+      const { result } = await renderSession();
+      await waitFor(() => expect(result.current.status).toBe('signedIn'));
+
+      await act(async () => {
+        await result.current.signOut();
+      });
+
+      expect(order).toEqual(['reset', 'clear']);
+      expect(result.current.status).toBe('signedOut');
+    } finally {
+      resetSpy.mockRestore();
+      clearSpy.mockRestore();
+    }
+  });
+
+  it('a slow startup token read never overrides a sign-in that finished first', async () => {
+    const startupRead = deferred<string | null>();
+    jest.mocked(SecureStore.getItemAsync).mockImplementationOnce(() => startupRead.promise);
+    mockFetch().mockResolvedValueOnce(jsonResponse(200, authResponse()));
+    const { result } = await renderSession();
+
+    await act(async () => {
+      await result.current.signIn({ email: testUser.email, password: 'fixture-pass-1' });
+    });
+    expect(result.current.status).toBe('signedIn');
+
+    await act(async () => {
+      startupRead.resolve(null);
+    });
+    expect(result.current.status).toBe('signedIn');
   });
 });
 
