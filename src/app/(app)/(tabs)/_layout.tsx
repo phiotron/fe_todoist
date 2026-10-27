@@ -6,6 +6,7 @@ import { useUserTimeZone } from '../../../features/auth/useUserTimeZone';
 import { AppTabBar } from '../../../features/navigation/AppTabBar';
 import { fabParamsFor } from '../../../features/navigation/fabTarget';
 import { TAB_DEFS } from '../../../features/navigation/navTabs';
+import { useAnySelectionActive } from '../../../features/tasks/selectionActiveStore';
 import { openQuickAdd } from '../../../features/quickAdd/quickAddTarget';
 import { useUpcomingDay } from '../../../features/views/upcomingDayStore';
 import { dateKeyInZone } from '../../../lib/dates';
@@ -19,7 +20,9 @@ function TabsFab() {
   const now = useNow();
   const timeZone = useUserTimeZone();
   const upcomingDay = useUpcomingDay();
+  const selecting = useAnySelectionActive();
   const params = fabParamsFor(pathname, { today: dateKeyInZone(now, timeZone), upcomingDay });
+  if (selecting) return null; // multi-select: the + would cover the right end of the action bar
   // One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar.
   return <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} testID="tab-fab" />;
 }
