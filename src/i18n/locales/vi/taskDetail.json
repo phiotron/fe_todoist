@@ -1,3 +1,12 @@
 {
-  "taskDetail": {}
+  "taskDetail": {
+    "content": "Tên công việc",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Thêm mô tả",
+    "breadcrumb": "Chuyển công việc: {{place}}",
+    "conflictTitle": "Đã có thay đổi ở nơi khác",
+    "conflictHint": "Bản mới nhất đã được tải về. Nội dung bạn đang nhập vẫn được giữ.",
+    "keepMine": "Lưu bản của tôi",
+    "useLatest": "Dùng bản mới"
+  }
 }
