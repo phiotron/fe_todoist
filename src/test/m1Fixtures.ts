@@ -39,6 +39,7 @@ export function makeTask(overrides: Partial<Task> = {}): Task {
     updatedAt: CREATED,
     projectName: 'Inbox',
     parentContent: null,
+    labelIds: [],
     ...overrides,
   };
 }

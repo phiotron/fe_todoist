@@ -2,6 +2,7 @@ import { apiFetch, buildQuery } from './client';
 import type {
   AffectedTasksResponse,
   CreateTaskRequest,
+  DisplayParams,
   MoveTaskRequest,
   Page,
   Task,
@@ -12,6 +13,19 @@ import type {
 } from './models';
 
 const base = (taskId: string) => `/api/v1/tasks/${encodeURIComponent(taskId)}`;
+
+/** Display parameters of GET tasks; empty for the lists that do not take them (the server answers 400 otherwise). */
+export function displayQuery(params: TaskListParams): DisplayParams {
+  if (params.view === 'overdue' || params.view === 'completed' || params.completed) return {};
+  return {
+    sort: params.sort,
+    order: params.order,
+    group: params.group,
+    filterPriority: params.filterPriority,
+    filterLabelId: params.filterLabelId,
+    filterDue: params.filterDue,
+  };
+}
 
 /** Spec 12.3 / 12.5. Writes answer with the new state; callers simply refresh their caches (decision #6). */
 export const tasksApi = {
@@ -25,6 +39,9 @@ export const tasksApi = {
         to: params.to,
         since: params.since,
         until: params.until,
+        labelId: params.labelId,
+        filter: params.filter,
+        ...displayQuery(params),
         cursor,
       })}`,
     ),
