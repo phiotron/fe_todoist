@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, weekdayShort } from '../../lib/dates/format';
 import { fonts, gutter, size, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -22,6 +23,8 @@ interface WeekStripProps {
  */
 export function WeekStrip({ days, today, selected, onSelectDay, onShiftWeek, testID = 'week-strip' }: WeekStripProps) {
   const styles = useThemedStyles(createWeekStripStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { t } = useTranslation();
   const latest = useRef(onShiftWeek);
   latest.current = onShiftWeek;

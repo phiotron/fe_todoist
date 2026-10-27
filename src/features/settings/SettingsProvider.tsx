@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { UserResponse } from '../../api/auth';
 import { settingsApi, type SettingsResponse } from '../../api/settings';
 import i18n from '../../i18n';
+import { setDisplayPrefs } from '../../lib/dates/displayFormat';
 import { getDeviceTimeZone } from '../../lib/deviceTimeZone';
 import { meQueryKey, useSession } from '../auth/session';
 import {
@@ -142,6 +143,13 @@ export function SettingsProvider({ children, storage = settingsStore, deviceTime
   useEffect(() => {
     if (locale && i18n.language !== locale) void i18n.changeLanguage(locale);
   }, [locale]);
+
+  // 2b. Date / time format for the pure formatting functions of lib/dates (components redraw through useDisplayPrefs()).
+  const dateFormat = stored ? effectiveSettings(stored).dateFormat : null;
+  const timeFormat = stored ? effectiveSettings(stored).timeFormat : null;
+  useEffect(() => {
+    if (dateFormat && timeFormat) setDisplayPrefs({ dateFormat, timeFormat });
+  }, [dateFormat, timeFormat]);
 
   // 3. Signed in: resend what failed last time, else load the account settings. Signed out: forget pending.
   const hydrated = stored !== null;

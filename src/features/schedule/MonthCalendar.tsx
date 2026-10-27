@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { IconButton } from '../../components/IconButton';
 import { addDays, monthGrid, weekDays } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, monthTitle, weekdayShort } from '../../lib/dates/format';
 import { fonts, size, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -28,6 +29,8 @@ function shiftMonth(month: string, delta: number): string {
 /** M-Schedule month grid: 44px cells, selected day = 40px accent circle, past days muted (still selectable). */
 export function MonthCalendar({ month, selected, today, minDate, startDay, onSelectDay, onMonthChange, testID }: MonthCalendarProps) {
   const styles = useThemedStyles(createMonthCalendarStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { t } = useTranslation();
   const [year, m] = month.split('-').map(Number);
   const weeks = monthGrid(year, m, startDay);

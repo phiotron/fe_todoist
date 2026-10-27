@@ -9,6 +9,7 @@ import { ErrorText } from '../../components/ErrorText';
 import { IconButton } from '../../components/IconButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { addDays, dateKeyInZone, dayRange, groupByDueDate, upcomingLimit, weekDays, weekStart } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDayHeader, monthTitle } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
@@ -30,6 +31,8 @@ import { WeekStrip } from './WeekStrip';
 
 function UpcomingBody() {
   const styles = useThemedStyles(createUpcomingScreenStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  const displayPrefs = useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
@@ -90,7 +93,7 @@ function UpcomingBody() {
     }
     return result;
     // reschedule.start only opens the sheet; overdue.query is read for hasNextPage / fetchNextPage.
-  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to the target day, loading more pages / windows first while it has not arrived (spec 9.2: infinite list of days, at most 2 years).
   useEffect(() => {

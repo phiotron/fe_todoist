@@ -8,6 +8,7 @@ import { BottomSheet } from '../../components/BottomSheet';
 import { Chip } from '../../components/Chip';
 import { IconButton, type IconName } from '../../components/IconButton';
 import { dateKeyInZone, dueTime, quickDates, taskDateKey } from '../../lib/dates';
+import { getDisplayPrefs, useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, formatDuration, weekdayShort } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
 import { size, type, useTheme, useThemedStyles } from '../../theme';
@@ -69,6 +70,8 @@ export function ScheduleSheet({
   testID = 'schedule',
 }: ScheduleSheetProps) {
   const styles = useThemedStyles(createScheduleSheetStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
@@ -112,7 +115,7 @@ export function ScheduleSheet({
     DateTimePickerAndroid.open({
       value: initial,
       mode: 'time',
-      is24Hour: true,
+      is24Hour: getDisplayPrefs().timeFormat === 'H24',
       onChange: (event, picked) => {
         if (event.type === 'set' && picked) setPending((current) => withTime(current, localTime(picked), today));
       },

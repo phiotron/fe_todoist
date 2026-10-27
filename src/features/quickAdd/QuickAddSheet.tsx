@@ -8,6 +8,7 @@ import { describeError } from '../../api/describeError';
 import { Chip } from '../../components/Chip';
 import { ErrorText } from '../../components/ErrorText';
 import { describeDue } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDueLabel } from '../../lib/dates/format';
 import { useIdempotencyKeys } from '../../lib/idempotency';
 import { useIsOnline } from '../../lib/useIsOnline';
@@ -39,6 +40,8 @@ type Overlay = 'none' | 'date' | 'priority' | 'project';
  */
 export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   const styles = useThemedStyles(createQuickAddSheetStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();

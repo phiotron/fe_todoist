@@ -8,6 +8,7 @@ import { IconButton } from '../../components/IconButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { StateView } from '../../components/StateView';
 import { dateKeyInZone, groupTodayView } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, formatDayHeader, weekdayName } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
 import { gutter, useTheme, useThemedStyles } from '../../theme';
@@ -23,6 +24,8 @@ import { overdueRows, useOverdueReschedule } from './overdue';
 
 function TodayBody() {
   const styles = useThemedStyles(createTodayScreenStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  const displayPrefs = useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
@@ -56,7 +59,7 @@ function TodayBody() {
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, t, palette]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, now, timeZone, collapsed, today, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subtitle = query.isPending
     ? undefined

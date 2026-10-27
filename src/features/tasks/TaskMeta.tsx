@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import type { Task } from '../../api/models';
 import { describeDeadline, describeDue, nowLocal } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDeadline, formatDueLabel } from '../../lib/dates/format';
 import { parseInstant } from '../../lib/dates/instant';
 import { size, type, useTheme, useThemedStyles } from '../../theme';
@@ -22,6 +23,8 @@ interface TaskMetaProps {
 /** .meta line: due (date tone), deadline, sub-task progress, project / parent. M2 adds labels (.tag) here. */
 export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime = false }: TaskMetaProps) {
   const styles = useThemedStyles(createTaskMetaStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const due = describeDue(task, now, timeZone);

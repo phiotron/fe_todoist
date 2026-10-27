@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Task } from '../../../api/models';
 import { Chip } from '../../../components/Chip';
 import { dateKeyInZone, describeDeadline, describeDue } from '../../../lib/dates';
+import { useDisplayPrefs } from '../../../lib/dates/displayFormat';
 import { formatDateKey, formatDueLabel } from '../../../lib/dates/format';
 import { size, type, useTheme, useThemedStyles } from '../../../theme';
 import type { Palette } from '../../../theme/palette';
@@ -36,6 +37,8 @@ type Sheet = 'none' | 'date' | 'deadline' | 'priority';
  */
 export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOnly = false }: TaskChipsProps) {
   const styles = useThemedStyles(createTaskChipsStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const [sheet, setSheet] = useState<Sheet>('none');

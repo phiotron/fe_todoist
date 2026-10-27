@@ -7,6 +7,7 @@ import { Chip } from '../../components/Chip';
 import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
 import { addDays, dateKeyInZone, nowLocal } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, weekdayName } from '../../lib/dates/format';
 import { parseInstant } from '../../lib/dates/instant';
 import { useNow } from '../../lib/useNow';
@@ -27,6 +28,8 @@ import { useTaskList } from '../tasks/useTaskList';
  */
 export function CompletedScreen() {
   const styles = useThemedStyles(createCompletedScreenStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
