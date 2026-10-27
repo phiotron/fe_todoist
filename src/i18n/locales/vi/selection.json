@@ -1,3 +1,15 @@
 {
-  "selection": {}
+  "selection": {
+    "limit": "Chỉ thao tác được tối đa {{n}} công việc cùng lúc — bỏ bớt công việc đã chọn.",
+    "count": "{{n}} đã chọn",
+    "close": "Thoát chế độ chọn",
+    "complete": "Hoàn thành",
+    "schedule": "Dời lịch",
+    "priority": "Ưu tiên",
+    "move": "Chuyển",
+    "delete": "Xoá",
+    "moveTitle": "Chuyển công việc đã chọn tới",
+    "deleteTitle": "Xoá {{n}} công việc?",
+    "deleteMessage": "Các công việc đã chọn cùng mọi sub-task sẽ bị xoá vĩnh viễn. Không hoàn tác được."
+  }
 }

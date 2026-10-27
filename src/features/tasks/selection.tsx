@@ -1,5 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
+/** `tasks/batch` accepts 1–200 ids (spec 12.5); more → 400. */
+export const MAX_BATCH_TASKS = 200;
+
 export interface TaskSelection {
   active: boolean;
   ids: ReadonlySet<string>;
