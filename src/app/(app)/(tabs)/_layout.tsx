@@ -21,7 +21,7 @@ export default function TabsLayout() {
   const params = fabParamsFor(pathname, { today: dateKeyInZone(now, timeZone), upcomingDay });
   return (
     <View style={styles.fill}>
-      <Tabs tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.bg } }}>
+      <Tabs backBehavior="history" tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.bg } }}>
         {Object.values(TAB_DEFS).map((def) => (
           <Tabs.Screen key={def.key} name={def.route} options={{ title: def.title() }} />
         ))}
