@@ -84,7 +84,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       const refreshToken = await tokenStore.getRefreshToken();
-      if (refreshToken) await authApi.logout(refreshToken);
+      if (refreshToken) await authApi.logout();
     } catch {
       // Offline, 401/5xx or session already gone: signing out on this device never depends on the server.
     }
