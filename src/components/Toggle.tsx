@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { palette } from '../theme';
+import { useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 
 interface ToggleProps {
   value: boolean;
@@ -12,6 +13,8 @@ interface ToggleProps {
 
 /** .tog: 44×26 track (tog / acc), 20px white knob. */
 export function Toggle({ value, onChange, label, disabled = false, testID }: ToggleProps) {
+  const styles = useThemedStyles(createToggleStyles);
+  const { palette } = useTheme();
   return (
     <Pressable
       testID={testID}
@@ -28,8 +31,10 @@ export function Toggle({ value, onChange, label, disabled = false, testID }: Tog
   );
 }
 
-const styles = StyleSheet.create({
-  track: { width: 44, height: 26, borderRadius: 13 },
-  knob: { position: 'absolute', top: 3, width: 20, height: 20, borderRadius: 10, backgroundColor: palette.knob },
-  disabled: { opacity: 0.5 },
-});
+function createToggleStyles(palette: Palette) {
+  return StyleSheet.create({
+    track: { width: 44, height: 26, borderRadius: 13 },
+    knob: { position: 'absolute', top: 3, width: 20, height: 20, borderRadius: 10, backgroundColor: palette.knob },
+    disabled: { opacity: 0.5 },
+  });
+}

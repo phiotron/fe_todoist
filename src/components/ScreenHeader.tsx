@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { gutter, layout, palette, type } from '../theme';
+import { gutter, layout, type, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 import { useTopInset } from './useTopInset';
 
 interface ScreenHeaderProps {
@@ -17,6 +18,7 @@ interface ScreenHeaderProps {
 
 /** .mh: tab screen header, 26/700 title + 13px muted subtitle, under the status bar. */
 export function ScreenHeader({ title, subtitle, left, right, compact = false, testID }: ScreenHeaderProps) {
+  const styles = useThemedStyles(createScreenHeaderStyles);
   const top = useTopInset();
   return (
     <View testID={testID} style={[styles.row, { paddingTop: top + layout.headerGap }]}>
@@ -32,9 +34,11 @@ export function ScreenHeader({ title, subtitle, left, right, compact = false, te
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: gutter, paddingBottom: 8, backgroundColor: palette.bg },
-  titles: { flex: 1 },
-  title: { color: palette.ink },
-  subtitle: { ...type.meta, color: palette.mute, marginTop: 2 },
-});
+function createScreenHeaderStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: gutter, paddingBottom: 8, backgroundColor: palette.bg },
+    titles: { flex: 1 },
+    title: { color: palette.ink },
+    subtitle: { ...type.meta, color: palette.mute, marginTop: 2 },
+  });
+}

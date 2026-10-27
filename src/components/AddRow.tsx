@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useIsOnline } from '../lib/useIsOnline';
-import { palette, size, type } from '../theme';
+import { size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 
 interface AddRowProps {
   label: string;
@@ -14,6 +15,8 @@ interface AddRowProps {
 
 /** .addrow: "+ Thêm công việc" / "Thêm sub-task" / "Thêm section". */
 export function AddRow({ label, onPress, accent = false, requiresOnline = false, testID }: AddRowProps) {
+  const styles = useThemedStyles(createAddRowStyles);
+  const { palette } = useTheme();
   const online = useIsOnline();
   const inactive = requiresOnline && !online;
   return (
@@ -32,7 +35,9 @@ export function AddRow({ label, onPress, accent = false, requiresOnline = false,
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: size.touch },
-  inactive: { opacity: 0.4 },
-});
+function createAddRowStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: size.touch },
+    inactive: { opacity: 0.4 },
+  });
+}

@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, size, type } from '../theme';
+import { size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import { AppButton } from './AppButton';
 import type { IconName } from './IconButton';
 
@@ -17,6 +18,8 @@ interface StateViewProps {
 
 /** Centered state of M-Empty / M-Error: 96px circle, 20/700 title, muted sentence, primary button. */
 export function StateView({ tone, icon, title, message, actionLabel, onAction, testID = 'state' }: StateViewProps) {
+  const styles = useThemedStyles(createStateViewStyles);
+  const { palette } = useTheme();
   const circle = tone === 'ok' ? palette.soft : palette.p1s;
   const iconColor = tone === 'ok' ? palette.acc2 : palette.warn;
   return (
@@ -33,9 +36,11 @@ export function StateView({ tone, icon, title, message, actionLabel, onAction, t
   );
 }
 
-const styles = StyleSheet.create({
-  box: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32, paddingVertical: 48 },
-  circle: { width: size.stateIcon, height: size.stateIcon, borderRadius: size.stateIcon / 2, alignItems: 'center', justifyContent: 'center' },
-  title: { ...type.stateTitle, color: palette.ink, marginTop: 8, textAlign: 'center' },
-  message: { ...type.body, color: palette.mute, textAlign: 'center' },
-});
+function createStateViewStyles(palette: Palette) {
+  return StyleSheet.create({
+    box: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32, paddingVertical: 48 },
+    circle: { width: size.stateIcon, height: size.stateIcon, borderRadius: size.stateIcon / 2, alignItems: 'center', justifyContent: 'center' },
+    title: { ...type.stateTitle, color: palette.ink, marginTop: 8, textAlign: 'center' },
+    message: { ...type.body, color: palette.mute, textAlign: 'center' },
+  });
+}

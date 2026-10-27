@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { palette, radius, shadow, size, type } from '../theme';
+import { radius, shadow, size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import type { IconName } from './IconButton';
 
 export interface MenuItem {
@@ -25,6 +26,8 @@ interface MenuProps {
 
 /** .menu / .mi: small floating card; the current item carries an accent check. Rows are 44 for touch. */
 export function Menu({ visible, onClose, items, onSelect, bottom = 220, left = 20, testID = 'menu' }: MenuProps) {
+  const styles = useThemedStyles(createMenuStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -58,18 +61,20 @@ export function Menu({ visible, onClose, items, onSelect, bottom = 220, left = 2
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    position: 'absolute',
-    width: 220,
-    padding: 6,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: palette.line,
-    backgroundColor: palette.bg,
-    ...shadow,
-  },
-  item: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.touch, paddingHorizontal: 10, borderRadius: radius.chip },
-  itemOn: { backgroundColor: palette.bg2 },
-  label: { flex: 1, color: palette.ink },
-});
+function createMenuStyles(palette: Palette) {
+  return StyleSheet.create({
+    card: {
+      position: 'absolute',
+      width: 220,
+      padding: 6,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.line,
+      backgroundColor: palette.bg,
+      ...shadow,
+    },
+    item: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.touch, paddingHorizontal: 10, borderRadius: radius.chip },
+    itemOn: { backgroundColor: palette.bg2 },
+    label: { flex: 1, color: palette.ink },
+  });
+}

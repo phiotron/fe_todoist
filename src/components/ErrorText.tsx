@@ -1,8 +1,10 @@
 import { StyleSheet, Text } from 'react-native';
-import { palette, type } from '../theme';
+import { type, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 
 /** .err: 13px warn under a field or a form. */
 export function ErrorText({ message, testID }: { message: string | undefined; testID?: string }) {
+  const styles = useThemedStyles(createErrorTextStyles);
   if (!message) return null;
   return (
     <Text testID={testID} accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>
@@ -11,4 +13,6 @@ export function ErrorText({ message, testID }: { message: string | undefined; te
   );
 }
 
-const styles = StyleSheet.create({ error: { ...type.meta, color: palette.warn, marginTop: 6 } });
+function createErrorTextStyles(palette: Palette) {
+  return StyleSheet.create({ error: { ...type.meta, color: palette.warn, marginTop: 6 } });
+}

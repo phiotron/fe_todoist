@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { palette, radius, shadow, type } from '../theme';
+import { radius, shadow, type, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 
 interface DialogFrameProps {
   visible: boolean;
@@ -12,6 +13,7 @@ interface DialogFrameProps {
 
 /** .dlg over a light scrim (M-Confirm): radius 16, padding 20, 18/700 title; Back = onRequestClose. */
 export function DialogFrame({ visible, title, onRequestClose, children, testID }: DialogFrameProps) {
+  const styles = useThemedStyles(createDialogFrameStyles);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onRequestClose} statusBarTranslucent>
       <KeyboardAvoidingView style={styles.backdrop} behavior="padding">
@@ -26,16 +28,18 @@ export function DialogFrame({ visible, title, onRequestClose, children, testID }
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: palette.scrimLight, justifyContent: 'center', padding: 24 },
-  card: {
-    backgroundColor: palette.bg,
-    borderRadius: radius.dialog,
-    borderWidth: 1,
-    borderColor: palette.line,
-    padding: 20,
-    maxHeight: '85%',
-    ...shadow,
-  },
-  title: { ...type.dialogTitle, color: palette.ink, marginBottom: 8 },
-});
+function createDialogFrameStyles(palette: Palette) {
+  return StyleSheet.create({
+    backdrop: { flex: 1, backgroundColor: palette.scrimLight, justifyContent: 'center', padding: 24 },
+    card: {
+      backgroundColor: palette.bg,
+      borderRadius: radius.dialog,
+      borderWidth: 1,
+      borderColor: palette.line,
+      padding: 20,
+      maxHeight: '85%',
+      ...shadow,
+    },
+    title: { ...type.dialogTitle, color: palette.ink, marginBottom: 8 },
+  });
+}

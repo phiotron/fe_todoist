@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { palette, size, type } from '../theme';
+import { size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 
 interface SectionHeaderProps {
   title: string;
@@ -20,6 +21,8 @@ interface SectionHeaderProps {
 
 /** .sec: 14/700 title, muted count, line under it; collapsible with an arrow like the Inbox sections. */
 export function SectionHeader({ title, count, tone, collapsed, onToggle, right, testID = 'section-header' }: SectionHeaderProps) {
+  const styles = useThemedStyles(createSectionHeaderStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const color = tone === 'danger' ? palette.warn : tone === 'muted' ? palette.mute : palette.ink;
   const collapsible = collapsed !== undefined && !!onToggle;
@@ -55,16 +58,18 @@ export function SectionHeader({ title, count, tone, collapsed, onToggle, right, 
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    minHeight: size.touch,
-    paddingTop: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  label: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: size.touch },
-  count: { ...type.metaStrong, color: palette.mute },
-});
+function createSectionHeaderStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      minHeight: size.touch,
+      paddingTop: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    label: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: size.touch },
+    count: { ...type.metaStrong, color: palette.mute },
+  });
+}

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, type } from '../theme';
+import { type, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 import { AppButton } from './AppButton';
 import { DialogFrame } from './DialogFrame';
 import { ErrorText } from './ErrorText';
@@ -35,6 +36,7 @@ export function ConfirmDialog({
   testID = 'confirm-dialog',
   children,
 }: ConfirmDialogProps) {
+  const styles = useThemedStyles(createConfirmDialogStyles);
   const { t } = useTranslation();
   return (
     <DialogFrame visible={visible} title={title} onRequestClose={onCancel} testID={testID}>
@@ -56,7 +58,9 @@ export function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
-  message: { ...type.bodySmall, color: palette.mute },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 18 },
-});
+function createConfirmDialogStyles(palette: Palette) {
+  return StyleSheet.create({
+    message: { ...type.bodySmall, color: palette.mute },
+    actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 18 },
+  });
+}

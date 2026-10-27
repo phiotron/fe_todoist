@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { useIsOnline } from '../lib/useIsOnline';
-import { palette, radius, size, type } from '../theme';
+import { radius, size, type, useTheme, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 import type { IconName } from './IconButton';
 
 /** .btn variants: primary = .pri, danger = .dng, ghost = .gh, outline = plain .btn. */
@@ -25,12 +26,14 @@ export interface AppButtonProps {
   requiresOnline?: boolean;
 }
 
-const FILL: Record<AppButtonVariant, { bg: string; border: string; text: string }> = {
-  primary: { bg: palette.acc, border: palette.acc, text: palette.onacc },
-  danger: { bg: palette.warn, border: palette.warn, text: palette.onwarn },
-  outline: { bg: palette.bg, border: palette.line2, text: palette.ink },
-  ghost: { bg: 'transparent', border: 'transparent', text: palette.ink2 },
-};
+function fillFor(palette: Palette): Record<AppButtonVariant, { bg: string; border: string; text: string }> {
+  return {
+    primary: { bg: palette.acc, border: palette.acc, text: palette.onacc },
+    danger: { bg: palette.warn, border: palette.warn, text: palette.onwarn },
+    outline: { bg: palette.bg, border: palette.line2, text: palette.ink },
+    ghost: { bg: 'transparent', border: 'transparent', text: palette.ink2 },
+  };
+}
 
 export function AppButton({
   label,
@@ -45,9 +48,11 @@ export function AppButton({
   busy = false,
   requiresOnline = false,
 }: AppButtonProps) {
+  const styles = useThemedStyles(createAppButtonStyles);
+  const { palette } = useTheme();
   const online = useIsOnline();
   const inactive = disabled || busy || (requiresOnline && !online);
-  const fill = FILL[variant];
+  const fill = fillFor(palette)[variant];
   const textColor = color ?? fill.text;
   const small = buttonSize === 'sm';
   return (
@@ -84,8 +89,10 @@ export function AppButton({
   );
 }
 
-const styles = StyleSheet.create({
-  base: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1 },
-  full: { alignSelf: 'stretch' },
-  inactive: { opacity: 0.5 },
-});
+function createAppButtonStyles(palette: Palette) {
+  return StyleSheet.create({
+    base: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1 },
+    full: { alignSelf: 'stretch' },
+    inactive: { opacity: 0.5 },
+  });
+}

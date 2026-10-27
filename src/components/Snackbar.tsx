@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useIsOnline } from '../lib/useIsOnline';
-import { fonts, layout, palette, radius, shadow, size } from '../theme';
+import { fonts, layout, radius, shadow, size, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 
 /** Spec 5.1: the Undo toast stays 5 seconds. */
 export const SNACKBAR_DURATION_MS = 5000;
@@ -24,6 +25,8 @@ const SnackbarContext = createContext<SnackbarApi>(NOOP);
 
 /** One toast at a time (M-Empty): a new one replaces the current one and restarts the timer. */
 export function SnackbarProvider({ children }: { children: ReactNode }) {
+  const styles = useThemedStyles(createSnackbarStyles);
+  const { palette } = useTheme();
   const [current, setCurrent] = useState<(SnackbarOptions & { id: number }) | null>(null);
   const online = useIsOnline();
   const hide = useCallback(() => setCurrent(null), []);
@@ -72,25 +75,27 @@ export function useSnackbar(): SnackbarApi {
   return useContext(SnackbarContext);
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1 },
-  toast: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: layout.toastBottom,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 4,
-    paddingLeft: 14,
-    paddingRight: 6,
-    borderRadius: radius.card,
-    backgroundColor: palette.toastBg,
-    ...shadow,
-  },
-  message: { flex: 1, fontFamily: fonts.regular, fontSize: 14, color: palette.toastText, paddingVertical: 8 },
-  action: { minHeight: size.touch, justifyContent: 'center', paddingHorizontal: 8 },
-  actionText: { fontFamily: fonts.bold, fontSize: 14, color: palette.toastAccent },
-  inactive: { opacity: 0.4 },
-});
+function createSnackbarStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1 },
+    toast: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      bottom: layout.toastBottom,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 4,
+      paddingLeft: 14,
+      paddingRight: 6,
+      borderRadius: radius.card,
+      backgroundColor: palette.toastBg,
+      ...shadow,
+    },
+    message: { flex: 1, fontFamily: fonts.regular, fontSize: 14, color: palette.toastText, paddingVertical: 8 },
+    action: { minHeight: size.touch, justifyContent: 'center', paddingHorizontal: 8 },
+    actionText: { fontFamily: fonts.bold, fontSize: 14, color: palette.toastAccent },
+    inactive: { opacity: 0.4 },
+  });
+}
