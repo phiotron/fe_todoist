@@ -59,3 +59,20 @@ không cần backend đang chạy. Mỗi khi backend đổi API:
 TypeScript 6. `overrides` ép nó dùng chung bản TypeScript của dự án. Sau mỗi lần nâng `typescript` hoặc
 `openapi-typescript`, chạy `npm run gen:api:smoke` để chắc việc sinh kiểu vẫn đúng; khi `openapi-typescript` hỗ trợ
 TypeScript 6 chính thức thì bỏ `overrides`.
+
+## Nhắc việc (M4)
+
+- Nhắc **cục bộ** (chưa có push từ server — M13). Server tính sẵn thời điểm nhắc (`GET /api/v1/tasks/reminders`); app đặt
+  **50** lần nhắc gần nhất trên máy, id lịch = `auto:<taskId>` hoặc id nhắc.
+- Phần dùng thông báo của hệ điều hành đi qua **một cổng** `src/features/reminders/platform.ts` (`ReminderPlatform`: kênh,
+  nút Hoãn / Hoàn thành, quyền, đặt / huỷ lịch, bấm thông báo). Mặc định là bản "không có" (không bao giờ có quyền) để
+  logic chạy và test được khi chưa cài `expo-notifications`. Bản cài thật (adapter `expo-notifications`) gắn lúc khởi động
+  bằng `setReminderPlatform(...)`; thêm `expo-notifications` là thay đổi native nên phải build lại development build
+  (`npx expo run:android`).
+- **Nhắc tự động** cho task **có giờ** (Cài đặt → Nhắc nhở → Nhắc tự động, mặc định 30 phút trước, tắt được). Task chỉ có
+  ngày không tự nhắc.
+- **Nhắc riêng**: chip "Nhắc nhở" trong chi tiết task và Quick Add — thời điểm cụ thể, hoặc trước hạn (chỉ task có giờ).
+  Task đã xong hoặc thuộc dự án / section lưu trữ: chỉ xem. Vuốt "Reminders" mở thẳng bảng nhắc của task.
+- Đồng bộ lịch khi mở app, khi quay lại app, sau mỗi thao tác ghi thành công trên máy này, khi đổi cài đặt nhắc.
+- Đăng xuất / hết phiên / đăng nhập tài khoản khác → huỷ mọi lịch nhắc.
+- Giờ nhắc theo **múi giờ tài khoản** (không phải múi giờ máy). Android 14+ cần bật "Báo thức & lời nhắc" để nhắc đúng giờ.
