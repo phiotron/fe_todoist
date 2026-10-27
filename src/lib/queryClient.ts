@@ -1,7 +1,8 @@
 ﻿import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
+import { AppState } from 'react-native';
 import { ApiError, OfflineError } from '../api/errors';
 import { isOnlineState } from './useIsOnline';
 
@@ -49,3 +50,13 @@ export function assertOnline(): void {
 onlineManager.setEventListener((setOnline) =>
   NetInfo.addEventListener((state) => setOnline(isOnlineState(state))),
 );
+
+// 'Window focus' on a phone is the app coming back to the foreground: refetch stale queries then
+// (this is also how a deleted/expired account is noticed: the refetch gets 401).
+focusManager.setEventListener((handleFocus) => {
+  // iOS passes through 'inactive' for Control Center, Face ID and share sheets: not a real leave, so it is ignored.
+  const subscription = AppState.addEventListener('change', (state) => {
+    if (state !== 'inactive') handleFocus(state === 'active');
+  });
+  return () => subscription.remove();
+});

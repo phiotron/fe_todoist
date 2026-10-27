@@ -4,11 +4,11 @@ import { authApi } from '../../../api/auth';
 import { apiFetch } from '../../../api/client';
 import { queryPersister } from '../../../lib/queryClient';
 import { tokenStore } from '../../../lib/tokenStore';
-import { deferred } from '../../../test/deferred';
+import { deferred, flushAsync } from '../../../test/deferred';
 import { authResponse, testUser } from '../../../test/fixtures';
 import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import { createTestQueryClient, createWrapper } from '../../../test/render';
-import { meQueryKey, useMe, useSession } from '../session';
+import { SESSION_RECHECK_MS, STARTUP_ME_TIMEOUT_MS, meQueryKey, useMe, useSession } from '../session';
 
 async function renderSession() {
   const queryClient = createTestQueryClient();
@@ -58,7 +58,7 @@ describe('SessionProvider', () => {
   it('signOut revokes the refresh token on the server and clears local tokens and caches', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
-    fetchMock.mockResolvedValueOnce(jsonResponse(204));
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, testUser)).mockResolvedValueOnce(jsonResponse(204));
     const { result, queryClient } = await renderSession();
     await waitFor(() => expect(result.current.status).toBe('signedIn'));
     queryClient.setQueryData(meQueryKey, testUser);
@@ -67,7 +67,7 @@ describe('SessionProvider', () => {
       await result.current.signOut();
     });
 
-    const request = requestAt(fetchMock, 0);
+    const request = requestAt(fetchMock, 1);
     expect(request.url).toMatch(/\/api\/v1\/auth\/logout$/);
     expect(request.body).toEqual({ refreshToken: 'ref-1' });
     expect(result.current.status).toBe('signedOut');
@@ -96,7 +96,9 @@ describe('SessionProvider', () => {
   ])('signOut clears tokens and caches even when logout fails with %s', async (_label, failure) => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     // 401 on logout triggers one refresh attempt; keep failing so every request rejects.
-    mockFetch().mockResolvedValue(failure());
+    mockFetch().mockImplementation(async (input) =>
+      String(input).endsWith('/api/v1/me') ? jsonResponse(200, testUser) : failure(),
+    );
     const { result, queryClient } = await renderSession();
     await waitFor(() => expect(result.current.status).toBe('signedIn'));
     queryClient.setQueryData(meQueryKey, testUser);
@@ -116,7 +118,7 @@ describe('SessionProvider', () => {
 
   it('signOut still signs out when removing the persisted cache fails', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
-    mockFetch().mockResolvedValueOnce(jsonResponse(204));
+    mockFetch().mockResolvedValueOnce(jsonResponse(200, testUser)).mockResolvedValueOnce(jsonResponse(204));
     removeClientSpy.mockRejectedValueOnce(new Error('storage failure'));
     const { result } = await renderSession();
     await waitFor(() => expect(result.current.status).toBe('signedIn'));
@@ -131,7 +133,7 @@ describe('SessionProvider', () => {
   it('goes back to signed out with expired=true and wipes caches when the refresh token is rejected', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
-    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, testUser)).mockResolvedValue(problem(401, 'Unauthorized'));
     const { result, queryClient } = await renderSession();
     await waitFor(() => expect(result.current.status).toBe('signedIn'));
     queryClient.setQueryData(meQueryKey, testUser);
@@ -189,7 +191,7 @@ describe('SessionProvider', () => {
   it('signUp calls the register endpoint, stores tokens and clears a previous expired flag', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
-    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, testUser)).mockResolvedValue(problem(401, 'Unauthorized'));
     const { result } = await renderSession();
     await waitFor(() => expect(result.current.status).toBe('signedIn'));
     await act(async () => {
@@ -217,7 +219,7 @@ describe('SessionProvider', () => {
 
   it('signOut still ends signed out with caches cleared when clearing local tokens throws', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
-    mockFetch().mockResolvedValueOnce(jsonResponse(204));
+    mockFetch().mockResolvedValueOnce(jsonResponse(200, testUser)).mockResolvedValueOnce(jsonResponse(204));
     const clearSpy = jest.spyOn(tokenStore, 'clear').mockRejectedValueOnce(new Error('keystore failure'));
     try {
       const { result, queryClient } = await renderSession();
@@ -273,7 +275,7 @@ describe('SessionProvider', () => {
       await realClear();
     });
     try {
-      mockFetch().mockResolvedValueOnce(jsonResponse(204));
+      mockFetch().mockResolvedValueOnce(jsonResponse(200, testUser)).mockResolvedValueOnce(jsonResponse(204));
       const { result } = await renderSession();
       await waitFor(() => expect(result.current.status).toBe('signedIn'));
 
@@ -304,6 +306,211 @@ describe('SessionProvider', () => {
       startupRead.resolve(null);
     });
     expect(result.current.status).toBe('signedIn');
+  });
+});
+
+describe('SessionProvider — account check at startup', () => {
+  beforeEach(async () => {
+    await tokenStore.clear();
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+  });
+
+  it('stays loading until /me answers, then signs in and seeds the /me cache', async () => {
+    const reply = deferred<Response>();
+    const fetchMock = mockFetch();
+    fetchMock.mockImplementationOnce(() => reply.promise);
+    const { result, queryClient } = await renderSession();
+    await flushAsync();
+    expect(result.current.status).toBe('loading');
+
+    await act(async () => {
+      reply.resolve(jsonResponse(200, testUser));
+    });
+
+    await waitFor(() => expect(result.current.status).toBe('signedIn'));
+    expect(queryClient.getQueryData(meQueryKey)).toEqual(testUser);
+  });
+
+  it('signs out with expired=true when /me is rejected (account deleted, refresh refused)', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    const { result } = await renderSession();
+
+    await waitFor(() => expect(result.current.status).toBe('signedOut'));
+    expect(result.current.expired).toBe(true);
+    await expect(tokenStore.getAccessToken()).resolves.toBeNull();
+  });
+
+  it('enters the app when /me fails on the network and checks again later', async () => {
+    jest.useFakeTimers();
+    try {
+      const fetchMock = mockFetch();
+      fetchMock.mockRejectedValueOnce(new TypeError('Network request failed'));
+      const { result } = await renderSession();
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(10);
+      });
+      expect(result.current.status).toBe('signedIn');
+
+      fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(SESSION_RECHECK_MS + 100);
+      });
+
+      expect(result.current.status).toBe('signedOut');
+      expect(result.current.expired).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('SessionProvider — startup /me deadline', () => {
+  beforeEach(async () => {
+    await tokenStore.clear();
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('a /me that hangs lets the user in after STARTUP_ME_TIMEOUT_MS (cached data) and is checked again in the background', async () => {
+    jest.useFakeTimers();
+    const fetchMock = mockFetch();
+    fetchMock.mockImplementationOnce(() => new Promise<Response>(() => undefined)); // never answers
+    const { result } = await renderSession();
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(STARTUP_ME_TIMEOUT_MS - 100);
+    });
+    expect(result.current.status).toBe('loading');
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(200);
+    });
+    expect(result.current.status).toBe('signedIn');
+    expect(countRequests(fetchMock, '/me')).toBe(1);
+
+    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(SESSION_RECHECK_MS + 100);
+    });
+    expect(countRequests(fetchMock, '/me')).toBeGreaterThanOrEqual(2);
+    expect(result.current.status).toBe('signedOut');
+    expect(result.current.expired).toBe(true);
+  });
+
+  it('a fast 401 still goes to Login (no waiting, no entering the app)', async () => {
+    jest.useFakeTimers();
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+    const { result } = await renderSession();
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(50);
+    });
+    expect(result.current.status).toBe('signedOut');
+    expect(result.current.expired).toBe(true);
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(STARTUP_ME_TIMEOUT_MS + SESSION_RECHECK_MS);
+    });
+    expect(result.current.status).toBe('signedOut');
+  });
+
+  it('a /me that answers fast never schedules the deadline entry or a recheck', async () => {
+    jest.useFakeTimers();
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(jsonResponse(200, testUser));
+    const { result } = await renderSession();
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(STARTUP_ME_TIMEOUT_MS + SESSION_RECHECK_MS + 100);
+    });
+    expect(result.current.status).toBe('signedIn');
+    expect(countRequests(fetchMock, '/me')).toBe(1);
+  });
+});
+
+describe('SessionProvider — /me failures that are not 401', () => {
+  beforeEach(async () => {
+    await tokenStore.clear();
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([403, 404])('%i from /me = an invalid session: signs out as expired, wipes the tokens, never rechecks', async (status) => {
+    jest.useFakeTimers();
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(problem(status, 'Nope'));
+    const { result } = await renderSession();
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(50);
+    });
+    expect(result.current.status).toBe('signedOut');
+    expect(result.current.expired).toBe(true);
+    await expect(tokenStore.getAccessToken()).resolves.toBeNull();
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(SESSION_RECHECK_MS + 100);
+    });
+    expect(countRequests(fetchMock, '/me')).toBe(1);
+    expect(result.current.status).toBe('signedOut');
+  });
+
+  it.each([400, 500, 503])('%i from /me keeps the offline path: enters the app and checks again', async (status) => {
+    jest.useFakeTimers();
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValueOnce(problem(status, 'Trouble'));
+    const { result } = await renderSession();
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(50);
+    });
+    expect(result.current.status).toBe('signedIn');
+
+    fetchMock.mockResolvedValue(jsonResponse(200, testUser));
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(SESSION_RECHECK_MS + 100);
+    });
+    expect(countRequests(fetchMock, '/me')).toBe(2);
+    expect(result.current.status).toBe('signedIn');
+  });
+});
+
+describe('SessionProvider — recheck timer vs. a changed session', () => {
+  beforeEach(async () => {
+    await tokenStore.clear();
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+  });
+
+  it('a pending recheck never fires after the user signed out (no false "session expired" on Login)', async () => {
+    jest.useFakeTimers();
+    try {
+      const fetchMock = mockFetch();
+      fetchMock.mockRejectedValueOnce(new TypeError('Network request failed'));
+      const { result } = await renderSession();
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(10);
+      });
+      expect(result.current.status).toBe('signedIn');
+
+      fetchMock.mockResolvedValue(jsonResponse(204));
+      await act(async () => {
+        await result.current.signOut();
+      });
+      expect(result.current.status).toBe('signedOut');
+
+      fetchMock.mockClear();
+      fetchMock.mockResolvedValue(problem(401, 'Unauthorized'));
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(SESSION_RECHECK_MS + 100);
+      });
+
+      expect(countRequests(fetchMock, '/me')).toBe(0);
+      expect(result.current.status).toBe('signedOut');
+      expect(result.current.expired).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 

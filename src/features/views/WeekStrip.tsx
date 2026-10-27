@@ -8,6 +8,8 @@ interface WeekStripProps {
   /** The 7 days shown (yyyy-MM-dd). */
   days: readonly string[];
   today: string;
+  /** Days after it are disabled (Upcoming jump limit). */
+  maxDate?: string;
   selected: string;
   onSelectDay: (day: string) => void;
   /** Horizontal swipe: +1 = next week, -1 = previous week. */
@@ -19,7 +21,7 @@ interface WeekStripProps {
  * M-Upcoming strip: weekday letters over day numbers; today = accent circle, past days muted (disabled), the selected
  * day gets an accent ring. Swipe left / right changes the week.
  */
-export function WeekStrip({ days, today, selected, onSelectDay, onShiftWeek, testID = 'week-strip' }: WeekStripProps) {
+export function WeekStrip({ days, today, maxDate, selected, onSelectDay, onShiftWeek, testID = 'week-strip' }: WeekStripProps) {
   const { t } = useTranslation();
   const latest = useRef(onShiftWeek);
   latest.current = onShiftWeek;
@@ -39,6 +41,7 @@ export function WeekStrip({ days, today, selected, onSelectDay, onShiftWeek, tes
     <View testID={testID} style={styles.strip} {...pan.panHandlers}>
       {days.map((day) => {
         const past = day < today;
+        const locked = past || (maxDate !== undefined && day > maxDate);
         const isToday = day === today;
         const isSelected = day === selected;
         return (
@@ -47,14 +50,14 @@ export function WeekStrip({ days, today, selected, onSelectDay, onShiftWeek, tes
             testID={`week-day-${day}`}
             accessibilityRole="button"
             accessibilityLabel={`${weekdayShort(day)} ${formatDateKey(day, false)}`}
-            accessibilityState={{ selected: isSelected, disabled: past }}
-            disabled={past}
+            accessibilityState={{ selected: isSelected, disabled: locked }}
+            disabled={locked}
             onPress={() => onSelectDay(day)}
             style={styles.cell}
           >
             <Text style={styles.weekday}>{weekdayShort(day)}</Text>
             <View style={[styles.day, isToday && styles.today, isSelected && !isToday && styles.selected]}>
-              <Text style={[styles.dayText, past && styles.past, isToday && styles.todayText]}>{Number(day.slice(8))}</Text>
+              <Text style={[styles.dayText, locked && styles.past, isToday && styles.todayText]}>{Number(day.slice(8))}</Text>
             </View>
           </Pressable>
         );

@@ -216,4 +216,14 @@ describe('apiFetch — 401 & refresh', () => {
     await expect(api('/api/v1/d')).rejects.toMatchObject({ status: 401 });
     expect(onSessionExpired).toHaveBeenCalledTimes(2);
   });
+
+  it('still reports session expiry and rejects with 401 when clearing the tokens fails', async () => {
+    const { api, fetchMock, tokens, onSessionExpired } = setup();
+    routeFetch(fetchMock, () => problem(401, 'Unauthorized'));
+    jest.spyOn(tokens, 'clear').mockRejectedValueOnce(new Error('keystore failure'));
+
+    await expect(api('/api/v1/me')).rejects.toMatchObject({ status: 401 });
+
+    expect(onSessionExpired).toHaveBeenCalledTimes(1);
+  });
 });

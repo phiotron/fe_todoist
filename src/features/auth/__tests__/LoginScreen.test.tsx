@@ -149,13 +149,7 @@ describe('LoginScreen', () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     mockFetch().mockResolvedValue(problem(401, 'Unauthorized'));
     await renderWithProviders(<LoginScreen />);
-    expect(screen.queryByTestId('login-expired-notice')).toBeNull();
-
-    // A Bearer request gets 401, the refresh gets 401 too: the client fires the session-expired event.
-    await act(async () => {
-      await expect(authApi.me()).rejects.toMatchObject({ status: 401 });
-    });
-
+    // The startup account check gets 401, the refresh gets 401 too: the client fires the session-expired event.
     const notice = await screen.findByTestId('login-expired-notice');
     expect(notice.props.children).toBe(vi.auth.errors.sessionExpired);
     expect(notice.props.accessibilityRole).toBe('alert');

@@ -12,13 +12,20 @@ import { dateKeyInZone } from '../../../lib/dates';
 import { useNow } from '../../../lib/useNow';
 import { palette } from '../../../theme';
 
-export default function TabsLayout() {
+/** The + button. It owns the clock / pathname / selected-day subscriptions, so their updates do not re-render the navigator. */
+function TabsFab() {
   const { t } = useTranslation();
   const pathname = usePathname();
   const now = useNow();
   const timeZone = useUserTimeZone();
   const upcomingDay = useUpcomingDay();
   const params = fabParamsFor(pathname, { today: dateKeyInZone(now, timeZone), upcomingDay });
+  // One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar.
+  return <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} testID="tab-fab" />;
+}
+
+export default function TabsLayout() {
+  useTranslation(); // screen titles below are translated: re-render when the language changes (rare, unlike the clock).
   return (
     <View style={styles.fill}>
       <Tabs tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.bg } }}>
@@ -26,8 +33,7 @@ export default function TabsLayout() {
           <Tabs.Screen key={def.key} name={def.route} options={{ title: def.title() }} />
         ))}
       </Tabs>
-      {/* One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar. */}
-      <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} testID="tab-fab" />
+      <TabsFab />
     </View>
   );
 }

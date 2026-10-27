@@ -18,7 +18,7 @@ import { useTaskSelection } from '../tasks/selection';
 import { TaskListView } from '../tasks/TaskListView';
 import { nodeRow, sectionRow, taskRows, type TaskListRow } from '../tasks/taskRows';
 import { useTaskList } from '../tasks/useTaskList';
-import { overdueRows, useOverdueReschedule } from './overdue';
+import { openCount, overdueRows, useOverdueReschedule } from './overdue';
 
 function TodayBody() {
   const { t } = useTranslation();
@@ -39,7 +39,8 @@ function TodayBody() {
       onReschedule: overdue.start,
     });
     if (groups.today.length > 0) {
-      result.push(sectionRow('today', { title: formatDayHeader(today, today), count: groups.today.length }), ...taskRows(groups.today));
+      // Counts follow the Overdue block: a task completed a moment ago keeps its (struck) row until the refetch but is not counted.
+      result.push(sectionRow('today', { title: formatDayHeader(today, today), count: openCount(groups.today) }), ...taskRows(groups.today));
     }
     if (result.length > 0) {
       result.push(
@@ -57,7 +58,7 @@ function TodayBody() {
 
   const subtitle = query.isPending
     ? undefined
-    : t('views.today.subtitle', { n: tasks.length, date: `${weekdayName(today)} ${formatDateKey(today, false)}` });
+    : t('views.today.subtitle', { n: openCount(tasks), date: `${weekdayName(today)} ${formatDateKey(today, false)}` });
 
   return (
     <View style={styles.fill}>

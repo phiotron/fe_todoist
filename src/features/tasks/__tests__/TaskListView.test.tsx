@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { createRef } from 'react';
+import { StyleSheet, type FlatList } from 'react-native';
 import { queryKeys } from '../../../api/queryKeys';
 import viTaskList from '../../../i18n/locales/vi/taskList.json';
 import vi from '../../../i18n/locales/vi.json';
@@ -12,8 +13,8 @@ import { createTestQueryClient } from '../../../test/render';
 import { renderSignedIn } from '../../../test/screen';
 import { palette } from '../../../theme';
 import { TaskSelectionProvider } from '../selection';
-import { TaskListView } from '../TaskListView';
-import { treeRows } from '../taskRows';
+import { MAX_SCROLL_RETRIES, TaskListView } from '../TaskListView';
+import { treeRows, type TaskListRow } from '../taskRows';
 import { useTaskList } from '../useTaskList';
 
 jest.mock('expo-router', () => ({
@@ -28,17 +29,57 @@ jest.mock('../../auth/useUserTimeZone', () => ({
 const PARAMS = { projectId: 'p1' } as const;
 const flat = (testID: string) => StyleSheet.flatten(screen.getByTestId(testID).props.style);
 
-function Harness({ showCompletedTime = false }: { showCompletedTime?: boolean }) {
+function Harness({
+  showCompletedTime = false,
+  listRef,
+}: {
+  showCompletedTime?: boolean;
+  listRef?: React.RefObject<FlatList<TaskListRow> | null>;
+}) {
   const { query, tasks } = useTaskList(PARAMS);
   return (
     <TaskSelectionProvider>
-      <TaskListView rows={treeRows(tasks)} query={query} showProject showCompletedTime={showCompletedTime} />
+      <TaskListView rows={treeRows(tasks)} query={query} showProject showCompletedTime={showCompletedTime} listRef={listRef} />
     </TaskSelectionProvider>
   );
 }
 
 describe('TaskListView + TaskRow', () => {
   afterEach(() => goOnline());
+
+  it('scrollToIndex on a row that is not measured yet: jumps near it by the average row height, then retries the row', async () => {
+    const listRef = createRef<FlatList<TaskListRow>>();
+    await renderSignedIn(<Harness listRef={listRef} />, { 'GET /api/v1/tasks': () => jsonResponse(200, page([makeTask({ id: 't1', content: 'Một' })])) });
+    await screen.findByText('Một');
+    const toOffset = jest.spyOn(listRef.current!, 'scrollToOffset');
+    const toIndex = jest.spyOn(listRef.current!, 'scrollToIndex').mockImplementation(() => undefined);
+
+    await fireEvent(screen.getByTestId('task-list'), 'scrollToIndexFailed', { index: 7, highestMeasuredFrameIndex: 2, averageItemLength: 60 });
+
+    expect(toOffset).toHaveBeenCalledWith({ offset: 420, animated: false });
+    await waitFor(() => expect(toIndex).toHaveBeenCalledWith({ index: 7, animated: true }));
+  });
+
+  it('a row that keeps failing to scroll is retried a few times only, not every 50 ms forever', async () => {
+    const listRef = createRef<FlatList<TaskListRow>>();
+    await renderSignedIn(<Harness listRef={listRef} />, { 'GET /api/v1/tasks': () => jsonResponse(200, page([makeTask({ id: 't1', content: 'Một' })])) });
+    await screen.findByText('Một');
+    const toIndex = jest.spyOn(listRef.current!, 'scrollToIndex').mockImplementation(() => undefined);
+
+    jest.useFakeTimers();
+    try {
+      for (let attempt = 0; attempt < 10; attempt += 1) {
+        await fireEvent(screen.getByTestId('task-list'), 'scrollToIndexFailed', { index: 7, highestMeasuredFrameIndex: 2, averageItemLength: 60 });
+        await act(async () => {
+          jest.advanceTimersByTime(80);
+        });
+      }
+    } finally {
+      jest.useRealTimers();
+    }
+
+    expect(toIndex).toHaveBeenCalledTimes(MAX_SCROLL_RETRIES);
+  });
 
   it('draws the design row: priority ring with its soft fill, date colours, deadline, progress and project', async () => {
     const overdue = makeTask({ id: 't1', content: 'Nộp báo cáo', priority: 1, dueDate: '2026-10-22', projectName: 'Công ty' });

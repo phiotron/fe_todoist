@@ -1,4 +1,5 @@
 ﻿import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { AppState } from 'react-native';
 import { ApiError, NetworkError, OfflineError } from '../../api/errors';
 import { PERSIST_MAX_AGE_MS, assertOnline, persistOptions, queryClient, shouldRetry } from '../queryClient';
 
@@ -57,5 +58,38 @@ describe('offline writes (spec 5.6)', () => {
     await new Promise((done) => setImmediate(done));
     expect(send).toHaveBeenCalledTimes(1);
     expect(mutation.state.status).toBe('error');
+  });
+});
+
+describe('app foreground (focusManager)', () => {
+  it('follows AppState so queries refetch when the app returns to the foreground', () => {
+    const remove = jest.fn();
+    const spy = jest.spyOn(AppState, 'addEventListener').mockReturnValue({ remove });
+    try {
+      // The listener is installed when the module loads, so load a fresh copy with the spy in place.
+      jest.isolateModules(() => {
+        const query = require('@tanstack/react-query') as typeof import('@tanstack/react-query');
+        require('../queryClient');
+        expect(spy).toHaveBeenCalledWith('change', expect.any(Function));
+        const onChange = spy.mock.calls[0]![1] as (state: string) => void;
+        onChange('background');
+        expect(query.focusManager.isFocused()).toBe(false);
+        onChange('active');
+        expect(query.focusManager.isFocused()).toBe(true);
+        // iOS "inactive" (Control Center, Face ID, share sheet) is not a trip to the background: it must not
+        // flip focus, otherwise coming back from it fires a pointless refetch of every stale query.
+        const focusEvents = jest.fn();
+        const unsubscribe = query.focusManager.subscribe(focusEvents);
+        onChange('inactive');
+        onChange('active');
+        expect(focusEvents).not.toHaveBeenCalled();
+        expect(query.focusManager.isFocused()).toBe(true);
+        onChange('background');
+        expect(query.focusManager.isFocused()).toBe(false);
+        unsubscribe();
+      });
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

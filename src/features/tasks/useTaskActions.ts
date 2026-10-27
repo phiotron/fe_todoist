@@ -100,43 +100,56 @@ export function useCompleteWithUndo() {
   const close = useCloseTask();
   const reopen = useReopenTask();
   const batch = useTaskBatch();
-  const closeTask = close.mutate;
-  const reopenTask = reopen.mutate;
-  const runBatch = batch.mutate;
+  // mutateAsync, not mutate(vars, { onSuccess }): TanStack drops per-call callbacks once the screen that started the
+  // write unmounts or a later mutate replaces it, which would lose the Undo snackbar and the 404 handling.
+  const closeTask = close.mutateAsync;
+  const reopenTask = reopen.mutateAsync;
+  const runBatch = batch.mutateAsync;
+  // The component that started an Undo may be gone (selection cleared): a failure is shown where it cannot vanish.
+  const showError = useCallback(
+    (failure: unknown) => snackbar.show({ message: describeError(failure).message, tone: 'error' }),
+    [snackbar],
+  );
 
   const complete = useCallback(
-    (taskId: string, options: { onError?: (error: unknown) => void } = {}) =>
-      closeTask(taskId, {
-        onSuccess: () =>
+    (taskId: string, options: { onError?: (error: unknown) => void } = {}) => {
+      closeTask(taskId).then(
+        () =>
           snackbar.show({
             message: t('taskList.completedOne'),
             actionLabel: t('common.undo'),
-            onAction: () => reopenTask({ taskId, undo: true }),
+            onAction: () => {
+              reopenTask({ taskId, undo: true }).catch(showError);
+            },
           }),
-        onError: options.onError,
-      }),
-    [closeTask, reopenTask, snackbar, t],
+        (failure: unknown) => options.onError?.(failure),
+      );
+    },
+    [closeTask, reopenTask, showError, snackbar, t],
   );
 
   const completeMany = useCallback(
-    (taskIds: string[], options: { onSuccess?: () => void } = {}) =>
-      runBatch(
-        { action: 'CLOSE', taskIds },
-        {
-          onSuccess: () => {
-            options.onSuccess?.();
-            snackbar.show({
-              message: t('taskList.completedMany', { n: taskIds.length }),
-              actionLabel: t('common.undo'),
-              onAction: () => runBatch({ action: 'REOPEN', taskIds, undo: true }),
-            });
-          },
+    (taskIds: string[], options: { onSuccess?: () => void } = {}) => {
+      runBatch({ action: 'CLOSE', taskIds }).then(
+        () => {
+          options.onSuccess?.();
+          snackbar.show({
+            message: t('taskList.completedMany', { n: taskIds.length }),
+            actionLabel: t('common.undo'),
+            onAction: () => {
+              runBatch({ action: 'REOPEN', taskIds, undo: true }).catch(showError);
+            },
+          });
         },
-      ),
-    [runBatch, snackbar, t],
+        // Per call, not from the shared observer: a later mutate (e.g. an Undo) moves batch.error to that newer mutation.
+        showError,
+      );
+    },
+    [runBatch, showError, snackbar, t],
   );
 
-  const error = close.error ?? reopen.error ?? batch.error;
+  // Only the single close shown inline; every bulk / Undo failure is reported per call through showError (snackbar).
+  const error = close.error;
   return {
     complete,
     completeMany,

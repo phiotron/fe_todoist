@@ -4,6 +4,7 @@ import viSelection from '../../../i18n/locales/vi/selection.json';
 import viTaskList from '../../../i18n/locales/vi/taskList.json';
 import vi from '../../../i18n/locales/vi.json';
 import { requestsTo, type ApiRoutes } from '../../../test/apiRoutes';
+import { deferred } from '../../../test/deferred';
 import { jsonResponse, problem } from '../../../test/http';
 import { affected, inboxProject, makeProject, makeTask, page } from '../../../test/m1Fixtures';
 import { renderSignedIn } from '../../../test/screen';
@@ -116,6 +117,19 @@ describe('SelectionBar', () => {
         { action: 'REOPEN', taskIds: ['t1', 't2'], undo: true },
       ]),
     );
+  });
+
+  it('Complete is locked while its request is on the wire: pressing twice sends ONE close', async () => {
+    const reply = deferred<Response>();
+    const { fetchMock } = await selectTwo(() => reply.promise);
+    await fireEvent.press(screen.getByTestId('selection-complete'));
+    await waitFor(() => expect(batchBodies(fetchMock)).toHaveLength(1));
+    await waitFor(() => expect(screen.getByTestId('selection-complete')).toBeDisabled());
+    await fireEvent.press(screen.getByTestId('selection-complete'));
+
+    reply.resolve(jsonResponse(200, affected(['t1', 't2'])));
+    expect(await screen.findByText(viTaskList.taskList.completedMany.replace('{{n}}', '2'))).toBeOnTheScreen();
+    expect(batchBodies(fetchMock)).toEqual([{ action: 'CLOSE', taskIds: ['t1', 't2'] }]);
   });
 
   it('a refused batch (409 archived section) changes nothing: the message shows and the selection stays', async () => {

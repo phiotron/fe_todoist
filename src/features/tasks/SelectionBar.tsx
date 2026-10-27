@@ -36,7 +36,7 @@ export function SelectionBar() {
   const top = useTopInset();
   const insets = useSafeAreaInsets();
   const batch = useTaskBatch();
-  const { completeMany, errorMessage } = useCompleteWithUndo();
+  const { completeMany, batchPending } = useCompleteWithUndo();
   const [sheet, setSheet] = useState<Sheet>('none');
   if (!selection?.active) return null;
 
@@ -67,8 +67,8 @@ export function SelectionBar() {
     ? t('selection.limit', { n: MAX_BATCH_TASKS })
     : batch.error
       ? describeError(batch.error).message
-      : errorMessage;
-  const inactive = taskIds.length === 0 || overLimit || !online || batch.isPending;
+      : undefined; // bulk-complete failures are toasted per call (useCompleteWithUndo), not shown here
+  const inactive = taskIds.length === 0 || overLimit || !online || batch.isPending || batchPending; // batchPending: the bulk close / Undo runs on useCompleteWithUndo's own mutation
 
   return (
     <>

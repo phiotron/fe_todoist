@@ -57,6 +57,60 @@ describe('TodayScreen', () => {
     expect(StyleSheet.flatten(screen.getByText('Hôm nay 17:00').props.style)).toMatchObject({ color: palette.ok });
   });
 
+  it('a completed overdue task stays visible but is not counted, and Reschedule stays while another overdue task is open', async () => {
+    const done = '2026-10-23T02:59:00Z';
+    await renderSignedIn(<TodayScreen />, {
+      'GET /api/v1/tasks': () =>
+        jsonResponse(
+          200,
+          page([
+            makeTask({ id: 'a', content: 'Nộp thuế', dueDate: '2026-10-21', completedAt: done }),
+            makeTask({ id: 'b', content: 'Gọi điện', dueDate: '2026-10-20' }),
+            makeTask({ id: 'c', content: 'Đi chợ', dueDate: '2026-10-23' }),
+          ]),
+        ),
+    });
+    await screen.findByText('Đi chợ');
+    expect(screen.getByText('Nộp thuế')).toBeOnTheScreen();
+    expect(screen.getByTestId('section-header-overdue')).toHaveTextContent(/Quá hạn1/);
+    expect(screen.getByTestId('overdue-reschedule')).toBeOnTheScreen();
+  });
+
+  it('when the last overdue task is completed the count drops to 0 and Reschedule disappears', async () => {
+    await renderSignedIn(<TodayScreen />, {
+      'GET /api/v1/tasks': () =>
+        jsonResponse(
+          200,
+          page([
+            makeTask({ id: 'a', content: 'Nộp thuế', dueDate: '2026-10-21', completedAt: '2026-10-23T02:59:00Z' }),
+            makeTask({ id: 'c', content: 'Đi chợ', dueDate: '2026-10-23' }),
+          ]),
+        ),
+    });
+    await screen.findByText('Đi chợ');
+    expect(screen.getByText('Nộp thuế')).toBeOnTheScreen();
+    expect(screen.getByTestId('section-header-overdue')).toHaveTextContent(/Quá hạn0/);
+    expect(screen.queryByTestId('overdue-reschedule')).toBeNull();
+  });
+
+  it('a task completed a moment ago keeps its row but is not counted: the Today block and the subtitle count open tasks only (interim decision, see review notes)', async () => {
+    await renderSignedIn(<TodayScreen />, {
+      'GET /api/v1/tasks': () =>
+        jsonResponse(
+          200,
+          page([
+            makeTask({ id: 'c', content: 'Đi chợ', dueDate: '2026-10-23', completedAt: '2026-10-23T02:59:00Z' }),
+            makeTask({ id: 'd', content: 'Họp nhóm', dueDate: '2026-10-23' }),
+            makeTask({ id: 'e', content: 'Gọi điện', dueDate: '2026-10-23' }),
+          ]),
+        ),
+    });
+    await screen.findByText('Họp nhóm');
+    expect(screen.getByText('Đi chợ')).toBeOnTheScreen();
+    expect(screen.getByTestId('section-header-today')).toHaveTextContent(/Hôm nay · Thứ Sáu2$/);
+    expect(screen.getByText('2 công việc · Thứ Sáu 23/10')).toBeOnTheScreen();
+  });
+
   it('with only a timed task that is late today there is no Overdue block and no Reschedule button', async () => {
     await renderSignedIn(<TodayScreen />, {
       'GET /api/v1/tasks': () => jsonResponse(200, page([tasks[1], tasks[2]])),

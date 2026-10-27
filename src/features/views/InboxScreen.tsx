@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { QueryStateView } from '../../components/QueryStateView';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { StateView } from '../../components/StateView';
 import { palette } from '../../theme';
 import { ProjectScreen } from '../projects/ProjectScreen';
 import { useProjects } from '../projects/useProjects';
@@ -14,7 +15,20 @@ export function InboxScreen() {
     return (
       <View style={styles.fill}>
         <ScreenHeader title={t('views.inbox.title')} />
-        <QueryStateView query={query} testID="inbox-state" />
+        {query.isSuccess ? (
+          // The list loaded but holds no Inbox: nothing to show, so say so and let the user retry.
+          <StateView
+            tone="error"
+            icon="alert-circle"
+            title={t('common.loadErrorTitle')}
+            message={t('errors.unknown')}
+            actionLabel={t('common.retry')}
+            onAction={() => void query.refetch()}
+            testID="inbox-state"
+          />
+        ) : (
+          <QueryStateView query={query} testID="inbox-state" />
+        )}
       </View>
     );
   }

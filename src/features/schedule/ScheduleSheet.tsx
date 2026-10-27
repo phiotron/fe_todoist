@@ -40,6 +40,8 @@ export interface ScheduleSheetProps {
    * (the server answers 400 for an earlier date, spec 12.5). Undefined = any day (due date, deadline, multi-select).
    */
   minDate?: string;
+  /** yyyy-MM-dd: later days are locked the same way (Upcoming jumps at most 3 months ahead). */
+  maxDate?: string;
   testID?: string;
 }
 
@@ -65,6 +67,7 @@ export function ScheduleSheet({
   allowNoDate = true,
   noDateLabel,
   minDate,
+  maxDate,
   testID = 'schedule',
 }: ScheduleSheetProps) {
   const { t } = useTranslation();
@@ -92,11 +95,12 @@ export function ScheduleSheet({
   const day = taskDateKey(pending);
   const time = dueTime(pending);
   // "Xong" is blocked while the chosen day is earlier than minDate, or while no day is chosen and "no date" is not allowed.
-  const doneBlocked = (day === null && !allowNoDate) || (day !== null && minDate !== undefined && day < minDate);
+  const doneBlocked = (day === null && !allowNoDate) || (day !== null && ((minDate !== undefined && day < minDate) || (maxDate !== undefined && day > maxDate)));
 
   function apply(next: DueValue) {
     const nextDay = taskDateKey(next);
     if (nextDay !== null && minDate !== undefined && nextDay < minDate) return;
+    if (nextDay !== null && maxDate !== undefined && nextDay > maxDate) return;
     if (nextDay === null && !allowNoDate) return;
     onSelect(mode === 'date' ? { ...next, dueDatetime: null, durationMinutes: null, dueDate: nextDay } : next);
     onClose();
@@ -163,6 +167,7 @@ export function ScheduleSheet({
         selected={day}
         today={today}
         minDate={minDate}
+        maxDate={maxDate}
         startDay={settings.startDay}
         onSelectDay={(picked) => setPending((current) => withDate(current, picked))}
         onMonthChange={setMonth}

@@ -119,6 +119,18 @@ export function useTaskEditor(taskId: string) {
     }
   }, [taskId, mutateAsync, queryClient]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /**
+   * Appends one save to the chain. A link that throws (anything `persist` did not handle itself) is reported as the form
+   * error and swallowed, so the chain always goes on and the next save is still sent.
+   */
+  const enqueue = useCallback(() => {
+    const run = chain.current.then(persist).catch((failure: unknown) => {
+      setErrors({ form: describeError(failure).message });
+    });
+    chain.current = run;
+    return run;
+  }, [persist]);
+
   /** Typing: only the draft changes (nothing is sent until blur / commit). */
   const edit = useCallback((patch: Partial<TaskDraft>) => {
     const current = store.current.draft;
@@ -131,10 +143,9 @@ export function useTaskEditor(taskId: string) {
     (patch?: Partial<TaskDraft>) => {
       const current = store.current.draft;
       if (patch && current) setDraft({ ...current, ...patch });
-      chain.current = chain.current.then(persist);
-      return chain.current;
+      return enqueue();
     },
-    [persist],
+    [enqueue],
   );
 
   const keepMine = useCallback(() => {
@@ -152,7 +163,8 @@ export function useTaskEditor(taskId: string) {
   // Leaving the screen saves what was typed but not blurred yet (a 409 then is dropped: the screen is gone).
   useEffect(
     () => () => {
-      void persist();
+      // Joins the chain: a save still on the wire must finish first, or both would send the same version (409).
+      void enqueue();
     },
     [], // eslint-disable-line react-hooks/exhaustive-deps
   );

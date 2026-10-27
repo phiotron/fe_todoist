@@ -4,6 +4,7 @@ import viViews from '../../../i18n/locales/vi/views.json';
 import { requestsTo } from '../../../test/apiRoutes';
 import { jsonResponse } from '../../../test/http';
 import { affected, makeTask, page } from '../../../test/m1Fixtures';
+import { SnackbarProvider } from '../../../components/Snackbar';
 import { renderSignedIn } from '../../../test/screen';
 import { getUpcomingDay, setUpcomingDay } from '../upcomingDayStore';
 import { UpcomingScreen } from '../UpcomingScreen';
@@ -12,11 +13,16 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => true) },
 }));
 // Friday 23/10/2026, 10:00 in Vietnam.
-jest.mock('../../../lib/useNow', () => ({ useNow: () => new Date('2026-10-23T03:00:00Z') }));
+const mockClock = { now: new Date('2026-10-23T03:00:00Z') };
+jest.mock('../../../lib/useNow', () => ({ useNow: () => mockClock.now }));
 jest.mock('../../auth/useUserTimeZone', () => ({
   useUserTimeZone: () => 'Asia/Ho_Chi_Minh',
   deviceTimeZone: () => 'Asia/Ho_Chi_Minh',
 }));
+
+// M3 will let the user change the week's first day; until then the settings are driven from here.
+const mockSettings = { startDay: 1, nextWeek: 1, weekendStartDay: 6 };
+jest.mock('../../settings/useDateSettings', () => ({ useDateSettings: () => mockSettings }));
 
 const headers = () => screen.getAllByText(/^\d{2}\/\d{2} · /).map((node) => node.props.children as string);
 const action = (actionName: string) => ({ nativeEvent: { actionName } });
@@ -54,7 +60,63 @@ function routes(extra: Parameters<typeof renderSignedIn>[1] = {}) {
 }
 
 describe('UpcomingScreen', () => {
-  beforeEach(() => setUpcomingDay(undefined));
+  beforeEach(() => {
+    setUpcomingDay(undefined);
+    mockClock.now = new Date('2026-10-23T03:00:00Z');
+    mockSettings.startDay = 1;
+  });
+
+  it('moves the week strip on when midnight passes into a new week (it must not keep showing the old week)', async () => {
+    const { rerender } = await renderSignedIn(<UpcomingScreen />, routes());
+    expect(await screen.findByTestId('week-day-2026-10-23')).toBeOnTheScreen();
+
+    // Monday 26/10/2026, 10:00 in Vietnam: the next week has begun.
+    mockClock.now = new Date('2026-10-26T03:00:00Z');
+    await rerender(
+      <SnackbarProvider>
+        <UpcomingScreen />
+      </SnackbarProvider>,
+    );
+
+    await waitFor(() => expect(screen.getByTestId('week-day-2026-10-26')).toBeOnTheScreen());
+    expect(screen.queryByTestId('week-day-2026-10-23')).toBeNull();
+  });
+
+  it('rebuilds the shown week when the first day of the week changes (it must not keep the old Monday-based week)', async () => {
+    const { rerender } = await renderSignedIn(<UpcomingScreen />, routes());
+    await screen.findByText('Đá bóng');
+    await fireEvent(screen.getByTestId('upcoming-month'), 'accessibilityAction', action('increment'));
+    expect(await screen.findByTestId('week-day-2026-10-26')).toBeSelected(); // Monday 26/10 – Sunday 01/11
+
+    mockSettings.startDay = 7; // weeks now start on Sunday: the week holding 26/10 is 25/10 – 31/10
+    await rerender(
+      <SnackbarProvider>
+        <UpcomingScreen />
+      </SnackbarProvider>,
+    );
+
+    await waitFor(() => expect(screen.getByTestId('week-day-2026-10-25')).toBeOnTheScreen());
+    expect(screen.getByTestId('week-day-2026-10-31')).toBeOnTheScreen();
+    expect(screen.queryByTestId('week-day-2026-11-01')).toBeNull();
+  });
+
+  it('a task completed a moment ago keeps its row but the day block does not count it (interim decision, see review notes)', async () => {
+    await renderSignedIn(<UpcomingScreen />, {
+      'GET /api/v1/tasks': (request: { query: URLSearchParams }) =>
+        jsonResponse(
+          200,
+          request.query.get('view') === 'overdue'
+            ? page([])
+            : page([
+                makeTask({ id: 'a', content: 'Sinh nhật', dueDate: '2026-10-24', completedAt: '2026-10-23T02:59:00Z' }),
+                makeTask({ id: 'b', content: 'Đá bóng', dueDate: '2026-10-24' }),
+              ]),
+        ),
+    });
+    await screen.findByText('Đá bóng');
+    expect(screen.getByText('Sinh nhật')).toBeOnTheScreen();
+    expect(screen.getByTestId('section-header-d-2026-10-24')).toHaveTextContent(/Thứ Bảy1$/);
+  });
 
   it('asks a 14-day WINDOW from today, groups by day (a header even for an empty day) and, once the window is complete, shows every day of it', async () => {
     const { fetchMock } = await renderSignedIn(<UpcomingScreen />, routes());
@@ -165,6 +227,74 @@ describe('UpcomingScreen', () => {
 
     expect(getUpcomingDay()).toBe('2026-10-24');
     expect(screen.getByTestId('week-day-2026-10-24')).toBeSelected();
+  });
+
+  describe('jump limit: today + 3 calendar months', () => {
+    const emptyRoutes = () => ({ 'GET /api/v1/tasks': () => jsonResponse(200, page([])) });
+    const upcomingWindows = (fetchMock: Parameters<typeof requestsTo>[0]) =>
+      requestsTo(fetchMock, 'GET', '/api/v1/tasks')
+        .filter((r) => r.query.get('view') === 'upcoming')
+        .map((r) => [r.query.get('from')!, r.query.get('to')!]);
+
+    async function openPickerAtJanuary() {
+      await fireEvent.press(screen.getByTestId('upcoming-month'));
+      for (let i = 0; i < 3; i += 1) await fireEvent.press(await screen.findByTestId('upcoming-jump-next-month'));
+    }
+
+    it('the limit day can be picked and the day after it is locked in the calendar (and so is the next month)', async () => {
+      await renderSignedIn(<UpcomingScreen />, emptyRoutes());
+      await screen.findByTestId('week-day-2026-10-23');
+
+      await openPickerAtJanuary();
+
+      expect(await screen.findByTestId('upcoming-jump-day-2027-01-23')).toBeEnabled();
+      expect(screen.getByTestId('upcoming-jump-day-2027-01-24')).toBeDisabled();
+      expect(screen.getByTestId('upcoming-jump-day-2027-01-31')).toBeDisabled();
+      expect(screen.getByTestId('upcoming-jump-next-month')).toBeDisabled();
+    });
+
+    it('jumping to the limit day loads the day windows one after another up to it, no further, and shows its header', async () => {
+      const { fetchMock } = await renderSignedIn(<UpcomingScreen />, emptyRoutes());
+      await screen.findByTestId('week-day-2026-10-23');
+
+      await openPickerAtJanuary();
+      await fireEvent.press(await screen.findByTestId('upcoming-jump-day-2027-01-23'));
+      await fireEvent.press(screen.getByTestId('upcoming-jump-done'));
+
+      await waitFor(() => expect(upcomingWindows(fetchMock).at(-1)![1] >= '2027-01-23').toBe(true), { timeout: 15000 });
+      // The list is virtualised: check the row exists in its data (the jump scrolls to it).
+      const keys = (screen.getByTestId('upcoming-list').props.data as { key: string }[]).map((row) => row.key);
+      expect(keys).toContain('d-2027-01-23');
+      expect(keys).not.toContain('d-2027-01-29');
+      expect(getUpcomingDay()).toBe('2027-01-23');
+      const windows = upcomingWindows(fetchMock);
+      expect(windows).toHaveLength(7);
+      expect(windows[0]).toEqual(['2026-10-23', '2026-11-05']);
+      for (const [from] of windows) expect(from <= '2027-01-23').toBe(true);
+      // The week strip of the limit week locks the days after the limit, and the next week is refused.
+      expect(screen.getByTestId('week-day-2027-01-23')).toBeSelected();
+      expect(screen.getByTestId('week-day-2027-01-24')).toBeDisabled();
+      await fireEvent(screen.getByTestId('upcoming-month'), 'accessibilityAction', action('increment'));
+      expect(getUpcomingDay()).toBe('2027-01-23');
+      expect(screen.queryByTestId('week-day-2027-01-25')).toBeNull();
+    }, 30000);
+
+    it('the limit follows today: after midnight one more day opens up', async () => {
+      const { rerender } = await renderSignedIn(<UpcomingScreen />, emptyRoutes());
+      await screen.findByTestId('week-day-2026-10-23');
+      await openPickerAtJanuary();
+      expect(await screen.findByTestId('upcoming-jump-day-2027-01-24')).toBeDisabled();
+
+      mockClock.now = new Date('2026-10-24T03:00:00Z');
+      await rerender(
+        <SnackbarProvider>
+          <UpcomingScreen />
+        </SnackbarProvider>,
+      );
+
+      await waitFor(() => expect(screen.getByTestId('upcoming-jump-day-2027-01-24')).toBeEnabled());
+      expect(screen.getByTestId('upcoming-jump-day-2027-01-25')).toBeDisabled();
+    });
   });
 
   it('shows the Overdue block first and reschedules it; each day offers "Thêm công việc" for that day', async () => {

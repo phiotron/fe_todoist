@@ -8,7 +8,7 @@ import { AppButton } from '../../components/AppButton';
 import { ErrorText } from '../../components/ErrorText';
 import { IconButton } from '../../components/IconButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { addDays, dateKeyInZone, dayRange, groupByDueDate, upcomingLimit, weekDays, weekStart } from '../../lib/dates';
+import { addDays, dateKeyInZone, dayRange, groupByDueDate, upcomingJumpLimit, weekDays, weekStart } from '../../lib/dates';
 import { formatDayHeader, monthTitle } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
 import { gutter, palette, size, type } from '../../theme';
@@ -22,7 +22,7 @@ import { useTaskSelection } from '../tasks/selection';
 import { TaskListView } from '../tasks/TaskListView';
 import { nodeRow, sectionRow, taskRows, type TaskListRow } from '../tasks/taskRows';
 import { useTaskList } from '../tasks/useTaskList';
-import { overdueRows, useOverdueReschedule } from './overdue';
+import { openCount, overdueRows, useOverdueReschedule } from './overdue';
 import { setUpcomingDay, useUpcomingDay } from './upcomingDayStore';
 import { useUpcomingDays } from './useUpcomingDays';
 import { WeekStrip } from './WeekStrip';
@@ -34,10 +34,17 @@ function UpcomingBody() {
   const settings = useDateSettings();
   const selection = useTaskSelection();
   const today = dateKeyInZone(now, timeZone);
+  // Jumps (picker, strip, next week) stop at today + 3 months; scrolling the list by hand still goes on up to 2 years.
+  const jumpLimit = upcomingJumpLimit(today);
   const thisWeek = weekStart(today, settings.startDay);
   const storedDay = useUpcomingDay();
   const selectedDay = storedDay && storedDay >= today ? storedDay : today;
-  const [weekStartKey, setWeekStartKey] = useState(thisWeek);
+  // Keep a DAY inside the shown week, not the week's first day: when the first day of the week changes (settings), the
+  // week is rebuilt around the same day instead of staying on the old boundaries.
+  const [shownDay, setShownDay] = useState(today);
+  const shownWeek = weekStart(shownDay, settings.startDay);
+  // After midnight into a new week the state would still point at the week that is over.
+  const weekStartKey = shownWeek < thisWeek ? thisWeek : shownWeek;
   const [overdueCollapsed, setOverdueCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -75,7 +82,7 @@ function UpcomingBody() {
     }
     for (const day of dayRange(today, loadedThrough)) {
       const list = byDay.get(day) ?? [];
-      result.push(sectionRow(`d-${day}`, { title: formatDayHeader(day, today), count: list.length }), ...taskRows(list));
+      result.push(sectionRow(`d-${day}`, { title: formatDayHeader(day, today), count: openCount(list) }), ...taskRows(list));
       result.push(
         nodeRow(
           `add-${day}`,
@@ -89,7 +96,7 @@ function UpcomingBody() {
     // reschedule.start only opens the sheet; overdue.query is read for hasNextPage / fetchNextPage.
   }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Scroll to the target day, loading more pages / windows first while it has not arrived (spec 9.2: infinite list of days, at most 2 years).
+  // Scroll to the target day, loading more pages / windows first while it has not arrived (spec 9.2: infinite list of days, at most 2 years; jumps are limited to 3 months, so only a few windows load here).
   useEffect(() => {
     if (!target) return;
     const index = rows.findIndex((row) => row.key === `d-${target}`);
@@ -97,7 +104,7 @@ function UpcomingBody() {
       try {
         listRef.current?.scrollToIndex({ index, animated: true });
       } catch {
-        // The row is not measured yet: onScrollToIndexFailed ignores it and the next render retries nothing — harmless.
+        // The row is not measured yet: TaskListView's onScrollToIndexFailed jumps near it and retries a few times, then gives up.
       }
       setTarget(null);
     } else if (hasNextPage && !isFetchingNextPage) {
@@ -114,16 +121,15 @@ function UpcomingBody() {
 
   function shiftWeek(delta: 1 | -1) {
     const next = addDays(weekStartKey, 7 * delta);
-    if (next < thisWeek) return;
-    setWeekStartKey(next);
+    if (next < thisWeek || next > jumpLimit) return;
+    setShownDay(next);
     chooseDay(next <= today && addDays(next, 6) >= today ? today : next);
   }
 
   function jumpTo(day: string) {
-    // Never before today, never past the 2-year horizon of the view (spec 12.3).
-    const limit = upcomingLimit(today);
-    const clamped = day < today ? today : day > limit ? limit : day;
-    setWeekStartKey(weekStart(clamped, settings.startDay));
+    // Never before today, never past the jump limit (today + 3 months): the picker locks those days, this guards the rest.
+    const clamped = day < today ? today : day > jumpLimit ? jumpLimit : day;
+    setShownDay(clamped);
     chooseDay(clamped);
   }
 
@@ -168,6 +174,7 @@ function UpcomingBody() {
       <WeekStrip
         days={weekDays(weekStartKey)}
         today={today}
+        maxDate={jumpLimit}
         selected={selectedDay}
         onSelectDay={chooseDay}
         onShiftWeek={shiftWeek}
@@ -189,6 +196,7 @@ function UpcomingBody() {
         allowNoDate={false}
         title={t('views.upcoming.pickDate')}
         minDate={today}
+        maxDate={jumpLimit}
         value={{ ...NO_DUE, dueDate: selectedDay }}
         onSelect={(due) => {
           if (due.dueDate) jumpTo(due.dueDate);

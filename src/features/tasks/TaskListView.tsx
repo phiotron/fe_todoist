@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode, type Ref } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { describeError } from '../../api/describeError';
@@ -35,6 +35,10 @@ export interface TaskListViewProps {
   initialNumToRender?: number;
 }
 
+/** scrollToIndex retries after onScrollToIndexFailed, and the gap after which a new failure counts as a new jump. */
+export const MAX_SCROLL_RETRIES = 4;
+const SCROLL_RETRY_WINDOW_MS = 500;
+
 /**
  * Every task list of the app: section headers / task rows / custom nodes, pull to refresh, "load more" near the end
  * and with a footer button (spec 5.10), skeleton / offline / error placeholder when nothing is cached, swipe
@@ -58,6 +62,40 @@ export function TaskListView({
   const { toggle, pendingId, errorMessage } = useToggleTask();
   const update = useUpdateTask();
   const [scheduling, setScheduling] = useState<Task | null>(null);
+
+  const innerRef = useRef<FlatList<TaskListRow> | null>(null);
+  const retryAttempts = useRef({ index: -1, count: 0, at: 0 });
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(retryTimer.current), []);
+  const setListRef = useCallback(
+    (list: FlatList<TaskListRow> | null) => {
+      innerRef.current = list;
+      if (typeof listRef === 'function') listRef(list);
+      else if (listRef) (listRef as { current: FlatList<TaskListRow> | null }).current = list;
+    },
+    [listRef],
+  );
+  // The list has no getItemLayout (rows differ in height): a row far below is not measured yet, so jump near it by the
+  // average row height first, then ask for the row itself once that stretch has been laid out.
+  const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
+    innerRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
+    clearTimeout(retryTimer.current);
+    // A scrollToIndex that fails again re-enters here: give up after a few tries instead of retrying forever.
+    // A failure long after the last one is a new jump, not another retry of the old one.
+    const now = Date.now();
+    const last = retryAttempts.current;
+    const sameJump = last.index === info.index && now - last.at < SCROLL_RETRY_WINDOW_MS;
+    retryAttempts.current = { index: info.index, count: sameJump ? last.count : 0, at: now };
+    if (retryAttempts.current.count >= MAX_SCROLL_RETRIES) return;
+    retryAttempts.current.count += 1;
+    retryTimer.current = setTimeout(() => {
+      try {
+        innerRef.current?.scrollToIndex({ index: info.index, animated: true });
+      } catch {
+        // The rows changed meanwhile and the index no longer exists: nothing to scroll to.
+      }
+    }, 50);
+  }, []);
 
   const loadMore = useCallback(() => {
     if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();
@@ -112,7 +150,7 @@ export function TaskListView({
         </View>
       ) : null}
       <FlatList
-        ref={listRef}
+        ref={setListRef}
         {...(initialNumToRender === undefined ? {} : { initialNumToRender })}
         testID={testID}
         data={rows}
@@ -121,7 +159,7 @@ export function TaskListView({
         ListHeaderComponent={header ? <>{header}</> : undefined}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
-        onScrollToIndexFailed={() => undefined}
+        onScrollToIndexFailed={onScrollToIndexFailed}
         refreshControl={
           <RefreshControl
             refreshing={query.isRefetching && !query.isFetchingNextPage}

@@ -83,26 +83,39 @@ export interface TaskListParams {
   today?: string;
 }
 
+/**
+ * POST tasks. `afterId` absent = end of the container, null = first (spec 12 "vắng ≠ null"); `parentId` / `sectionId`
+ * absent or null = a root task / no section.
+ */
 export type CreateTaskRequest = Nullable<
   Schemas['CreateTaskRequest'],
   'sectionId' | 'parentId' | 'dueDate' | 'dueDatetime' | 'durationMinutes' | 'deadlineDate' | 'afterId'
 >;
+/**
+ * PATCH tasks/{id}: the version the edit started from + changed fields only. Absent = keep, null = clear; sending
+ * dueDate or dueDatetime replaces the whole due.
+ */
 export type UpdateTaskRequest = Nullable<
   Schemas['UpdateTaskRequest'],
   'dueDate' | 'dueDatetime' | 'durationMinutes' | 'deadlineDate'
 >;
+/** POST tasks/{id}/move: `sectionId` / `parentId` null or absent = none; `afterId` absent = end of the container, null = first. */
 export type MoveTaskRequest = Nullable<Schemas['MoveTaskRequest'], 'sectionId' | 'parentId' | 'afterId'>;
 export type TaskBatchRequest = Schemas['BatchTasksRequest'];
 export type BatchAction = TaskBatchRequest['action'];
+/** `parentId` null or absent = root project; `afterId` absent = last, null = first. */
 export type CreateProjectRequest = Nullable<Schemas['CreateProjectRequest'], 'parentId'>;
 export type UpdateProjectRequest = Schemas['UpdateProjectRequest'];
+/** POST projects/{id}/move: `parentId` must be PRESENT (null = root); `afterId` absent = last, null = first. */
 export type MoveProjectRequest = Schemas['MoveProjectRequest'];
+/** `afterId` absent = last, null = first. */
 export type CreateSectionRequest = Schemas['CreateSectionRequest'];
 export type UpdateSectionRequest = Schemas['UpdateSectionRequest'];
+/** `afterId` is REQUIRED (absent → 400): null = first in its container, else the id of the item right before it. Never changes `version`. */
 export type ReorderRequest = Schemas['ReorderRequest'];
 export type ReorderType = ReorderRequest['type'];
 
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-/** Compile-time guard: fails when the server's 20 colour keys drift from PROJECT_COLORS. */
-const colorsInSync: Same<ProjectColor, NonNullable<Schemas['CreateProjectRequest']['color']>> = true;
-void colorsInSync;
+type Assert<T extends true> = T;
+/** Compile-time guard (type only, no runtime code): fails to compile when the server's 20 colour keys drift from PROJECT_COLORS. */
+export type ColorsInSync = Assert<Same<ProjectColor, NonNullable<Schemas['CreateProjectRequest']['color']>>>;

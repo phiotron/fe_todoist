@@ -20,25 +20,32 @@ interface OverdueRowsOptions {
   onReschedule: () => void;
 }
 
+/** Tasks still open: one completed a moment ago keeps its struck-through row until the refetch but is not counted. */
+export const openCount = (tasks: readonly Task[]): number => tasks.filter((task) => !task.completedAt).length;
+
 /**
  * "Quá hạn" (warn) + count + "Dời lịch", then its tasks unless collapsed (Today and Upcoming). `tasks` = the Overdue BLOCK
  * (due day before today, spec 5.1): already split by `groupTodayView` / `view=overdue`, never by `isOverdue`.
  */
 export function overdueRows(tasks: readonly Task[], { collapsed, onToggle, onReschedule }: OverdueRowsOptions): TaskListRow[] {
   if (tasks.length === 0) return [];
-  const reschedule = (
-    <AppButton
-      variant="ghost"
-      size="sm"
-      color={palette.acc}
-      label={i18n.t('views.overdue.reschedule')}
-      onPress={onReschedule}
-      requiresOnline
-      testID="overdue-reschedule"
-    />
-  );
+  // A task completed a moment ago keeps its place (struck through) until the refetch, but it is no longer overdue:
+  // it is not counted and does not keep "Dời lịch" alive.
+  const open = openCount(tasks);
+  const reschedule =
+    open === 0 ? undefined : (
+      <AppButton
+        variant="ghost"
+        size="sm"
+        color={palette.acc}
+        label={i18n.t('views.overdue.reschedule')}
+        onPress={onReschedule}
+        requiresOnline
+        testID="overdue-reschedule"
+      />
+    );
   return [
-    sectionRow('overdue', { title: i18n.t('views.overdue.title'), count: tasks.length, tone: 'danger', collapsed, onToggle, right: reschedule }),
+    sectionRow('overdue', { title: i18n.t('views.overdue.title'), count: open, tone: 'danger', collapsed, onToggle, right: reschedule }),
     ...(collapsed ? [] : taskRows(tasks)),
   ];
 }

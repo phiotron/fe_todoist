@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useIsOnline } from '../lib/useIsOnline';
 import { fonts, layout, palette, radius, shadow, size } from '../theme';
@@ -12,6 +12,8 @@ export interface SnackbarOptions {
   actionLabel?: string;
   onAction?: () => void;
   durationMs?: number;
+  /** 'error' swaps the check icon for a warning one (a failed write reported outside its own screen). */
+  tone?: 'error';
 }
 
 interface SnackbarApi {
@@ -22,17 +24,56 @@ interface SnackbarApi {
 const NOOP: SnackbarApi = { show: () => undefined, hide: () => undefined };
 const SnackbarContext = createContext<SnackbarApi>(NOOP);
 
-/** One toast at a time (M-Empty): a new one replaces the current one and restarts the timer. */
+type Toast = SnackbarOptions & { id: number };
+
+/** Toasts waiting behind the one on screen; more than this are dropped (a failing action spammed by taps). */
+const MAX_QUEUED = 3;
+
+const sameToast = (a: Toast, b: Toast) => a.message === b.message && a.tone === b.tone;
+
+/**
+ * One toast at a time (M-Empty). A toast WITH an Undo (`onAction`) REPLACES the one on screen, so its Undo is always the
+ * newest action's. Anything that would wipe a toast carrying an Undo, or an error, WAITS in a queue instead: an error,
+ * and a plain toast (no action) arriving over an Undo or an error. A plain toast over a plain toast replaces it. A toast
+ * equal (message + tone) to the one on screen or already waiting is dropped; the queue is capped.
+ */
 export function SnackbarProvider({ children }: { children: ReactNode }) {
-  const [current, setCurrent] = useState<(SnackbarOptions & { id: number }) | null>(null);
+  const [current, setCurrent] = useState<Toast | null>(null);
+  const currentRef = useRef<Toast | null>(null);
+  const queue = useRef<Toast[]>([]);
   const online = useIsOnline();
-  const hide = useCallback(() => setCurrent(null), []);
-  const show = useCallback((options: SnackbarOptions) => setCurrent({ ...options, id: Date.now() + Math.random() }), []);
+  const present = useCallback((toast: Toast | null) => {
+    currentRef.current = toast;
+    setCurrent(toast);
+  }, []);
+  const hide = useCallback(() => present(queue.current.shift() ?? null), [present]);
+  const show = useCallback(
+    (options: SnackbarOptions) => {
+      const toast = { ...options, id: Date.now() + Math.random() };
+      const onScreen = currentRef.current;
+      if (!onScreen) {
+        present(toast);
+        return;
+      }
+      const wipes = toast.onAction || (toast.tone !== 'error' && !onScreen.onAction && onScreen.tone !== 'error');
+      if (wipes) {
+        // An error on screen is not lost: it goes back to the front of the line (if there is room) behind the newer toast.
+        if (onScreen.tone === 'error' && queue.current.length < MAX_QUEUED) queue.current.unshift(onScreen);
+        present(toast);
+        return;
+      }
+      const duplicate = sameToast(onScreen, toast) || queue.current.some((queued) => sameToast(queued, toast));
+      if (!duplicate && queue.current.length < MAX_QUEUED) queue.current.push(toast);
+    },
+    [present],
+  );
   const api = useMemo(() => ({ show, hide }), [show, hide]);
 
   useEffect(() => {
     if (!current) return undefined;
-    const timer = setTimeout(hide, current.durationMs ?? SNACKBAR_DURATION_MS);
+    const timer = setTimeout(() => {
+      if (currentRef.current?.id === current.id) hide();
+    }, current.durationMs ?? SNACKBAR_DURATION_MS);
     return () => clearTimeout(timer);
   }, [current, hide]);
 
@@ -41,8 +82,12 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
       <View style={styles.fill}>
         {children}
         {current ? (
-          <View testID="snackbar" accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.toast}>
-            <Feather name="check" size={size.iconSmall} color={palette.toastAccent} />
+          <View key={current.id} testID="snackbar" accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.toast}>
+            <Feather
+              name={current.tone === 'error' ? 'alert-circle' : 'check'}
+              size={size.iconSmall}
+              color={current.tone === 'error' ? palette.warn : palette.toastAccent}
+            />
             <Text style={styles.message}>{current.message}</Text>
             {current.actionLabel && current.onAction ? (
               <Pressable

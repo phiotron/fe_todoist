@@ -12,6 +12,8 @@ interface MonthCalendarProps {
   today: string;
   /** Days before it are muted and not selectable (Reschedule). */
   minDate?: string;
+  /** Days after it are muted and not selectable, and months after its month cannot be opened (Upcoming jump limit). */
+  maxDate?: string;
   startDay: number;
   onSelectDay: (dateKey: string) => void;
   onMonthChange: (monthKey: string) => void;
@@ -25,10 +27,13 @@ function shiftMonth(month: string, delta: number): string {
 }
 
 /** M-Schedule month grid: 44px cells, selected day = 40px accent circle, past days muted (still selectable). */
-export function MonthCalendar({ month, selected, today, minDate, startDay, onSelectDay, onMonthChange, testID }: MonthCalendarProps) {
+export function MonthCalendar({ month, selected, today, minDate, maxDate, startDay, onSelectDay, onMonthChange, testID }: MonthCalendarProps) {
   const { t } = useTranslation();
   const [year, m] = month.split('-').map(Number);
   const weeks = monthGrid(year, m, startDay);
+  const isLocked = (day: string) => (minDate !== undefined && day < minDate) || (maxDate !== undefined && day > maxDate);
+  const nextMonth = shiftMonth(month, 1);
+  const nextMonthLocked = maxDate !== undefined && nextMonth > maxDate;
   // Header letters of a week starting on startDay (any week works: 2026-10-19 is a Monday).
   const header = weekDays(addDays('2026-10-19', (startDay + 6) % 7));
   return (
@@ -45,7 +50,8 @@ export function MonthCalendar({ month, selected, today, minDate, startDay, onSel
           <IconButton
             icon="chevron-right"
             label={t('schedule.nextMonth')}
-            onPress={() => onMonthChange(shiftMonth(month, 1))}
+            onPress={() => onMonthChange(nextMonth)}
+            disabled={nextMonthLocked}
             testID={`${testID}-next-month`}
           />
         </View>
@@ -66,8 +72,8 @@ export function MonthCalendar({ month, selected, today, minDate, startDay, onSel
                 testID={`${testID}-day-${day}`}
                 accessibilityRole="button"
                 accessibilityLabel={formatDateKey(day, true)}
-                accessibilityState={{ selected: day === selected, disabled: minDate !== undefined && day < minDate }}
-                disabled={minDate !== undefined && day < minDate}
+                accessibilityState={{ selected: day === selected, disabled: isLocked(day) }}
+                disabled={isLocked(day)}
                 onPress={() => onSelectDay(day)}
                 style={styles.cell}
               >
@@ -75,7 +81,7 @@ export function MonthCalendar({ month, selected, today, minDate, startDay, onSel
                   <Text
                     style={[
                       styles.dayText,
-                      (day < today || (minDate !== undefined && day < minDate)) && styles.past,
+                      (day < today || isLocked(day)) && styles.past,
                       day === today && styles.today,
                       day === selected && styles.selectedText,
                     ]}

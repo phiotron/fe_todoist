@@ -47,6 +47,22 @@ describe('AppTabBar', () => {
     expect(navigateToTab).not.toHaveBeenCalled();
   });
 
+  it('warns (dev) instead of silently doing nothing when a tab points at a route the navigator does not have', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { navigateToTab, props } = setup(1);
+      props.state.routes = props.state.routes.filter((route) => route.name !== 'browse');
+      await render(<AppTabBar {...props} />);
+
+      await fireEvent.press(screen.getByTestId('tab-browse'));
+
+      expect(navigateToTab).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('browse'));
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('respects a prevented tabPress', async () => {
     const { navigateToTab, props } = setup(1, true);
     await render(<AppTabBar {...props} />);

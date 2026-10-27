@@ -150,8 +150,13 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     if (!expiring) {
       const run: Promise<void> = (async () => {
         if (epoch !== startEpoch) return;
-        await config.tokens.clear();
-        if (epoch === startEpoch) config.onSessionExpired();
+        try {
+          await config.tokens.clear();
+        } catch {
+          // Keystore failure: the session is over regardless, so the app must still be told.
+        } finally {
+          if (epoch === startEpoch) config.onSessionExpired();
+        }
       })().finally(() => {
         if (expiring === run) expiring = null;
       });

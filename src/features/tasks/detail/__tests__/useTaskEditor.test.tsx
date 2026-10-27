@@ -5,9 +5,11 @@ import { queryKeys } from '../../../../api/queryKeys';
 import viTaskList from '../../../../i18n/locales/vi/taskList.json';
 import vi from '../../../../i18n/locales/vi.json';
 import { requestsTo, type ApiRoutes } from '../../../../test/apiRoutes';
+import { deferred, flushAsync } from '../../../../test/deferred';
 import { jsonResponse, problem } from '../../../../test/http';
 import { makeTask } from '../../../../test/m1Fixtures';
 import { renderSignedIn } from '../../../../test/screen';
+import * as draftModule from '../draft';
 import { useTaskEditor } from '../useTaskEditor';
 
 let server: Task;
@@ -222,6 +224,54 @@ describe('useTaskEditor', () => {
     await unmount();
 
     await waitFor(() => expect(patches(fetchMock)).toEqual([{ version: 3, description: 'Mô tả mới' }]));
+  });
+
+  it('leaving the screen waits for a save still on the wire and sends the version it returned (no 409)', async () => {
+    const firstReply = deferred<Response>();
+    let calls = 0;
+    const { fetchMock, unmount } = await open({
+      'PATCH /api/v1/tasks/t1': (request) => {
+        calls += 1;
+        if (calls === 1) {
+          const body = request.body as object;
+          return firstReply.promise.then(() => {
+            server = { ...server, ...body, version: server.version + 1 };
+            return jsonResponse(200, server);
+          });
+        }
+        return applyPatch(request);
+      },
+    });
+
+    await fireEvent.press(screen.getByTestId('h-p1'));
+    await waitFor(() => expect(patches(fetchMock)).toHaveLength(1));
+    await fireEvent.changeText(screen.getByTestId('h-description'), 'Mô tả mới');
+    await unmount();
+    await flushAsync();
+    // The second save must not start until the first one has told us the new version.
+    expect(patches(fetchMock)).toHaveLength(1);
+
+    firstReply.resolve(jsonResponse(200));
+    await waitFor(() => expect(patches(fetchMock)).toHaveLength(2));
+    expect(patches(fetchMock)[1]).toEqual({ version: 4, description: 'Mô tả mới' });
+  });
+
+  it('a save that throws unexpectedly is reported and does not jam the chain: the next save is still sent', async () => {
+    const { fetchMock } = await open({ 'PATCH /api/v1/tasks/t1': applyPatch });
+    const real = draftModule.draftChanges;
+    const spy = jest.spyOn(draftModule, 'draftChanges').mockImplementationOnce(() => {
+      throw new Error('boom');
+    });
+
+    await fireEvent.press(screen.getByTestId('h-p1'));
+    await waitFor(() => expect(spy).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByTestId('h-error-form')).not.toHaveTextContent(''));
+    expect(patches(fetchMock)).toHaveLength(0);
+
+    spy.mockImplementation(real);
+    await fireEvent.press(screen.getByTestId('h-p2'));
+    await waitFor(() => expect(patches(fetchMock)).toEqual([{ version: 3, priority: 2 }]));
+    spy.mockRestore();
   });
 
   it('follows a server change while nothing is unsaved', async () => {

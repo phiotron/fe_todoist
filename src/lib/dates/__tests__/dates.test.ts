@@ -8,7 +8,6 @@ import {
   dueTime,
   groupByDueDate,
   groupTodayView,
-  isInOverdueBlock,
   isTaskOverdue,
   isoWeekday,
   monthGrid,
@@ -16,6 +15,7 @@ import {
   nowLocal,
   quickDates,
   taskDateKey,
+  upcomingJumpLimit,
   upcomingLimit,
   weekDays,
   weekStart,
@@ -90,25 +90,26 @@ describe('isTaskOverdue (spec 5.1)', () => {
 
 describe('overdue block (spec 5.1 / 3.1): due DAY before today, not "time already passed"', () => {
   const now = new Date('2026-10-23T10:00:00Z'); // 17:00 local
+  const inOverdue = (task: ReturnType<typeof due>, at = now) =>
+    groupTodayView([{ id: 'x', ...task }], at, TZ).overdue.length === 1;
 
   it('a timed task whose time passed earlier TODAY is not in the block (it is red in Today, see isTaskOverdue)', () => {
     const passedToday = due(null, '2026-10-23T08:00:00');
-    expect(isInOverdueBlock(passedToday, now, TZ)).toBe(false);
+    expect(inOverdue(passedToday)).toBe(false);
     expect(isTaskOverdue(passedToday, now, TZ)).toBe(true);
   });
 
-  it('any open task due on an earlier day is in the block, timed or all-day', () => {
-    expect(isInOverdueBlock(due('2026-10-22'), now, TZ)).toBe(true);
-    expect(isInOverdueBlock(due(null, '2026-10-22T23:59:00'), now, TZ)).toBe(true);
-    expect(isInOverdueBlock(due('2026-10-23'), now, TZ)).toBe(false);
-    expect(isInOverdueBlock(due('2026-10-24'), now, TZ)).toBe(false);
+  it('any task due on an earlier day is in the block, timed or all-day', () => {
+    expect(inOverdue(due('2026-10-22'))).toBe(true);
+    expect(inOverdue(due(null, '2026-10-22T23:59:00'))).toBe(true);
+    expect(inOverdue(due('2026-10-23'))).toBe(false);
+    expect(inOverdue(due('2026-10-24'))).toBe(false);
   });
 
-  it('completed tasks and tasks without due are never in the block; the day flips at local midnight', () => {
-    expect(isInOverdueBlock(due('2026-10-01', null, '2026-10-02T00:00:00Z'), now, TZ)).toBe(false);
-    expect(isInOverdueBlock(due(null), now, TZ)).toBe(false);
-    expect(isInOverdueBlock(due('2026-10-23'), new Date('2026-10-23T17:00:00Z'), TZ)).toBe(true);
-    expect(isInOverdueBlock(due('2026-10-23'), new Date('2026-10-23T16:59:59Z'), TZ)).toBe(false);
+  it('tasks without due are never in the block; the day flips at local midnight', () => {
+    expect(inOverdue(due(null))).toBe(false);
+    expect(inOverdue(due('2026-10-23'), new Date('2026-10-23T17:00:00Z'))).toBe(true);
+    expect(inOverdue(due('2026-10-23'), new Date('2026-10-23T16:59:59Z'))).toBe(false);
   });
 });
 
@@ -124,6 +125,14 @@ describe('grouping', () => {
     const groups = groupTodayView([a, b, c, d, e], now, TZ);
     expect(groups.overdue.map((t) => t.id)).toEqual(['a', 'e']);
     expect(groups.today.map((t) => t.id)).toEqual(['b', 'c', 'd']);
+  });
+
+  it('spec 3.1: an overdue task completed a moment ago stays in the Overdue block until the lists refetch', () => {
+    const done = { id: 'x', ...due('2026-10-21', null, '2026-10-23T09:59:00Z') };
+    const open = { id: 'y', ...due('2026-10-21') };
+    const groups = groupTodayView([done, open], now, TZ);
+    expect(groups.overdue.map((t) => t.id)).toEqual(['x', 'y']);
+    expect(groups.today).toEqual([]);
   });
 
   it('groups by due day in ascending order and drops tasks without due', () => {
@@ -191,6 +200,15 @@ describe('Upcoming day windows (spec 12.3: 14 days by default, at most 2 years a
     expect(upcomingLimit('2026-12-31')).toBe('2028-12-31');
   });
 
+  it('the jump limit is today + 3 calendar months, clamped to the end of a shorter month', () => {
+    expect(upcomingJumpLimit('2026-10-23')).toBe('2027-01-23');
+    expect(upcomingJumpLimit('2026-10-31')).toBe('2027-01-31');
+    expect(upcomingJumpLimit('2026-11-30')).toBe('2027-02-28');
+    expect(upcomingJumpLimit('2027-11-30')).toBe('2028-02-29');
+    expect(upcomingJumpLimit('2026-12-15')).toBe('2027-03-15');
+    expect(upcomingJumpLimit('2026-05-31')).toBe('2026-08-31');
+  });
+
   it('builds the next 14-day window from a day, cut at the limit, null past it', () => {
     expect(nextUpcomingWindow('2026-10-23', '2026-10-23')).toEqual({ from: '2026-10-23', to: '2026-11-05' });
     expect(nextUpcomingWindow('2026-11-06', '2026-10-23')).toEqual({ from: '2026-11-06', to: '2026-11-19' });
@@ -235,5 +253,18 @@ describe('describeDue / describeDeadline', () => {
     expect(describeDeadline('2026-10-23', now, TZ)?.daysLeft).toBe(0);
     expect(describeDeadline('2026-10-20', now, TZ)?.daysLeft).toBe(-3);
     expect(describeDeadline(null, now, TZ)).toBeNull();
+  });
+});
+
+describe('zone formatter cache', () => {
+  it('builds one Intl.DateTimeFormat per time zone, not one per call', () => {
+    const spy = jest.spyOn(Intl, 'DateTimeFormat');
+    try {
+      const instant = new Date('2026-10-23T10:00:00Z');
+      for (let i = 0; i < 5; i += 1) dateKeyInZone(instant, 'Pacific/Auckland');
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

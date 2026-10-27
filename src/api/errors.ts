@@ -24,8 +24,9 @@ export interface ProblemDetail {
   max?: number;
 }
 
-/** Compile-time guard (Task 30): the generated ProblemDetail must stay assignable to the app's superset above. */
-export const generatedProblemIsCompatible = (generated: components['schemas']['ProblemDetail']): ProblemDetail => generated;
+type Assert<T extends true> = T;
+/** Compile-time guard (Task 30, type only, no runtime code): the generated ProblemDetail must stay assignable to the app's superset above. */
+export type GeneratedProblemIsCompatible = Assert<components['schemas']['ProblemDetail'] extends ProblemDetail ? true : false>;
 
 export interface ApiErrorInit {
   status: number;

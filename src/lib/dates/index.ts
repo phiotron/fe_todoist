@@ -15,17 +15,29 @@ export interface DueFields {
   completedAt?: string | null;
 }
 
+// Building an Intl.DateTimeFormat is expensive and every row of every list render asks for one: one per zone.
+const zoneFormats = new Map<string, Intl.DateTimeFormat>();
+
+function formatterFor(timeZone: string): Intl.DateTimeFormat {
+  let format = zoneFormats.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    });
+    zoneFormats.set(timeZone, format);
+  }
+  return format;
+}
+
 function partsInZone(instant: Date, timeZone: string): Record<string, string> {
-  const format = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  });
+  const format = formatterFor(timeZone);
   const parts: Record<string, string> = {};
   for (const part of format.formatToParts(instant)) parts[part.type] = part.value;
   return parts;
@@ -91,7 +103,7 @@ export function combineDue(dateKey: string, time: string | null): { dueDate: str
 
 /**
  * `isOverdue` of spec 5.1 — ONLY for painting the due red: timed → local time passed (even earlier today);
- * all-day → before today; completed / no due → never. NOT the rule of the Overdue block (see isInOverdueBlock).
+ * all-day → before today; completed / no due → never. NOT the rule of the Overdue block (due DAY before today, see groupTodayView).
  */
 export function isTaskOverdue(task: DueFields, now: Date, timeZone: string): boolean {
   if (task.completedAt) return false;
@@ -100,21 +112,20 @@ export function isTaskOverdue(task: DueFields, now: Date, timeZone: string): boo
   return false;
 }
 
-/**
- * The Overdue BLOCK of Today / Upcoming and the scope of Reschedule (spec 5.1, 3.1): open task whose due DAY is before
- * today in the account zone, timed or not. A timed task that is late only within today belongs to the Today block.
- */
-export function isInOverdueBlock(task: DueFields, now: Date, timeZone: string): boolean {
-  if (task.completedAt) return false;
+function isDueBeforeToday(task: DueFields, now: Date, timeZone: string): boolean {
   const day = taskDateKey(task);
   return day !== null && day < dateKeyInZone(now, timeZone);
 }
 
-/** Today view = Overdue block + Today block (late timed tasks of today stay in Today), each keeping the server order. */
+/**
+ * Today view = Overdue block + Today block (late timed tasks of today stay in Today), each keeping the server order.
+ * Completion does not move a task between blocks: one completed a moment ago keeps its block (spec 3.1) until the
+ * refetch drops it, instead of jumping to Today.
+ */
 export function groupTodayView<T extends DueFields>(tasks: readonly T[], now: Date, timeZone: string) {
   const overdue: T[] = [];
   const today: T[] = [];
-  for (const task of tasks) (isInOverdueBlock(task, now, timeZone) ? overdue : today).push(task);
+  for (const task of tasks) (isDueBeforeToday(task, now, timeZone) ? overdue : today).push(task);
   return { overdue, today };
 }
 
@@ -174,12 +185,27 @@ export function quickDates(todayKey: string, settings: DateSettings): QuickDates
 /** Upcoming loads DAY WINDOWS (spec 12.3): 14 days by default, the server accepts up to 31. */
 export const UPCOMING_WINDOW_DAYS = 14;
 
+/** `dateKey` + `months` calendar months; the day is clamped to the last day of the target month (31/10 + 3 = 31/01, 30/11 + 3 = 28/02). */
+export function addMonthsClamped(dateKey: string, months: number): string {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const index = year * 12 + (month - 1) + months;
+  const targetYear = Math.floor(index / 12);
+  const targetMonth = (index % 12) + 1;
+  const lastDay = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate();
+  return `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(Math.min(day, lastDay)).padStart(2, '0')}`;
+}
+
 /** Last day Upcoming may show: today + 2 years (29 February clamps to 28 February, like java.time). */
 export function upcomingLimit(todayKey: string): string {
-  const [year, month, day] = todayKey.split('-').map(Number);
-  const target = year + 2;
-  const lastDay = new Date(Date.UTC(target, month, 0)).getUTCDate();
-  return `${target}-${String(month).padStart(2, '0')}-${String(Math.min(day, lastDay)).padStart(2, '0')}`;
+  return addMonthsClamped(todayKey, 24);
+}
+
+/** How far ahead the day pickers of Upcoming (month calendar, week strip, next week) let the user jump: today + 3 months. */
+export const UPCOMING_JUMP_MONTHS = 3;
+
+/** Last day a jump may target; later days are locked (scrolling the list by hand still loads up to `upcomingLimit`). */
+export function upcomingJumpLimit(todayKey: string): string {
+  return addMonthsClamped(todayKey, UPCOMING_JUMP_MONTHS);
 }
 
 export interface DayWindow {

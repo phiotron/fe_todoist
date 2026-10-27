@@ -167,6 +167,190 @@ describe('overlays', () => {
     expect(SNACKBAR_DURATION_MS).toBe(5000);
   });
 
+  it('a newer toast waits for the one on screen (an error never wipes a toast with an action), then shows', async () => {
+    jest.useFakeTimers();
+    function Two() {
+      const snackbar = useSnackbar();
+      return (
+        <Pressable
+          testID="two"
+          onPress={() => {
+            snackbar.show({ message: 'first', actionLabel: 'Undo', onAction: () => undefined });
+            snackbar.show({ message: 'second', tone: 'error' });
+          }}
+        >
+          <Text>go</Text>
+        </Pressable>
+      );
+    }
+    await render(
+      <SnackbarProvider>
+        <Two />
+      </SnackbarProvider>,
+    );
+
+    await fireEvent.press(screen.getByTestId('two'));
+    expect(screen.getByTestId('snackbar')).toHaveTextContent(/first/);
+    expect(screen.getByTestId('snackbar-action')).toBeOnTheScreen();
+    await act(async () => {
+      jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+    });
+    expect(screen.getByTestId('snackbar')).toHaveTextContent(/second/);
+    await act(async () => {
+      jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+    });
+    expect(screen.queryByTestId('snackbar')).toBeNull();
+  });
+
+  it('a newer success toast with an action REPLACES the one on screen: its Undo is the newest action', async () => {
+    jest.useFakeTimers();
+    const first = jest.fn();
+    const second = jest.fn();
+    function Seq() {
+      const snackbar = useSnackbar();
+      return (
+        <>
+          <Pressable testID="a" onPress={() => snackbar.show({ message: 'one', actionLabel: 'Undo', onAction: first })} />
+          <Pressable testID="b" onPress={() => snackbar.show({ message: 'two', actionLabel: 'Undo', onAction: second })} />
+        </>
+      );
+    }
+    await render(
+      <SnackbarProvider>
+        <Seq />
+      </SnackbarProvider>,
+    );
+
+    await fireEvent.press(screen.getByTestId('a'));
+    await fireEvent.press(screen.getByTestId('b'));
+    expect(screen.getByTestId('snackbar')).toHaveTextContent(/two/);
+    await fireEvent.press(screen.getByTestId('snackbar-action'));
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('snackbar')).toBeNull();
+  });
+
+  it('error toasts queue without duplicates and the queue is capped at 3', async () => {
+    jest.useFakeTimers();
+    function Spam() {
+      const snackbar = useSnackbar();
+      return (
+        <>
+          <Pressable
+            testID="same"
+            onPress={() => {
+              snackbar.show({ message: 'Undo toast', actionLabel: 'Undo', onAction: () => undefined });
+              for (let i = 0; i < 6; i += 1) snackbar.show({ message: 'boom', tone: 'error' });
+            }}
+          />
+          <Pressable
+            testID="many"
+            onPress={() => {
+              snackbar.show({ message: 'Undo toast', actionLabel: 'Undo', onAction: () => undefined });
+              for (let i = 0; i < 6; i += 1) snackbar.show({ message: `e${i}`, tone: 'error' });
+            }}
+          />
+        </>
+      );
+    }
+    await render(
+      <SnackbarProvider>
+        <Spam />
+      </SnackbarProvider>,
+    );
+
+    await fireEvent.press(screen.getByTestId('same'));
+    await act(async () => {
+      jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+    });
+    expect(screen.getByTestId('snackbar')).toHaveTextContent(/boom/);
+    await act(async () => {
+      jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+    });
+    expect(screen.queryByTestId('snackbar')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('many'));
+    for (const expected of [/e0/, /e1/, /e2/]) {
+      await act(async () => {
+        jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+      });
+      expect(screen.getByTestId('snackbar')).toHaveTextContent(expected);
+    }
+    await act(async () => {
+      jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+    });
+    expect(screen.queryByTestId('snackbar')).toBeNull();
+  });
+
+  /** Runs `steps` (show calls) in one press, then lists what each 5 s window shows (null = nothing). */
+  async function windows(steps: (show: ReturnType<typeof useSnackbar>['show']) => void, count: number) {
+    jest.useFakeTimers();
+    function Run() {
+      const snackbar = useSnackbar();
+      return <Pressable testID="run" onPress={() => steps(snackbar.show)} />;
+    }
+    await render(
+      <SnackbarProvider>
+        <Run />
+      </SnackbarProvider>,
+    );
+    await fireEvent.press(screen.getByTestId('run'));
+    const seen: Array<string | null> = [];
+    for (let i = 0; i < count; i += 1) {
+      const toast = screen.queryByTestId('snackbar');
+      seen.push(toast ? toast.props.children[1].props.children : null);
+      await act(async () => {
+        jest.advanceTimersByTime(SNACKBAR_DURATION_MS);
+      });
+    }
+    return { seen, action: screen.queryByTestId('snackbar-action') };
+  }
+  const undo = { actionLabel: 'Undo', onAction: () => undefined };
+
+  it('a plain toast (no action) does not wipe a toast with an Undo: it waits (duplicate / detail-screen scenario)', async () => {
+    const { seen } = await windows((show) => {
+      show({ message: 'Đã hoàn thành', ...undo });
+      show({ message: 'Đã nhân bản' });
+    }, 3);
+    expect(seen).toEqual(['Đã hoàn thành', 'Đã nhân bản', null]);
+  });
+
+  it('a plain toast replaces a plain toast', async () => {
+    const { seen } = await windows((show) => {
+      show({ message: 'a' });
+      show({ message: 'b' });
+    }, 2);
+    expect(seen).toEqual(['b', null]);
+  });
+
+  it('an error on screen goes back to the front of the line when a toast with an Undo arrives', async () => {
+    const { seen } = await windows((show) => {
+      show({ message: 'boom', tone: 'error' });
+      show({ message: 'Undo toast', ...undo });
+    }, 3);
+    expect(seen).toEqual(['Undo toast', 'boom', null]);
+  });
+
+  it('the re-queued error respects the cap of 3 waiting toasts', async () => {
+    const { seen } = await windows((show) => {
+      show({ message: 'e0', tone: 'error' });
+      for (const m of ['e1', 'e2', 'e3']) show({ message: m, tone: 'error' });
+      show({ message: 'Undo toast', ...undo });
+    }, 5);
+    expect(seen).toEqual(['Undo toast', 'e1', 'e2', 'e3', null]);
+  });
+
+  it('a repeated toast is dropped against the whole queue and the tone counts: [A,B] then A is not [A,B,A]', async () => {
+    const { seen } = await windows((show) => {
+      show({ message: 'Undo toast', ...undo });
+      show({ message: 'A', tone: 'error' });
+      show({ message: 'B', tone: 'error' });
+      show({ message: 'A', tone: 'error' });
+      show({ message: 'B' });
+    }, 5);
+    expect(seen).toEqual(['Undo toast', 'A', 'B', 'B', null]);
+  });
+
   it('useSnackbar without a provider is a harmless no-op', async () => {
     await render(<Trigger onAction={jest.fn()} />);
     await fireEvent.press(screen.getByTestId('trigger'));

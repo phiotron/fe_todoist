@@ -99,16 +99,13 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
       icon: 'copy',
       requiresOnline: true,
       onPress: () =>
-        duplicate.mutate(
-          { taskId, idempotencyKey: duplicateKeys.keyFor({ duplicate: taskId }) },
-          {
-            onSuccess: () => {
-              duplicateKeys.reset();
-              snackbar.show({ message: t('taskDetail.duplicated') });
-            },
-            onError: onActionError,
-          },
-        ),
+        // mutateAsync: per-call mutate callbacks are dropped when this screen unmounts or a later mutate replaces them.
+        void duplicate
+          .mutateAsync({ taskId, idempotencyKey: duplicateKeys.keyFor({ duplicate: taskId }) })
+          .then(() => {
+            duplicateKeys.reset();
+            snackbar.show({ message: t('taskDetail.duplicated') });
+          }, onActionError),
     },
     {
       key: 'toggle-completed',
@@ -181,7 +178,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
             checked={completed}
             label={completed ? t('taskDetail.reopen') : t('taskDetail.complete')}
             disabled={access.archived || !online}
-            onPress={() => (completed ? reopen.mutate({ taskId }, { onError: onActionError }) : complete(taskId, { onError: onActionError }))}
+            onPress={() => (completed ? void reopen.mutateAsync({ taskId }).catch(onActionError) : complete(taskId, { onError: onActionError }))}
           />
           <TextInput
             testID="task-content"
