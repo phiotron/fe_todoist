@@ -17,6 +17,7 @@ import { ScheduleSheet } from '../schedule/ScheduleSheet';
 import { DEFAULT_PRIORITY } from './priority';
 import { PriorityMenu } from './PriorityMenu';
 import { MAX_BATCH_TASKS, useTaskSelection } from './selection';
+import { SelectionLabelsAction } from './SelectionLabelsAction';
 import { useCompleteWithUndo, useTaskBatch } from './useTaskActions';
 
 type Sheet = 'none' | 'schedule' | 'priority' | 'move' | 'delete';
@@ -70,6 +71,22 @@ export function SelectionBar() {
       : errorMessage;
   const inactive = taskIds.length === 0 || overLimit || !online || batch.isPending;
 
+  const renderAction = (action: BarAction) => (
+    <Pressable
+      key={action.key}
+      testID={`selection-${action.key}`}
+      accessibilityRole="button"
+      accessibilityLabel={labels[action.key]}
+      accessibilityState={{ disabled: inactive }}
+      disabled={inactive}
+      onPress={action.onPress}
+      style={[styles.action, inactive && styles.inactive]}
+    >
+      <Feather name={action.icon} size={size.icon} color={action.color} />
+      <Text style={[type.caption, { color: action.color }]}>{labels[action.key]}</Text>
+    </Pressable>
+  );
+
   return (
     <>
       <View style={[styles.topBar, { paddingTop: top + 4 }]}>
@@ -81,21 +98,9 @@ export function SelectionBar() {
       <View style={[styles.bottomBar, { paddingBottom: 8 + insets.bottom }]}>
         <ErrorText message={message} testID="selection-error" />
         <View style={styles.actions}>
-          {actions.map((action) => (
-            <Pressable
-              key={action.key}
-              testID={`selection-${action.key}`}
-              accessibilityRole="button"
-              accessibilityLabel={labels[action.key]}
-              accessibilityState={{ disabled: inactive }}
-              disabled={inactive}
-              onPress={action.onPress}
-              style={[styles.action, inactive && styles.inactive]}
-            >
-              <Feather name={action.icon} size={size.icon} color={action.color} />
-              <Text style={[type.caption, { color: action.color }]}>{labels[action.key]}</Text>
-            </Pressable>
-          ))}
+          {actions.slice(0, 3).map(renderAction)}
+          <SelectionLabelsAction taskIds={taskIds} onDone={done} />
+          {actions.slice(3).map(renderAction)}
         </View>
       </View>
       <ScheduleSheet
