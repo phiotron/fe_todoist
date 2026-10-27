@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import type { Task } from '../../../api/models';
-import { palette, type } from '../../../theme';
+import { type, useThemedStyles } from '../../../theme';
+import type { Palette } from '../../../theme/palette';
 import { projectDisplayName } from '../../projects/appearance';
 import { ProjectIcon } from '../../projects/ProjectIcon';
 import { useProjects } from '../../projects/useProjects';
@@ -9,6 +10,7 @@ import { useSections } from '../../sections/useSections';
 
 /** Top bar of M-TaskDetail: "# Project / Section" (tap = move the task, Task 27). */
 export function Breadcrumb({ task, onPress }: { task: Pick<Task, 'projectId' | 'sectionId' | 'projectName'>; onPress?: () => void }) {
+  const styles = useThemedStyles(createBreadcrumbStyles);
   const { t } = useTranslation();
   const { byId } = useProjects();
   const project = byId.get(task.projectId);
@@ -33,7 +35,9 @@ export function Breadcrumb({ task, onPress }: { task: Pick<Task, 'projectId' | '
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 },
-  text: { ...type.meta, color: palette.mute, flexShrink: 1 },
-});
+function createBreadcrumbStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 },
+    text: { ...type.meta, color: palette.mute, flexShrink: 1 },
+  });
+}

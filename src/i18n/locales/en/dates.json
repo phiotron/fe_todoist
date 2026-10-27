@@ -1,0 +1,36 @@
+{
+  "dates": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "weekday": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "weekdayShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "monthTitle": "{{month}} {{year}}",
+    "duration": {
+      "minutes": "{{n}} min",
+      "hours": "{{n}} h",
+      "hoursMinutes": "{{h}} h {{m}} min"
+    },
+    "deadline": {
+      "daysLeft": "{{n}} days left",
+      "today": "Deadline today",
+      "overdue": "Deadline passed {{n}} days ago"
+    }
+  }
+}

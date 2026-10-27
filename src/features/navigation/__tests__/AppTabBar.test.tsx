@@ -1,7 +1,11 @@
 import '../../../i18n';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { palette } from '../../../theme';
+import { tokenStore } from '../../../lib/tokenStore';
+import { mockFetch } from '../../../test/http';
+import { renderWithSettings } from '../../../test/renderSettings';
+import { serveSettings } from '../../../test/settingsFixtures';
+import { lightPalette as palette } from '../../../theme';
 import { AppTabBar, type AppTabBarProps } from '../AppTabBar';
 
 function setup(index: number, emitPrevented = false, extraRoutes: { key: string; name: string }[] = []) {
@@ -21,7 +25,17 @@ function setup(index: number, emitPrevented = false, extraRoutes: { key: string;
   return { emitter, navigateToTab, props: { state, emitter, navigateToTab, descriptors: {}, insets: { top: 0, bottom: 0, left: 0, right: 0 } } as unknown as AppTabBarProps };
 }
 
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() } }));
+
+// M3: the bar reads the account's navTabs, so it renders inside the settings providers (default tabs = the M1 four).
+const render = (ui: Parameters<typeof renderWithSettings>[0]) => renderWithSettings(ui);
+
 describe('AppTabBar', () => {
+  beforeEach(async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    serveSettings(mockFetch());
+  });
+
   it('draws the four tabs with their labels; the current one is selected and accent coloured', async () => {
     const { props } = setup(1);
     await render(<AppTabBar {...props} />);

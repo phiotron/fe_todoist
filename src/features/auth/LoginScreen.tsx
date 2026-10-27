@@ -3,12 +3,13 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { KeyboardScreen } from '../../components/KeyboardScreen';
-import { palette } from '../../theme';
+import { useTheme } from '../../theme';
 import { useIsOnline } from '../../lib/useIsOnline';
+import { AuthLogo } from './AuthLogo';
 import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
 import { useSession } from './session';
-import { authStyles as styles } from './styles';
+import { useAuthStyles } from './styles';
 import { hasErrors, validateLogin, type LoginValues } from './validation';
 
 /** Leaves the auth screens for good: drop them from the stack so Android Back cannot return here. */
@@ -17,8 +18,15 @@ export function goHomeAfterAuth() {
   router.replace('/');
 }
 
+/** Opens the code screen after a sign-in answered 401 two-factor-required (password; M5 adds Google). */
+export function goToTwoFactor() {
+  router.push('/two-factor');
+}
+
 export function LoginScreen() {
   const { t } = useTranslation();
+  const styles = useAuthStyles();
+  const { palette } = useTheme();
   const { signIn, expired } = useSession();
   const isOnline = useIsOnline();
   const [values, setValues] = useState<LoginValues>({ email: '', password: '' });
@@ -40,7 +48,14 @@ export function LoginScreen() {
     setErrors({ fields: {} });
     setSubmitting(true);
     try {
-      await signIn({ email: values.email.trim(), password: values.password });
+      const outcome = await signIn({ email: values.email.trim(), password: values.password });
+      if (outcome === 'twoFactorRequired') {
+        // The password was right; the code screen finishes the sign-in. Release the lock so Back lands on a usable form.
+        setSubmitting(false);
+        inFlight.current = false;
+        goToTwoFactor();
+        return;
+      }
       // On success keep the lock and the busy state until navigation unmounts this screen.
       goHomeAfterAuth();
     } catch (error) {
@@ -52,6 +67,7 @@ export function LoginScreen() {
 
   return (
     <KeyboardScreen contentStyle={styles.screen}>
+      <AuthLogo />
       <Text style={styles.title}>{t('auth.login.title')}</Text>
       {expired ? (
         <Text
@@ -115,6 +131,14 @@ export function LoginScreen() {
         ) : (
           <Text style={styles.buttonText}>{t('auth.login.submit')}</Text>
         )}
+      </Pressable>
+      <Pressable
+        testID="login-go-forgot"
+        accessibilityRole="link"
+        disabled={submitting}
+        onPress={() => router.push('/forgot-password')}
+      >
+        <Text style={styles.ghostLink}>{t('auth.login.forgotPassword')}</Text>
       </Pressable>
       <Pressable
         testID="login-go-register"

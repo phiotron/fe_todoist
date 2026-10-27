@@ -1,4 +1,5 @@
 import i18n from '../../i18n';
+import { formatDate, formatTime } from './displayFormat';
 import { addDays, isoWeekday, type DeadlineLabel, type DueLabel } from './index';
 
 const WEEKDAY_NAMES: ReadonlyArray<() => string> = [
@@ -30,10 +31,9 @@ export function weekdayShort(dateKey: string): string {
   return WEEKDAY_SHORT[isoWeekday(dateKey) - 1]();
 }
 
-/** "25/10", or "25/10/2027" when asked for the year. */
+/** "25/10" or "10/25" (day/month or month/day setting), with the year when asked. */
 export function formatDateKey(dateKey: string, withYear: boolean): string {
-  const [year, month, day] = dateKey.split('-');
-  return withYear ? `${day}/${month}/${year}` : `${day}/${month}`;
+  return formatDate(dateKey, withYear);
 }
 
 /** "Tháng 10, 2026" (week strip, calendar). */
@@ -61,7 +61,8 @@ export function formatDueLabel(label: DueLabel): string {
       day = formatDateKey(label.dateKey, !label.sameYear);
   }
   if (!label.time) return day;
-  return label.endTime ? `${day} ${label.time}–${label.endTime}` : `${day} ${label.time}`;
+  const start = formatTime(label.time);
+  return label.endTime ? `${day} ${start}–${formatTime(label.endTime)}` : `${day} ${start}`;
 }
 
 /** Upcoming day header, e.g. "24/10 · Ngày mai · Thứ Bảy" or "25/10 · Chủ nhật". */

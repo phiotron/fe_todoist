@@ -8,12 +8,14 @@ import { describeError } from '../../api/describeError';
 import { Chip } from '../../components/Chip';
 import { ErrorText } from '../../components/ErrorText';
 import { describeDue } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDueLabel } from '../../lib/dates/format';
 import { useIdempotencyKeys } from '../../lib/idempotency';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { useNow } from '../../lib/useNow';
 import { useSingleFlight } from '../../lib/useSingleFlight';
-import { palette, radius, shadow, size, type } from '../../theme';
+import { radius, shadow, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import type { TextInputHandle } from '../auth/AuthTextField';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { LabelChip } from '../labels/LabelChip';
@@ -38,6 +40,10 @@ type Overlay = 'none' | 'date' | 'priority' | 'project';
  * stays open after a successful add; an error keeps everything and a retry reuses the Idempotency-Key.
  */
 export function QuickAddSheet({ params }: { params: QuickAddParams }) {
+  const styles = useThemedStyles(createQuickAddSheetStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -150,7 +156,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
             large
             icon="calendar"
             label={dueLabel ? formatDueLabel(dueLabel) : t('quickAdd.date')}
-            color={dueLabel ? dueTone(due, now, timeZone) : undefined}
+            color={dueLabel ? dueTone(due, now, timeZone, palette) : undefined}
             onPress={() => show('date')}
             testID="quick-add-date"
           />
@@ -158,7 +164,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
             large
             icon="flag"
             label={priority < DEFAULT_PRIORITY ? `P${priority}` : t('quickAdd.priority')}
-            color={priority < DEFAULT_PRIORITY ? priorityColor(priority) : undefined}
+            color={priority < DEFAULT_PRIORITY ? priorityColor(priority, palette) : undefined}
             onPress={() => show('priority')}
             testID="quick-add-priority"
           />
@@ -226,34 +232,36 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end' },
-  scrim: { backgroundColor: palette.scrim },
-  sheet: {
-    backgroundColor: palette.bg,
-    borderTopLeftRadius: radius.sheet,
-    borderTopRightRadius: radius.sheet,
-    paddingTop: 12,
-    paddingHorizontal: 20,
-    ...shadow,
-  },
-  grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: palette.line2, marginBottom: 14 },
-  name: { ...type.composerTitle, color: palette.ink, paddingVertical: 2 },
-  description: { ...type.body, color: palette.ink, height: 40, paddingVertical: 0 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10, marginBottom: 6 },
-  notice: { ...type.meta, color: palette.ok, marginBottom: 4 },
-  rule: { height: 1, backgroundColor: palette.line, marginHorizontal: -20, marginTop: 8, marginBottom: 10 },
-  bottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  flex: { flex: 1 },
-  project: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: size.touch },
-  projectText: { color: palette.ink, flexShrink: 1 },
-  send: {
-    width: size.input,
-    height: size.input,
-    borderRadius: size.input / 2,
-    backgroundColor: palette.acc,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sendInactive: { opacity: 0.4 },
-});
+function createQuickAddSheetStyles(palette: Palette) {
+  return StyleSheet.create({
+    root: { flex: 1, justifyContent: 'flex-end' },
+    scrim: { backgroundColor: palette.scrim },
+    sheet: {
+      backgroundColor: palette.bg,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+      paddingTop: 12,
+      paddingHorizontal: 20,
+      ...shadow,
+    },
+    grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: palette.line2, marginBottom: 14 },
+    name: { ...type.composerTitle, color: palette.ink, paddingVertical: 2 },
+    description: { ...type.body, color: palette.ink, height: 40, paddingVertical: 0 },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10, marginBottom: 6 },
+    notice: { ...type.meta, color: palette.ok, marginBottom: 4 },
+    rule: { height: 1, backgroundColor: palette.line, marginHorizontal: -20, marginTop: 8, marginBottom: 10 },
+    bottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    flex: { flex: 1 },
+    project: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: size.touch },
+    projectText: { color: palette.ink, flexShrink: 1 },
+    send: {
+      width: size.input,
+      height: size.input,
+      borderRadius: size.input / 2,
+      backgroundColor: palette.acc,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    sendInactive: { opacity: 0.4 },
+  });
+}

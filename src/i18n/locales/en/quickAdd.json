@@ -1,0 +1,13 @@
+{
+  "quickAdd": {
+    "placeholder": "Task name",
+    "subtaskPlaceholder": "Sub-task name",
+    "description": "Description",
+    "date": "Date",
+    "priority": "Priority",
+    "send": "Add task",
+    "added": "Added to {{name}}",
+    "project": "Choose a project",
+    "closeSheet": "Close"
+  }
+}

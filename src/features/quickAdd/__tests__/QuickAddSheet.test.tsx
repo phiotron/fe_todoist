@@ -9,7 +9,7 @@ import { jsonResponse, problem } from '../../../test/http';
 import { inboxProject, makeProject, makeSection, makeTask } from '../../../test/m1Fixtures';
 import { goOffline, goOnline } from '../../../test/network';
 import { renderSignedIn } from '../../../test/screen';
-import { palette } from '../../../theme';
+import { lightPalette as palette } from '../../../theme';
 import { QuickAddSheet } from '../QuickAddSheet';
 import type { QuickAddParams } from '../quickAddTarget';
 

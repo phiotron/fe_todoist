@@ -6,7 +6,8 @@ import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatli
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { afterIdAt, moveItem } from '../lib/reorder';
 import { useIsOnline } from '../lib/useIsOnline';
-import { palette, radius, shadow, size, type } from '../theme';
+import { radius, shadow, size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import { AppButton } from './AppButton';
 import { ErrorText } from './ErrorText';
 import { IconButton } from './IconButton';
@@ -41,6 +42,8 @@ export function ReorderModal({
   error,
   testID = 'reorder',
 }: ReorderModalProps) {
+  const styles = useThemedStyles(createReorderModalStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const online = useIsOnline();
   const [order, setOrder] = useState<ReorderItem[]>(() => [...items]);
@@ -119,21 +122,23 @@ export function ReorderModal({
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1 },
-  backdrop: { flex: 1, backgroundColor: palette.scrimLight, justifyContent: 'center', padding: 16 },
-  card: { backgroundColor: palette.bg, borderRadius: radius.dialog, padding: 16, maxHeight: '90%', ...shadow },
-  title: { ...type.dialogTitle, color: palette.ink },
-  hint: { ...type.meta, color: palette.mute, marginVertical: 6 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: size.listRow,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-    backgroundColor: palette.bg,
-  },
-  rowActive: { backgroundColor: palette.bg2 },
-  handle: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center' },
-  label: { ...type.body, flex: 1, color: palette.ink },
-});
+function createReorderModalStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1 },
+    backdrop: { flex: 1, backgroundColor: palette.scrimLight, justifyContent: 'center', padding: 16 },
+    card: { backgroundColor: palette.bg, borderRadius: radius.dialog, padding: 16, maxHeight: '90%', ...shadow },
+    title: { ...type.dialogTitle, color: palette.ink },
+    hint: { ...type.meta, color: palette.mute, marginVertical: 6 },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: size.listRow,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+      backgroundColor: palette.bg,
+    },
+    rowActive: { backgroundColor: palette.bg2 },
+    handle: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center' },
+    label: { ...type.body, flex: 1, color: palette.ink },
+  });
+}

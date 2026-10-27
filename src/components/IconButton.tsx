@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useIsOnline } from '../lib/useIsOnline';
-import { palette, radius, size } from '../theme';
+import { radius, size, useTheme, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 
 export type IconName = ComponentProps<typeof Feather>['name'];
 
@@ -26,9 +27,11 @@ export function IconButton({
   testID,
   disabled = false,
   requiresOnline = false,
-  color = palette.ink2,
+  color,
   iconSize = size.icon,
 }: IconButtonProps) {
+  const styles = useThemedStyles(createIconButtonStyles);
+  const { palette } = useTheme();
   const online = useIsOnline();
   const inactive = disabled || (requiresOnline && !online);
   return (
@@ -41,12 +44,14 @@ export function IconButton({
       onPress={onPress}
       style={[styles.button, inactive && styles.inactive]}
     >
-      <Feather name={icon} size={iconSize} color={color} />
+      <Feather name={icon} size={iconSize} color={color ?? palette.ink2} />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  button: { width: size.touch, height: size.touch, borderRadius: radius.card, alignItems: 'center', justifyContent: 'center' },
-  inactive: { opacity: 0.4 },
-});
+function createIconButtonStyles(palette: Palette) {
+  return StyleSheet.create({
+    button: { width: size.touch, height: size.touch, borderRadius: radius.card, alignItems: 'center', justifyContent: 'center' },
+    inactive: { opacity: 0.4 },
+  });
+}

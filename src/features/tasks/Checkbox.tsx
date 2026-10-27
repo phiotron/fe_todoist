@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet } from 'react-native';
-import { palette, size } from '../../theme';
+import { size, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { priorityColor, prioritySoft } from './priority';
 
 interface CheckboxProps {
@@ -16,6 +17,8 @@ interface CheckboxProps {
 
 /** .chk: round, ring in the priority colour + matching soft fill; done = accent fill + white check; 44 touch area. */
 export function Checkbox({ priority, checked, onPress, label, disabled = false, large = false, testID }: CheckboxProps) {
+  const styles = useThemedStyles(createCheckboxStyles);
+  const { palette } = useTheme();
   const dimension = large ? size.checkboxLarge : size.checkbox;
   return (
     <Pressable
@@ -32,8 +35,8 @@ export function Checkbox({ priority, checked, onPress, label, disabled = false, 
           width: dimension,
           height: dimension,
           borderRadius: dimension / 2,
-          borderColor: checked ? palette.acc : priorityColor(priority),
-          backgroundColor: checked ? palette.acc : prioritySoft(priority),
+          borderColor: checked ? palette.acc : priorityColor(priority, palette),
+          backgroundColor: checked ? palette.acc : prioritySoft(priority, palette),
         },
         disabled && !checked && styles.disabled,
       ]}
@@ -43,7 +46,9 @@ export function Checkbox({ priority, checked, onPress, label, disabled = false, 
   );
 }
 
-const styles = StyleSheet.create({
-  box: { borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  disabled: { opacity: 0.6 },
-});
+function createCheckboxStyles(palette: Palette) {
+  return StyleSheet.create({
+    box: { borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+    disabled: { opacity: 0.6 },
+  });
+}

@@ -1,6 +1,7 @@
 import type { ComponentRef, Ref } from 'react';
 import { Text, TextInput, View, type TextInputProps } from 'react-native';
-import { authStyles as styles } from './styles';
+import { useTheme } from '../../theme';
+import { useAuthStyles } from './styles';
 
 /** Instance type of a TextInput ref (focus, blur…). */
 export type TextInputHandle = ComponentRef<typeof TextInput>;
@@ -14,6 +15,8 @@ interface AuthTextFieldProps extends Omit<TextInputProps, 'style' | 'testID'> {
 }
 
 export function AuthTextField({ label, testID, error, ref, ...inputProps }: AuthTextFieldProps) {
+  const styles = useAuthStyles();
+  const { palette } = useTheme();
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -21,6 +24,7 @@ export function AuthTextField({ label, testID, error, ref, ...inputProps }: Auth
         ref={ref}
         accessibilityLabel={label}
         testID={testID}
+        placeholderTextColor={palette.mute}
         style={[styles.input, error ? styles.inputError : null]}
         {...inputProps}
       />

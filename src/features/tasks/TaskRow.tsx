@@ -5,12 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Task } from '../../api/models';
+import type { IconName } from '../../components/IconButton';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { gutter, palette, size, type } from '../../theme';
+import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { Checkbox } from './Checkbox';
 import { useTaskSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
 import { TaskMeta } from './TaskMeta';
+import { useDeleteTaskSwipe } from './useDeleteTaskSwipe';
 
 const INDENT = 24;
 
@@ -32,11 +35,21 @@ export interface TaskRowProps {
   showCompletedTime?: boolean;
 }
 
-const SWIPE_LOOK: Partial<Record<SwipeAction, { icon: 'check-circle' | 'calendar' | 'check-square'; color: string }>> = {
-  COMPLETE: { icon: 'check-circle', color: palette.ok },
-  SCHEDULE: { icon: 'calendar', color: palette.vio },
-  SELECT: { icon: 'check-square', color: palette.acc },
-};
+interface SwipeLook {
+  icon: IconName;
+  color: string;
+  /** Icon colour on the panel; defaults to the on-accent colour. */
+  iconColor?: string;
+}
+
+function swipeLookFor(palette: Palette): Partial<Record<SwipeAction, SwipeLook>> {
+  return {
+    COMPLETE: { icon: 'check-circle', color: palette.ok },
+    SCHEDULE: { icon: 'calendar', color: palette.vio },
+    SELECT: { icon: 'check-square', color: palette.acc },
+    DELETE: { icon: 'trash-2', color: palette.warn, iconColor: palette.onwarn },
+  };
+}
 
 /** .task row: checkbox, 16/500 title, one line of description, meta; swipe actions; long press = multi-select. */
 export function TaskRow({
@@ -51,10 +64,13 @@ export function TaskRow({
   readOnly = false,
   showCompletedTime = false,
 }: TaskRowProps) {
+  const styles = useThemedStyles(createTaskRowStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const online = useIsOnline();
   const selection = useTaskSelection();
   const swipe = useSwipeSettings();
+  const { requestDelete, dialog } = useDeleteTaskSwipe();
   const swipeRef = useRef<SwipeableMethods>(null);
   const completed = task.completedAt !== null;
   const selecting = selection?.active === true;
@@ -66,6 +82,8 @@ export function TaskRow({
     if (action === 'COMPLETE' && !completed) onToggle(task);
     else if (action === 'SCHEDULE') onSchedule?.(task);
     else if (action === 'SELECT') selection?.start(task.id);
+    // Not deleted here: this only opens the confirmation (BR-11).
+    else if (action === 'DELETE') requestDelete({ id: task.id, content: task.content, subtaskCount: task.subtaskCount });
   }
 
   const row = (
@@ -101,15 +119,15 @@ export function TaskRow({
 
   if (readOnly || completed || selecting || !online) return row;
   const renderPanel = (action: SwipeAction) => {
-    const look = SWIPE_LOOK[action];
+    const look = swipeLookFor(palette)[action];
     if (!look) return null;
     return (
       <View style={[styles.panel, { backgroundColor: look.color }]}>
-        <Feather name={look.icon} size={size.iconLarge} color={palette.onacc} />
+        <Feather name={look.icon} size={size.iconLarge} color={look.iconColor ?? palette.onacc} />
       </View>
     );
   };
-  return (
+  const swipeable = (
     <Swipeable
       ref={swipeRef}
       testID={`task-swipe-${task.id}`}
@@ -126,23 +144,31 @@ export function TaskRow({
       {row}
     </Swipeable>
   );
+  return (
+    <>
+      {swipeable}
+      {dialog}
+    </>
+  );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 12,
-    paddingRight: gutter,
-    backgroundColor: palette.bg,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  selected: { backgroundColor: palette.soft },
-  body: { flex: 1 },
-  title: { color: palette.ink },
-  done: { color: palette.mute, textDecorationLine: 'line-through' },
-  description: { ...type.meta, color: palette.mute, marginTop: 2 },
-  panel: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
-});
+function createTaskRowStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      paddingVertical: 12,
+      paddingRight: gutter,
+      backgroundColor: palette.bg,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    selected: { backgroundColor: palette.soft },
+    body: { flex: 1 },
+    title: { color: palette.ink },
+    done: { color: palette.mute, textDecorationLine: 'line-through' },
+    description: { ...type.meta, color: palette.mute, marginTop: 2 },
+    panel: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
+  });
+}

@@ -1,7 +1,7 @@
 import '../../i18n';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { palette, size } from '../../theme';
+import { lightPalette as palette, size } from '../../theme';
 import { goOffline, goOnline } from '../../test/network';
 import { AppButton } from '../AppButton';
 import { Avatar, initialsOf } from '../Avatar';

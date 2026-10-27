@@ -17,7 +17,8 @@ import { QueryStateView } from '../../components/QueryStateView';
 import { ReorderModal } from '../../components/ReorderModal';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { SubHeader } from '../../components/SubHeader';
-import { gutter, palette, radius, type } from '../../theme';
+import { gutter, radius, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { projectViewKey } from '../display/displayRules';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
@@ -58,6 +59,7 @@ function ProjectBody({
   onLeave: () => void;
   display: ViewDisplay;
 }) {
+  const styles = useThemedStyles(createProjectScreenStyles);
   const { t } = useTranslation();
   const selection = useTaskSelection();
   const readOnly = isProjectReadOnly(project);
@@ -206,6 +208,8 @@ function ProjectBody({
 
 /** Waits for the saved Display, so the open tasks are fetched once with the right parameters (Quyết định 14). */
 function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: boolean; onLeave: () => void }) {
+  const styles = useThemedStyles(createProjectScreenStyles);
+  const { palette } = useTheme();
   const display = useViewDisplay(projectViewKey(project.id));
   if (!display.ready) {
     return <ActivityIndicator testID="project-display-loading" color={palette.acc} style={styles.loading} />;
@@ -215,6 +219,7 @@ function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: 
 
 /** Project / Inbox screen (spec 9.2 "Màn dự án / Inbox (List)"): header, menu ⋯, sections, Completed tasks, read-only when archived. */
 export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
+  const styles = useThemedStyles(createProjectScreenStyles);
   const queryClient = useQueryClient();
   const projectQuery = useProject(projectId);
 
@@ -241,22 +246,24 @@ export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  pad: { paddingHorizontal: gutter },
-  loading: { padding: 24 },
-  description: { ...type.bodySmall, color: palette.mute, paddingHorizontal: gutter, paddingBottom: 8 },
-  banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginHorizontal: gutter,
-    marginBottom: 8,
-    paddingVertical: 8,
-    paddingLeft: 12,
-    paddingRight: 8,
-    borderRadius: radius.control,
-    backgroundColor: palette.soft,
-  },
-  bannerText: { flex: 1, color: palette.acc2 },
-});
+function createProjectScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    pad: { paddingHorizontal: gutter },
+    loading: { padding: 24 },
+    description: { ...type.bodySmall, color: palette.mute, paddingHorizontal: gutter, paddingBottom: 8 },
+    banner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginHorizontal: gutter,
+      marginBottom: 8,
+      paddingVertical: 8,
+      paddingLeft: 12,
+      paddingRight: 8,
+      borderRadius: radius.control,
+      backgroundColor: palette.soft,
+    },
+    bannerText: { flex: 1, color: palette.acc2 },
+  });
+}

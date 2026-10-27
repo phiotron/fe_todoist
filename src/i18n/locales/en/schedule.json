@@ -1,0 +1,25 @@
+{
+  "schedule": {
+    "title": "Due date",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeekend": "This weekend",
+    "nextWeek": "Next week",
+    "noDate": "No date",
+    "time": "Time",
+    "none": "None",
+    "removeTime": "Remove time",
+    "duration": "Duration",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "priority": {
+      "title": "Priority",
+      "option": "Priority {{n}}"
+    },
+    "picker": {
+      "title": "Choose a project",
+      "noSection": "No section",
+      "back": "Back to the project list"
+    }
+  }
+}

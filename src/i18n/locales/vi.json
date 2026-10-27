@@ -8,7 +8,8 @@
     "login": {
       "title": "Đăng nhập",
       "submit": "Đăng nhập",
-      "goToRegister": "Chưa có tài khoản? Đăng ký"
+      "goToRegister": "Chưa có tài khoản? Đăng ký",
+      "forgotPassword": "Quên mật khẩu?"
     },
     "register": {
       "title": "Tạo tài khoản",
@@ -21,6 +22,7 @@
       "emailTooLong": "Email tối đa 254 ký tự",
       "passwordRequired": "Vui lòng nhập mật khẩu",
       "passwordLength": "Mật khẩu phải từ 8 đến 72 ký tự",
+      "passwordBytes": "Mật khẩu tối đa 72 byte — chữ có dấu và biểu tượng chiếm nhiều hơn 1 byte",
       "displayNameRequired": "Vui lòng nhập tên hiển thị",
       "displayNameTooLong": "Tên hiển thị tối đa 100 ký tự"
     },

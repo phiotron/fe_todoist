@@ -6,7 +6,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Project } from '../../api/models';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { gutter, palette, size, type } from '../../theme';
+import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { projectDisplayName } from '../projects/appearance';
 import { ProjectIcon } from '../projects/ProjectIcon';
 import { useSetProjectFavorite } from '../projects/useProjects';
@@ -26,6 +27,8 @@ interface BrowseProjectRowProps {
 
 /** A project line of M-Browse: arrow, "#" icon in the project colour, name, open-task count; swipe right = favorite. */
 export function BrowseProjectRow({ project, depth = 1, hasChildren = false, collapsed = false, onToggleCollapse, idPrefix }: BrowseProjectRowProps) {
+  const styles = useThemedStyles(createBrowseProjectRowStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const online = useIsOnline();
   const favorite = useSetProjectFavorite();
@@ -88,20 +91,22 @@ export function BrowseProjectRow({ project, depth = 1, hasChildren = false, coll
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 48,
-    paddingRight: gutter,
-    backgroundColor: palette.bg,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  arrow: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center', marginLeft: -12 },
-  arrowSpace: { width: 32 },
-  main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
-  name: { flex: 1, color: palette.ink },
-  count: { ...type.meta, color: palette.mute },
-  panel: { flex: 1, backgroundColor: palette.acc, justifyContent: 'center', paddingHorizontal: 24 },
-});
+function createBrowseProjectRowStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 48,
+      paddingRight: gutter,
+      backgroundColor: palette.bg,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    arrow: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center', marginLeft: -12 },
+    arrowSpace: { width: 32 },
+    main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
+    name: { flex: 1, color: palette.ink },
+    count: { ...type.meta, color: palette.mute },
+    panel: { flex: 1, backgroundColor: palette.acc, justifyContent: 'center', paddingHorizontal: 24 },
+  });
+}

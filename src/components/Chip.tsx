@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { palette, radius, size, type } from '../theme';
+import { radius, size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import type { IconName } from './IconButton';
 
 export interface ChipProps {
@@ -20,6 +21,8 @@ export interface ChipProps {
 
 /** .chip: secondary control (date, priority, project, deadline…). */
 export function Chip({ label, icon, color, selected = false, large = false, onPress, disabled, testID, accessibilityLabel }: ChipProps) {
+  const styles = useThemedStyles(createChipStyles);
+  const { palette } = useTheme();
   const textColor = selected ? palette.acc2 : (color ?? palette.ink2);
   return (
     <Pressable
@@ -45,16 +48,18 @@ export function Chip({ label, icon, color, selected = false, large = false, onPr
   );
 }
 
-const styles = StyleSheet.create({
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: radius.chip,
-    backgroundColor: palette.bg,
-  },
-  selected: { backgroundColor: palette.soft },
-  disabled: { opacity: 0.5 },
-});
+function createChipStyles(palette: Palette) {
+  return StyleSheet.create({
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderRadius: radius.chip,
+      backgroundColor: palette.bg,
+    },
+    selected: { backgroundColor: palette.soft },
+    disabled: { opacity: 0.5 },
+  });
+}

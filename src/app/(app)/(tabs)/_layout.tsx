@@ -10,7 +10,8 @@ import { openQuickAdd } from '../../../features/quickAdd/quickAddTarget';
 import { useUpcomingDay } from '../../../features/views/upcomingDayStore';
 import { dateKeyInZone } from '../../../lib/dates';
 import { useNow } from '../../../lib/useNow';
-import { palette } from '../../../theme';
+import { useTheme, useThemedStyles } from '../../../theme';
+import type { Palette } from '../../../theme/palette';
 
 /** The + button. It owns the clock / pathname / selected-day subscriptions, so their updates do not re-render the navigator. */
 function TabsFab() {
@@ -25,17 +26,23 @@ function TabsFab() {
 }
 
 export default function TabsLayout() {
-  useTranslation(); // screen titles below are translated: re-render when the language changes (rare, unlike the clock).
+  const styles = useThemedStyles(createTabsLayoutStyles);
+  const { palette } = useTheme();
+  const { t } = useTranslation(); // screen titles below are translated: re-render when the language changes (rare, unlike the clock).
   return (
     <View style={styles.fill}>
       <Tabs backBehavior="history" tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.bg } }}>
         {Object.values(TAB_DEFS).map((def) => (
           <Tabs.Screen key={def.key} name={def.route} options={{ title: def.title() }} />
         ))}
+        {/* The pinned project / label / filter is not a fixed key, so it is not in TAB_DEFS. */}
+        <Tabs.Screen name="pinned" options={{ title: t('settings.navigation.pin') }} />
       </Tabs>
       <TabsFab />
     </View>
   );
 }
 
-const styles = StyleSheet.create({ fill: { flex: 1, backgroundColor: palette.bg } });
+function createTabsLayoutStyles(palette: Palette) {
+  return StyleSheet.create({ fill: { flex: 1, backgroundColor: palette.bg } });
+}

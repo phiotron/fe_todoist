@@ -9,9 +9,11 @@ import { ErrorText } from '../../components/ErrorText';
 import { IconButton } from '../../components/IconButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { addDays, dateKeyInZone, dayRange, groupByDueDate, upcomingJumpLimit, weekDays, weekStart } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDayHeader, monthTitle } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
-import { gutter, palette, size, type } from '../../theme';
+import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { UPCOMING_VIEW_KEY } from '../display/displayRules';
@@ -31,6 +33,10 @@ import { useUpcomingDays } from './useUpcomingDays';
 import { WeekStrip } from './WeekStrip';
 
 function UpcomingBody({ display }: { display: ViewDisplay }) {
+  const styles = useThemedStyles(createUpcomingScreenStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  const displayPrefs = useDisplayPrefs();
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -67,7 +73,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
       collapsed: overdueCollapsed,
       onToggle: () => setOverdueCollapsed((value) => !value),
       onReschedule: reschedule.start,
-    });
+    }, palette);
     if (overdue.query.hasNextPage) {
       result.push(
         nodeRow(
@@ -98,7 +104,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
     }
     return result;
     // reschedule.start only opens the sheet; overdue.query is read for hasNextPage / fetchNextPage.
-  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to the target day, loading more pages / windows first while it has not arrived (spec 9.2: infinite list of days, at most 2 years; jumps are limited to 3 months, so only a few windows load here).
   useEffect(() => {
@@ -224,6 +230,8 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
 
 /** Upcoming (M-Upcoming): week strip + one block per day from today on, Overdue with Reschedule at the top. */
 export function UpcomingScreen() {
+  const styles = useThemedStyles(createUpcomingScreenStyles);
+  const { palette } = useTheme();
   const display = useViewDisplay(UPCOMING_VIEW_KEY);
   return (
     <SelectionScope>
@@ -236,12 +244,14 @@ export function UpcomingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  month: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: size.touch, paddingHorizontal: 4 },
-  todayButton: { alignItems: 'flex-end', paddingHorizontal: gutter },
-  add: { paddingHorizontal: gutter },
-  more: { paddingHorizontal: gutter, alignItems: 'flex-start' },
-  error: { paddingHorizontal: gutter },
-  loading: { padding: 24 },
-});
+function createUpcomingScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    month: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: size.touch, paddingHorizontal: 4 },
+    todayButton: { alignItems: 'flex-end', paddingHorizontal: gutter },
+    add: { paddingHorizontal: gutter },
+    more: { paddingHorizontal: gutter, alignItems: 'flex-start' },
+    error: { paddingHorizontal: gutter },
+    loading: { padding: 24 },
+  });
+}

@@ -7,11 +7,45 @@ import {
   useFonts,
 } from '@expo-google-fonts/figtree';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SessionProvider } from '../features/auth/session';
+import { SettingsProvider } from '../features/settings/SettingsProvider';
+import { SettingsThemeProvider } from '../features/settings/SettingsThemeProvider';
 import { persistOptions, queryClient } from '../lib/queryClient';
+import { useTheme } from '../theme';
+
+/**
+ * Status bar icons and every header / tab / sheet background of the navigators follow the active theme (the navigation
+ * theme is built from the design tokens). TODO(Task 10): once expo-system-ui is installed, also call
+ * SystemUI.setBackgroundColorAsync(palette.bg) here so the root window colour follows the theme.
+ */
+function ThemedStack() {
+  const { scheme, palette } = useTheme();
+  const navigationTheme = useMemo(() => {
+    const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: palette.acc,
+        background: palette.bg,
+        card: palette.bg,
+        text: palette.ink,
+        border: palette.line,
+        notification: palette.acc,
+      },
+    };
+  }, [scheme, palette]);
+  return (
+    <NavigationThemeProvider value={navigationTheme}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }} />
+    </NavigationThemeProvider>
+  );
+}
 
 export default function RootLayout() {
   // The keys become the fontFamily names used by src/theme/typography.ts.
@@ -27,13 +61,14 @@ export default function RootLayout() {
   return (
     // Swipe actions, drag-to-reorder and the bottom sheets all need the gesture-handler root.
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={persistOptions}
-      >
+      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <SessionProvider>
-          <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false }} />
+          {/* Renders nothing until the cached theme and language are read (a few ms on start). */}
+          <SettingsProvider>
+            <SettingsThemeProvider>
+              <ThemedStack />
+            </SettingsThemeProvider>
+          </SettingsProvider>
         </SessionProvider>
       </PersistQueryClientProvider>
     </GestureHandlerRootView>

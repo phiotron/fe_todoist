@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, type } from '../theme';
+import { type, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 import { AppButton } from './AppButton';
 import { DialogFrame } from './DialogFrame';
 import { ErrorText } from './ErrorText';
@@ -16,6 +18,8 @@ export interface ConfirmDialogProps {
   busy?: boolean;
   error?: string;
   testID?: string;
+  /** Extra content between the message and the buttons (password / code fields of M3). */
+  children?: ReactNode;
 }
 
 /** BR-11 (M-Confirm): asked before every delete; Cancel never calls the API; the action is red when destructive. */
@@ -30,11 +34,14 @@ export function ConfirmDialog({
   busy = false,
   error,
   testID = 'confirm-dialog',
+  children,
 }: ConfirmDialogProps) {
+  const styles = useThemedStyles(createConfirmDialogStyles);
   const { t } = useTranslation();
   return (
     <DialogFrame visible={visible} title={title} onRequestClose={onCancel} testID={testID}>
       {message ? <Text style={styles.message}>{message}</Text> : null}
+      {children}
       <ErrorText message={error} testID={`${testID}-error`} />
       <View style={styles.actions}>
         <AppButton variant="outline" label={t('common.cancel')} onPress={onCancel} disabled={busy} testID={`${testID}-cancel`} />
@@ -51,7 +58,9 @@ export function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
-  message: { ...type.bodySmall, color: palette.mute },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 18 },
-});
+function createConfirmDialogStyles(palette: Palette) {
+  return StyleSheet.create({
+    message: { ...type.bodySmall, color: palette.mute },
+    actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 18 },
+  });
+}

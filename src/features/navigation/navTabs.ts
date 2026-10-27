@@ -1,5 +1,10 @@
 import type { IconName } from '../../components/IconButton';
+import { useMemo } from 'react';
 import i18n from '../../i18n';
+import { effectiveNavTabs } from '../settings/navTabsModel';
+import { useSettingsContext } from '../settings/SettingsProvider';
+import { usePinTargets } from '../settings/usePinTargets';
+import { pinKinds } from './tabBarItems';
 
 export type NavTabKey = 'INBOX' | 'TODAY' | 'UPCOMING' | 'SEARCH' | 'FILTERS_LABELS' | 'BROWSE';
 
@@ -27,9 +32,16 @@ export const TAB_DEFS: Record<NavTabKey, TabDef> = {
 /** spec 9.2 / 10: default tab bar; Browse always last. */
 export const DEFAULT_NAV_TABS: readonly NavTabKey[] = ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'];
 
-/** Tabs to draw. M1: fixed. M3 replaces the body with `me/settings.navTabs` (3–5 tabs) and keeps the signature. */
-export function useNavTabs(): readonly NavTabKey[] {
-  return DEFAULT_NAV_TABS;
+/**
+ * Keys of the tabs shown, in order: the account's navTabs (spec 12.1.1, 3-5 entries), the M1 default without settings,
+ * and without a pinned target that no longer exists (dropped once its list has loaded). Besides `NavTabKey` the list can
+ * hold a pinned key (`project:<uuid>` ...) or a key without a screen yet (`SEARCH` until M2, `TEAM` until M8):
+ * `buildTabItems` skips those.
+ */
+export function useNavTabs(): readonly string[] {
+  const stored = useSettingsContext()?.settings.navTabs;
+  const targets = usePinTargets(pinKinds(stored));
+  return useMemo(() => effectiveNavTabs(stored ?? DEFAULT_NAV_TABS, targets.known), [stored, targets.known]);
 }
 
 export function tabKeyForRoute(route: string): NavTabKey | undefined {

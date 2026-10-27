@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, type } from '../theme';
+import { type, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 import { IconButton } from './IconButton';
 import { useTopInset } from './useTopInset';
 
@@ -16,6 +17,7 @@ interface SubHeaderProps {
 
 /** Top bar of a pushed screen (M-Completed, M-TaskDetail): back 44 + 20/700 title + actions. */
 export function SubHeader({ title, onBack, center, right, testID = 'sub-header' }: SubHeaderProps) {
+  const styles = useThemedStyles(createSubHeaderStyles);
   const { t } = useTranslation();
   const top = useTopInset();
   return (
@@ -33,8 +35,10 @@ export function SubHeader({ title, onBack, center, right, testID = 'sub-header' 
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingBottom: 4, backgroundColor: palette.bg },
-  center: { flex: 1 },
-  title: { color: palette.ink },
-});
+function createSubHeaderStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingBottom: 4, backgroundColor: palette.bg },
+    center: { flex: 1 },
+    title: { color: palette.ink },
+  });
+}

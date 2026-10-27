@@ -8,7 +8,8 @@ import { AddRow } from '../../../components/AddRow';
 import { ErrorText } from '../../../components/ErrorText';
 import { ReorderModal } from '../../../components/ReorderModal';
 import { SectionHeader } from '../../../components/SectionHeader';
-import { palette, type } from '../../../theme';
+import { type, useTheme, useThemedStyles } from '../../../theme';
+import type { Palette } from '../../../theme/palette';
 import { openQuickAdd } from '../../quickAdd/quickAddTarget';
 import { childrenOf, progressLabel } from '../../subtasks/tree';
 import { Checkbox } from '../Checkbox';
@@ -30,6 +31,8 @@ interface SubtaskSectionProps {
 
 /** M-TaskDetail "Sub-task 1/3": direct children with their circles, "Thêm sub-task", and the sort dialog. */
 export function SubtaskSection({ task, depth, hideCompleted, reorderOpen = false, onReorderClose, readOnly = false }: SubtaskSectionProps) {
+  const styles = useThemedStyles(createSubtaskSectionStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const subtasks = useSubtasks(task.id);
   const { toggle, pendingId, errorMessage } = useToggleTask();
@@ -101,11 +104,13 @@ export function SubtaskSection({ task, depth, hideCompleted, reorderOpen = false
   );
 }
 
-const styles = StyleSheet.create({
-  loading: { paddingVertical: 12 },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: palette.line },
-  title: { flex: 1, minHeight: 44, justifyContent: 'center', marginTop: -10 },
-  open: { color: palette.ink },
-  done: { color: palette.mute, textDecorationLine: 'line-through' },
-  maxDepth: { ...type.meta, color: palette.mute, paddingVertical: 12 },
-});
+function createSubtaskSectionStyles(palette: Palette) {
+  return StyleSheet.create({
+    loading: { paddingVertical: 12 },
+    row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: palette.line },
+    title: { flex: 1, minHeight: 44, justifyContent: 'center', marginTop: -10 },
+    open: { color: palette.ink },
+    done: { color: palette.mute, textDecorationLine: 'line-through' },
+    maxDepth: { ...type.meta, color: palette.mute, paddingVertical: 12 },
+  });
+}

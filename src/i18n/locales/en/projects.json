@@ -1,0 +1,48 @@
+{
+  "projects": {
+    "form": {
+      "createTitle": "New project",
+      "editTitle": "Edit project",
+      "create": "Add",
+      "save": "Save",
+      "close": "Close",
+      "name": "Name",
+      "description": "Description",
+      "color": "Color",
+      "colorOption": "Color {{name}}",
+      "parent": "Parent project",
+      "noParent": "None",
+      "parentTitle": "Choose a parent project",
+      "favorite": "Add to favorites",
+      "nameRequired": "Please enter a project name",
+      "nameTooLong": "Project name must be at most 120 characters"
+    },
+    "archived": {
+      "title": "Archived projects",
+      "empty": "No archived projects",
+      "restore": "Restore"
+    },
+    "colors": {
+      "berry_red": "Berry red",
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "olive_green": "Olive green",
+      "lime_green": "Lime green",
+      "green": "Green",
+      "mint_green": "Mint green",
+      "teal": "Teal",
+      "sky_blue": "Sky blue",
+      "light_blue": "Light blue",
+      "blue": "Blue",
+      "grape": "Grape",
+      "violet": "Violet",
+      "lavender": "Lavender",
+      "magenta": "Magenta",
+      "salmon": "Salmon",
+      "charcoal": "Charcoal",
+      "grey": "Grey",
+      "taupe": "Taupe"
+    }
+  }
+}

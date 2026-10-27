@@ -7,7 +7,8 @@ import { IconButton } from '../../components/IconButton';
 import { ListRow } from '../../components/ListRow';
 import { QueryStateView } from '../../components/QueryStateView';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { gutter, palette, size } from '../../theme';
+import { gutter, size, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
 import { useProjects } from '../projects/useProjects';
 import { AccountDialog } from './AccountDialog';
@@ -17,6 +18,7 @@ import { MyProjectsBlock } from './MyProjectsBlock';
 
 /** Browse (M-Browse): account avatar, shortcuts, Favorites, My Projects tree and the blocks later milestones add. */
 export function BrowseScreen() {
+  const styles = useThemedStyles(createBrowseScreenStyles);
   const { t } = useTranslation();
   const me = useMe();
   const { query, inbox } = useProjects();
@@ -39,7 +41,12 @@ export function BrowseScreen() {
             <Avatar name={me.data?.displayName ?? '?'} seed={me.data?.id ?? 'me'} size="l" />
           </Pressable>
         }
-        right={<IconButton icon="search" label={t('search.open')} onPress={() => router.push('/search')} testID="browse-search" />}
+        right={
+          <View style={styles.headerActions}>
+            <IconButton icon="search" label={t('search.open')} onPress={() => router.push('/search')} testID="browse-search" />
+            <IconButton icon="settings" label={t('settings.title')} testID="browse-settings" onPress={() => router.push('/settings')} />
+          </View>
+        }
       />
       <ScrollView contentContainerStyle={styles.content}>
         {BROWSE_SHORTCUTS.map((shortcut) => (
@@ -73,8 +80,11 @@ export function BrowseScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  content: { paddingBottom: 120 },
-  shortcut: { paddingHorizontal: gutter },
-});
+function createBrowseScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    headerActions: { flexDirection: 'row' },
+    content: { paddingBottom: 120 },
+    shortcut: { paddingHorizontal: gutter },
+  });
+}

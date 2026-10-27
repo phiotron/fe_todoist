@@ -1,0 +1,51 @@
+{
+  "taskDetail": {
+    "content": "Task name",
+    "description": "Description",
+    "descriptionPlaceholder": "Add a description",
+    "breadcrumb": "Move task: {{place}}",
+    "conflictTitle": "It was changed somewhere else",
+    "conflictHint": "The latest version has been loaded. What you are typing is kept.",
+    "keepMine": "Save my version",
+    "useLatest": "Use the latest",
+    "complete": "Complete task",
+    "reopen": "Reopen task",
+    "menu": "Task options",
+    "menuAddSubtask": "Add sub-task",
+    "menuDuplicate": "Duplicate",
+    "menuHideCompleted": "Hide completed sub-tasks",
+    "menuShowCompleted": "Show completed sub-tasks",
+    "menuReorderSubtasks": "Reorder sub-tasks",
+    "menuDelete": "Delete task",
+    "duplicated": "Task duplicated",
+    "archivedNotice": "This task is in an archived project or section — view only",
+    "deleteTitle": "Delete task?",
+    "deleteMessage": "\"{{name}}\" will be permanently deleted. This cannot be undone.",
+    "deleteMessageWithSubtasks": "\"{{name}}\" and its {{n}} sub-tasks will be permanently deleted. This cannot be undone.",
+    "date": {
+      "add": "Add date",
+      "row": "Due date"
+    },
+    "deadline": {
+      "chip": "Deadline",
+      "chipWithDate": "Deadline {{date}}",
+      "title": "Deadline",
+      "remove": "Remove deadline"
+    },
+    "priority": {
+      "chip": "Priority {{n}}"
+    },
+    "move": {
+      "chip": "Move to",
+      "title": "Move to"
+    },
+    "subtasks": {
+      "title": "Sub-tasks",
+      "add": "Add sub-task",
+      "complete": "Complete {{name}}",
+      "reopen": "Reopen {{name}}",
+      "maxDepth": "Level 4 reached — no more sub-tasks can be added",
+      "reorderTitle": "Reorder sub-tasks"
+    }
+  }
+}

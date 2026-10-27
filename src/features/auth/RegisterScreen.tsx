@@ -3,17 +3,20 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { KeyboardScreen } from '../../components/KeyboardScreen';
-import { palette } from '../../theme';
+import { useTheme } from '../../theme';
 import { useIsOnline } from '../../lib/useIsOnline';
+import { AuthLogo } from './AuthLogo';
 import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
 import { goHomeAfterAuth } from './LoginScreen';
 import { useSession } from './session';
-import { authStyles as styles } from './styles';
+import { useAuthStyles } from './styles';
 import { hasErrors, validateRegister, type RegisterValues } from './validation';
 
 export function RegisterScreen() {
   const { t } = useTranslation();
+  const styles = useAuthStyles();
+  const { palette } = useTheme();
   const { signUp } = useSession();
   const isOnline = useIsOnline();
   const [values, setValues] = useState<RegisterValues>({ displayName: '', email: '', password: '' });
@@ -58,6 +61,7 @@ export function RegisterScreen() {
 
   return (
     <KeyboardScreen contentStyle={styles.screen}>
+      <AuthLogo />
       <Text style={styles.title}>{t('auth.register.title')}</Text>
       <AuthTextField
         testID="register-displayName"

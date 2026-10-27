@@ -1,6 +1,7 @@
 import type { ComponentRef, Ref } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { palette, radius, size, type } from '../theme';
+import { radius, size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import { ErrorText } from './ErrorText';
 
 interface TextFieldProps extends Omit<TextInputProps, 'style' | 'testID'> {
@@ -15,6 +16,8 @@ interface TextFieldProps extends Omit<TextInputProps, 'style' | 'testID'> {
 
 /** .lab + .in (48 high, radius 10, line2 border) + .err. */
 export function TextField({ testID, label, error, maxCount, ref, multiline, value, ...inputProps }: TextFieldProps) {
+  const styles = useThemedStyles(createTextFieldStyles);
+  const { palette } = useTheme();
   return (
     <View style={styles.field}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
@@ -36,21 +39,23 @@ export function TextField({ testID, label, error, maxCount, ref, multiline, valu
   );
 }
 
-const styles = StyleSheet.create({
-  field: { marginBottom: 14 },
-  label: { ...type.label, color: palette.ink2, marginBottom: 6 },
-  input: {
-    ...type.body,
-    minHeight: size.input,
-    borderWidth: 1,
-    borderColor: palette.line2,
-    borderRadius: radius.control,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: palette.ink,
-    backgroundColor: palette.bg,
-  },
-  multiline: { minHeight: 88, textAlignVertical: 'top' },
-  inputError: { borderColor: palette.warn },
-  counter: { ...type.caption, color: palette.mute, textAlign: 'right', marginTop: 4 },
-});
+function createTextFieldStyles(palette: Palette) {
+  return StyleSheet.create({
+    field: { marginBottom: 14 },
+    label: { ...type.label, color: palette.ink2, marginBottom: 6 },
+    input: {
+      ...type.body,
+      minHeight: size.input,
+      borderWidth: 1,
+      borderColor: palette.line2,
+      borderRadius: radius.control,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: palette.ink,
+      backgroundColor: palette.bg,
+    },
+    multiline: { minHeight: 88, textAlignVertical: 'top' },
+    inputError: { borderColor: palette.warn },
+    counter: { ...type.caption, color: palette.mute, textAlign: 'right', marginTop: 4 },
+  });
+}

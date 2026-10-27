@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useIsOnline } from '../lib/useIsOnline';
-import { palette, size, type } from '../theme';
+import { size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import { BottomSheet } from './BottomSheet';
 import type { IconName } from './IconButton';
 
@@ -26,6 +27,8 @@ interface ActionMenuProps {
 
 /** M-Confirm task actions: a bottom sheet of 48px rows with an icon; choosing one closes the sheet first. */
 export function ActionMenu({ visible, onClose, items, title, testID = 'action-menu' }: ActionMenuProps) {
+  const styles = useThemedStyles(createActionMenuStyles);
+  const { palette } = useTheme();
   const online = useIsOnline();
   return (
     <BottomSheet visible={visible} onClose={onClose} title={title} testID={testID}>
@@ -54,15 +57,17 @@ export function ActionMenu({ visible, onClose, items, title, testID = 'action-me
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    minHeight: size.menuRow,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  last: { borderBottomWidth: 0 },
-  inactive: { opacity: 0.4 },
-});
+function createActionMenuStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      minHeight: size.menuRow,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    last: { borderBottomWidth: 0 },
+    inactive: { opacity: 0.4 },
+  });
+}

@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { palette, radius, size, type } from '../theme';
+import { radius, size, type, useTheme, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 import type { IconName } from './IconButton';
 
 interface ListRowProps {
@@ -26,7 +27,7 @@ interface ListRowProps {
 export function ListRow({
   title,
   icon,
-  iconColor = palette.ink2,
+  iconColor,
   iconBox = false,
   right,
   chevron = false,
@@ -37,6 +38,9 @@ export function ListRow({
   testID,
   accessibilityLabel,
 }: ListRowProps) {
+  const styles = useThemedStyles(createListRowStyles);
+  const { palette } = useTheme();
+  const iconTint = iconColor ?? palette.ink2;
   return (
     <Pressable
       testID={testID}
@@ -50,10 +54,10 @@ export function ListRow({
       {icon ? (
         iconBox ? (
           <View style={styles.iconBox}>
-            <Feather name={icon} size={size.icon} color={iconColor} />
+            <Feather name={icon} size={size.icon} color={iconTint} />
           </View>
         ) : (
-          <Feather name={icon} size={size.icon} color={iconColor} />
+          <Feather name={icon} size={size.icon} color={iconTint} />
         )
       ) : null}
       <Text style={[bold ? type.bodyStrong : type.body, styles.title]} numberOfLines={1}>
@@ -65,23 +69,25 @@ export function ListRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    minHeight: size.listRow,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.control,
-    backgroundColor: palette.side,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { flex: 1, color: palette.ink },
-  right: { ...type.meta, color: palette.mute },
-});
+function createListRowStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      minHeight: size.listRow,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    iconBox: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.control,
+      backgroundColor: palette.side,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: { flex: 1, color: palette.ink },
+    right: { ...type.meta, color: palette.mute },
+  });
+}

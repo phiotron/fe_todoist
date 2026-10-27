@@ -9,7 +9,8 @@ import { QueryStateView } from '../../components/QueryStateView';
 import { SectionHeader } from '../../components/SectionHeader';
 import type { PagedQuery } from '../../lib/usePagedList';
 import { useNow } from '../../lib/useNow';
-import { gutter, palette } from '../../theme';
+import { gutter, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
 import { NO_DUE, dueValueOf, type DueValue } from '../schedule/dueValue';
@@ -56,6 +57,8 @@ export function TaskListView({
   listRef,
   initialNumToRender,
 }: TaskListViewProps) {
+  const styles = useThemedStyles(createTaskListViewStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const timeZone = useUserTimeZone();
   const now = useNow();
@@ -186,11 +189,13 @@ export function TaskListView({
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  section: { paddingHorizontal: gutter },
-  error: { paddingHorizontal: gutter },
-  footer: { padding: 16, alignItems: 'center' },
-  /** Room for the FAB and the Undo toast above the tab bar. */
-  content: { paddingBottom: 168 },
-});
+function createTaskListViewStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    section: { paddingHorizontal: gutter },
+    error: { paddingHorizontal: gutter },
+    footer: { padding: 16, alignItems: 'center' },
+    /** Room for the FAB and the Undo toast above the tab bar. */
+    content: { paddingBottom: 168 },
+  });
+}

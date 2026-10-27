@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { palette, size, type } from '../theme';
+import { size, type, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 import type { IconName } from './IconButton';
 
 interface RadioRowProps {
@@ -16,6 +17,8 @@ interface RadioRowProps {
 
 /** Single-choice row (reminder lead time, duration, language…): same metrics as `.lrow`, a check mark on the right when chosen. */
 export function RadioRow({ title, subtitle, selected, onPress, icon, disabled = false, testID }: RadioRowProps) {
+  const styles = useThemedStyles(createRadioRowStyles);
+  const { palette } = useTheme();
   return (
     <Pressable
       testID={testID}
@@ -38,16 +41,18 @@ export function RadioRow({ title, subtitle, selected, onPress, icon, disabled = 
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    minHeight: size.listRow,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  texts: { flex: 1 },
-  subtitle: { ...type.meta, color: palette.mute },
-  disabled: { opacity: 0.5 },
-});
+function createRadioRowStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      minHeight: size.listRow,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    texts: { flex: 1 },
+    subtitle: { ...type.meta, color: palette.mute },
+    disabled: { opacity: 0.5 },
+  });
+}

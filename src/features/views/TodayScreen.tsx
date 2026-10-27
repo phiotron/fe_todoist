@@ -8,9 +8,11 @@ import { IconButton } from '../../components/IconButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { StateView } from '../../components/StateView';
 import { dateKeyInZone, groupTodayView } from '../../lib/dates';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, formatDayHeader, weekdayName } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
-import { gutter, palette } from '../../theme';
+import { gutter, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { TODAY_VIEW_KEY } from '../display/displayRules';
@@ -26,6 +28,10 @@ import { useTaskList } from '../tasks/useTaskList';
 import { openCount, overdueRows, useOverdueReschedule } from './overdue';
 
 function TodayBody({ display }: { display: ViewDisplay }) {
+  const styles = useThemedStyles(createTodayScreenStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  const displayPrefs = useDisplayPrefs();
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -45,7 +51,7 @@ function TodayBody({ display }: { display: ViewDisplay }) {
       collapsed,
       onToggle: () => setCollapsed((value) => !value),
       onReschedule: overdue.start,
-    });
+    }, palette);
     if (groups.today.length > 0) {
       // Counts follow the Overdue block: a task completed a moment ago keeps its (struck) row until the refetch but is not counted.
       result.push(sectionRow('today', { title: formatDayHeader(today, today), count: openCount(groups.today) }), ...displayRows(groups.today, groupBy, ctx));
@@ -62,7 +68,7 @@ function TodayBody({ display }: { display: ViewDisplay }) {
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subtitle = query.isPending
     ? undefined
@@ -112,6 +118,8 @@ function TodayBody({ display }: { display: ViewDisplay }) {
 
 /** Today (M-Main): Overdue (collapsible, Reschedule) + today's tasks; the + button adds due today. */
 export function TodayScreen() {
+  const styles = useThemedStyles(createTodayScreenStyles);
+  const { palette } = useTheme();
   const display = useViewDisplay(TODAY_VIEW_KEY);
   return (
     <SelectionScope>
@@ -124,9 +132,11 @@ export function TodayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  add: { paddingHorizontal: gutter },
-  error: { paddingHorizontal: gutter },
-  loading: { padding: 24 },
-});
+function createTodayScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    add: { paddingHorizontal: gutter },
+    error: { paddingHorizontal: gutter },
+    loading: { padding: 24 },
+  });
+}

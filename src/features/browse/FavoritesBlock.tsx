@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import { gutter, palette, type } from '../../theme';
+import { gutter, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useFilters } from '../filters/useFilters';
 import { useLabels } from '../labels/useLabels';
 import { useProjects } from '../projects/useProjects';
@@ -12,6 +13,7 @@ import { useFavoriteTargets } from './useFavoriteTargets';
 
 /** "Yêu thích": favorite projects, labels and filters in the order they were added (spec 5.7, 9.2). */
 export function FavoritesBlock() {
+  const styles = useThemedStyles(createFavoritesBlockStyles);
   const { t } = useTranslation();
   const favorites = useFavoriteTargets();
   const { all } = useProjects();
@@ -37,6 +39,8 @@ export function FavoritesBlock() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: { ...type.section, color: palette.ink, paddingHorizontal: gutter, paddingTop: 16, paddingBottom: 4 },
-});
+function createFavoritesBlockStyles(palette: Palette) {
+  return StyleSheet.create({
+    title: { ...type.section, color: palette.ink, paddingHorizontal: gutter, paddingTop: 16, paddingBottom: 4 },
+  });
+}

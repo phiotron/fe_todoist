@@ -1,0 +1,64 @@
+{
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "displayName": "Full name"
+    },
+    "login": {
+      "title": "Log in",
+      "submit": "Log in",
+      "goToRegister": "Don't have an account? Sign up",
+      "forgotPassword": "Forgot your password?"
+    },
+    "register": {
+      "title": "Create account",
+      "submit": "Sign up",
+      "goToLogin": "Already signed up? Go to log in"
+    },
+    "validation": {
+      "emailRequired": "Please enter your email",
+      "emailInvalid": "Invalid email",
+      "emailTooLong": "Email must be at most 254 characters",
+      "passwordRequired": "Please enter your password",
+      "passwordLength": "Password must be 8 to 72 characters",
+      "passwordBytes": "Password must be at most 72 bytes — accented letters and emoji use more than one byte",
+      "displayNameRequired": "Please enter a display name",
+      "displayNameTooLong": "Display name must be at most 100 characters"
+    },
+    "errors": {
+      "invalidCredentials": "Wrong email or password",
+      "emailTaken": "This email is already in use",
+      "sessionExpired": "Your session has expired, please log in again"
+    }
+  },
+  "errors": {
+    "offline": "You are offline, please check your connection",
+    "network": "Cannot reach the server, please try again",
+    "unknown": "Something went wrong, please try again",
+    "timeout": "The server took too long to respond, please try again",
+    "invalid": "Some data is not valid, please check it",
+    "forbidden": "You cannot do this",
+    "notFound": "This item no longer exists",
+    "versionConflict": "It was changed somewhere else",
+    "conflict": "This could not be done because the data has changed",
+    "projectArchived": "This project is archived — view only",
+    "sectionArchived": "This section is archived — its tasks are view only",
+    "parentCompleted": "The parent task is completed — reopen it first",
+    "taskCompleted": "This task is already completed",
+    "inProgress": "The previous request is still being processed, please wait a moment",
+    "targetArchived": "The destination is archived",
+    "targetUnavailable": "The destination is no longer available",
+    "idempotencyMismatch": "The content changed since the last attempt, please try again",
+    "tooManyRequests": "You are going too fast, please try again in a few minutes",
+    "server": "The server had a problem (code {{code}}), please try again",
+    "limit": {
+      "activeProjects": "You have reached the maximum of {{max}} active projects",
+      "projects": "You have reached the maximum of {{max}} projects (archived ones included)",
+      "projectActiveTasks": "This project already has the maximum of {{max}} open tasks",
+      "projectSections": "This project already has the maximum of {{max}} sections in use",
+      "projectSectionsTotal": "This project already has the maximum of {{max}} sections (archived ones included)",
+      "other": "You have reached the maximum ({{max}})"
+    }
+  }
+}

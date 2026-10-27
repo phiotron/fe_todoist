@@ -4,7 +4,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { renderWithProviders } from '../../../../test/render';
 import { StyleSheet } from 'react-native';
 import { makeTask } from '../../../../test/m1Fixtures';
-import { palette } from '../../../../theme';
+import { lightPalette as palette } from '../../../../theme';
 import { draftFromTask } from '../draft';
 import { TaskChips } from '../TaskChips';
 

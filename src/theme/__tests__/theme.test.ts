@@ -1,7 +1,7 @@
+import { renderHook } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { authStyles } from '../../features/auth/styles';
-import { colors } from '../../lib/theme';
-import { AVATAR_COLORS, PROJECT_PALETTE, darkPalette, fonts, palette, radius, size, type, useTheme } from '..';
+import { createAuthStyles } from '../../features/auth/styles';
+import { AVATAR_COLORS, PROJECT_PALETTE, darkPalette, fonts, lightPalette as palette, radius, size, type, useTheme } from '..';
 
 describe('design tokens (design-mobile/screens/taskly.css)', () => {
   it('keeps the light colours of the approved design', () => {
@@ -50,17 +50,18 @@ describe('design tokens (design-mobile/screens/taskly.css)', () => {
     expect(type.tab).toMatchObject({ fontFamily: fonts.semibold, fontSize: 11 });
   });
 
-  it('keeps touch targets at least 44 and the design radii', () => {
+  it('keeps touch targets at least 44 and the design radii', async () => {
     expect(size.touch).toBe(44);
     expect(size.input).toBe(48);
     expect(size.fab).toBe(56);
     expect(radius).toMatchObject({ chip: 8, control: 10, card: 12, dialog: 16, sheet: 20 });
-    expect(useTheme().palette).toBe(palette);
+    // useTheme() is a hook now (it reads the theme context): TASKLY light outside a provider.
+    const { result } = await renderHook(() => useTheme());
+    expect(result.current.palette).toBe(palette);
   });
 
-  it('maps the M0 colour names onto the tokens and styles the auth screens with them', () => {
-    expect(colors.primary).toBe(palette.acc);
-    expect(colors.danger).toBe(palette.warn);
+  it('styles the auth screens with the tokens', () => {
+    const authStyles = createAuthStyles(palette);
     expect(StyleSheet.flatten(authStyles.title)?.fontFamily).toBe(fonts.bold);
     expect(StyleSheet.flatten(authStyles.button)?.backgroundColor).toBe(palette.acc);
   });

@@ -1,8 +1,10 @@
 import { StyleSheet, View, type DimensionValue } from 'react-native';
-import { gutter, palette } from '../theme';
+import { gutter, useThemedStyles } from '../theme';
+import type { Palette } from '../theme/palette';
 
 /** .skel block (static: the shimmer of the design is left out to keep tests and low-end devices simple). */
 export function Skeleton({ width, height, round = false }: { width: DimensionValue; height: number; round?: boolean }) {
+  const styles = useThemedStyles(createSkeletonStyles);
   return <View style={[styles.block, { width, height, borderRadius: round ? height / 2 : 6 }]} />;
 }
 
@@ -16,6 +18,7 @@ const ROWS: readonly [DimensionValue, DimensionValue][] = [
 
 /** M-Loading: section bar + task rows (circle + two bars). */
 export function TaskSkeletonList({ testID = 'skeleton' }: { testID?: string }) {
+  const styles = useThemedStyles(createSkeletonStyles);
   return (
     <View testID={testID} accessibilityRole="progressbar" accessibilityState={{ busy: true }} style={styles.list}>
       <View style={styles.section}>
@@ -35,11 +38,13 @@ export function TaskSkeletonList({ testID = 'skeleton' }: { testID?: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  block: { backgroundColor: palette.line },
-  list: { paddingHorizontal: gutter },
-  section: { marginTop: 16, marginBottom: 10 },
-  row: { flexDirection: 'row', gap: 12, paddingVertical: 12 },
-  text: { flex: 1 },
-  gap: { height: 8 },
-});
+function createSkeletonStyles(palette: Palette) {
+  return StyleSheet.create({
+    block: { backgroundColor: palette.line },
+    list: { paddingHorizontal: gutter },
+    section: { marginTop: 16, marginBottom: 10 },
+    row: { flexDirection: 'row', gap: 12, paddingVertical: 12 },
+    text: { flex: 1 },
+    gap: { height: 8 },
+  });
+}

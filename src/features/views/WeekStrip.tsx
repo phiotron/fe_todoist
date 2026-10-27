@@ -1,8 +1,10 @@
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useDisplayPrefs } from '../../lib/dates/displayFormat';
 import { formatDateKey, weekdayShort } from '../../lib/dates/format';
-import { fonts, gutter, palette, size, type } from '../../theme';
+import { fonts, gutter, size, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 
 interface WeekStripProps {
   /** The 7 days shown (yyyy-MM-dd). */
@@ -22,6 +24,9 @@ interface WeekStripProps {
  * day gets an accent ring. Swipe left / right changes the week.
  */
 export function WeekStrip({ days, today, maxDate, selected, onSelectDay, onShiftWeek, testID = 'week-strip' }: WeekStripProps) {
+  const styles = useThemedStyles(createWeekStripStyles);
+  // Redraw when the user changes the date / time format (the formatting functions read the same store).
+  useDisplayPrefs();
   const { t } = useTranslation();
   const latest = useRef(onShiftWeek);
   latest.current = onShiftWeek;
@@ -67,32 +72,34 @@ export function WeekStrip({ days, today, maxDate, selected, onSelectDay, onShift
   );
 }
 
-const styles = StyleSheet.create({
-  strip: {
-    flexDirection: 'row',
-    paddingHorizontal: gutter - 8,
-    paddingTop: 4,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-    backgroundColor: palette.bg,
-  },
-  cell: { flex: 1, alignItems: 'center', minHeight: size.touch },
-  weekday: { ...type.caption, color: palette.mute },
-  day: {
-    marginTop: 6,
-    width: size.weekDay,
-    height: size.weekDay,
-    borderRadius: size.weekDay / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  today: { backgroundColor: palette.acc, borderColor: palette.acc },
-  selected: { borderColor: palette.acc },
-  dayText: { ...type.body, color: palette.ink },
-  past: { color: palette.mute },
-  todayText: { fontFamily: fonts.bold, color: palette.onacc },
-  hidden: { position: 'absolute', width: 0, height: 0, opacity: 0 },
-});
+function createWeekStripStyles(palette: Palette) {
+  return StyleSheet.create({
+    strip: {
+      flexDirection: 'row',
+      paddingHorizontal: gutter - 8,
+      paddingTop: 4,
+      paddingBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+      backgroundColor: palette.bg,
+    },
+    cell: { flex: 1, alignItems: 'center', minHeight: size.touch },
+    weekday: { ...type.caption, color: palette.mute },
+    day: {
+      marginTop: 6,
+      width: size.weekDay,
+      height: size.weekDay,
+      borderRadius: size.weekDay / 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    today: { backgroundColor: palette.acc, borderColor: palette.acc },
+    selected: { borderColor: palette.acc },
+    dayText: { ...type.body, color: palette.ink },
+    past: { color: palette.mute },
+    todayText: { fontFamily: fonts.bold, color: palette.onacc },
+    hidden: { position: 'absolute', width: 0, height: 0, opacity: 0 },
+  });
+}

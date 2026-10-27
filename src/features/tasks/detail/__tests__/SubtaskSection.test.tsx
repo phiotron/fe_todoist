@@ -9,7 +9,7 @@ import { requestsTo, type ApiRoutes } from '../../../../test/apiRoutes';
 import { jsonResponse, problem } from '../../../../test/http';
 import { makeTask, taskChange } from '../../../../test/m1Fixtures';
 import { renderSignedIn } from '../../../../test/screen';
-import { palette } from '../../../../theme';
+import { lightPalette as palette } from '../../../../theme';
 import { SubtaskSection } from '../SubtaskSection';
 import { useTaskDepth } from '../useSubtasks';
 

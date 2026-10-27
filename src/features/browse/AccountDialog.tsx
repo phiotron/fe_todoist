@@ -4,11 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { Avatar } from '../../components/Avatar';
 import { DialogFrame } from '../../components/DialogFrame';
-import { palette, type } from '../../theme';
+import { type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useMe, useSession } from '../auth/session';
 
 /** Who is signed in + Sign out (moved from the M0 home screen; M3 adds "sign out of all devices" in Settings). */
 export function AccountDialog({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const styles = useThemedStyles(createAccountDialogStyles);
   const { t } = useTranslation();
   const { signOut } = useSession();
   const me = useMe();
@@ -52,9 +54,11 @@ export function AccountDialog({ visible, onClose }: { visible: boolean; onClose:
   );
 }
 
-const styles = StyleSheet.create({
-  who: { alignItems: 'center', gap: 4, marginBottom: 12 },
-  name: { ...type.sheetTitle, color: palette.ink, marginTop: 8 },
-  email: { ...type.meta, color: palette.mute },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 8 },
-});
+function createAccountDialogStyles(palette: Palette) {
+  return StyleSheet.create({
+    who: { alignItems: 'center', gap: 4, marginBottom: 12 },
+    name: { ...type.sheetTitle, color: palette.ink, marginTop: 8 },
+    email: { ...type.meta, color: palette.mute },
+    actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 8 },
+  });
+}

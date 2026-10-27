@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { AVATAR_COLORS, fonts, palette, size } from '../theme';
+import { AVATAR_COLORS, fonts, size, useThemedStyles, useTheme } from '../theme';
+import type { Palette } from '../theme/palette';
 
 const SIZES = { s: size.avatarS, m: size.avatar, l: size.avatarL, xl: size.avatarXL } as const;
 const FONT = { s: 10, m: 12, l: 15, xl: 22 } as const;
@@ -21,6 +22,8 @@ function colorFor(seed: string): string {
 
 /** .av: round initials on one of the 5 avatar colours (stable per user). Read as an image named after the user, not as the bare initials. */
 export function Avatar({ name, seed, size: avatarSize = 'm', testID }: { name: string; seed: string; size?: keyof typeof SIZES; testID?: string }) {
+  const styles = useThemedStyles(createAvatarStyles);
+  const { palette } = useTheme();
   const dimension = SIZES[avatarSize];
   return (
     <View
@@ -35,4 +38,6 @@ export function Avatar({ name, seed, size: avatarSize = 'm', testID }: { name: s
   );
 }
 
-const styles = StyleSheet.create({ circle: { alignItems: 'center', justifyContent: 'center' } });
+function createAvatarStyles(palette: Palette) {
+  return StyleSheet.create({ circle: { alignItems: 'center', justifyContent: 'center' } });
+}

@@ -18,7 +18,8 @@ import { SubHeader } from '../../../components/SubHeader';
 import { useIdempotencyKeys } from '../../../lib/idempotency';
 import { useIsOnline } from '../../../lib/useIsOnline';
 import { useNow } from '../../../lib/useNow';
-import { gutter, palette, radius, type } from '../../../theme';
+import { gutter, radius, type, useTheme, useThemedStyles } from '../../../theme';
+import type { Palette } from '../../../theme/palette';
 import { useUserTimeZone } from '../../auth/useUserTimeZone';
 import { openQuickAdd } from '../../quickAdd/quickAddTarget';
 import { childrenOf } from '../../subtasks/tree';
@@ -34,6 +35,8 @@ import { useTaskMove } from './useTaskMove';
 
 /** Task detail (M-TaskDetail, spec 9.2): header, name, description, date + chips, sub-tasks, menu ⋯, conflict banner. */
 export function TaskDetailScreen({ taskId }: { taskId: string }) {
+  const styles = useThemedStyles(createTaskDetailScreenStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const now = useNow();
@@ -247,15 +250,17 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  content: { paddingHorizontal: gutter, paddingTop: 8, paddingBottom: 48 },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginTop: 8 },
-  title: { ...type.detailTitle, flex: 1, color: palette.ink, paddingTop: 0, paddingBottom: 0 },
-  description: { ...type.bodySmall, color: palette.mute, marginTop: 6, marginBottom: 12, marginLeft: 38, paddingVertical: 4 },
-  conflict: { backgroundColor: palette.p2s, borderRadius: radius.control, padding: 12, gap: 6, marginBottom: 8 },
-  conflictTitle: { color: palette.p2 },
-  conflictText: { color: palette.ink },
-  conflictActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  archivedNotice: { color: palette.mute, backgroundColor: palette.bg2, borderRadius: radius.control, padding: 12, marginBottom: 8 },
-});
+function createTaskDetailScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    content: { paddingHorizontal: gutter, paddingTop: 8, paddingBottom: 48 },
+    titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginTop: 8 },
+    title: { ...type.detailTitle, flex: 1, color: palette.ink, paddingTop: 0, paddingBottom: 0 },
+    description: { ...type.bodySmall, color: palette.mute, marginTop: 6, marginBottom: 12, marginLeft: 38, paddingVertical: 4 },
+    conflict: { backgroundColor: palette.p2s, borderRadius: radius.control, padding: 12, gap: 6, marginBottom: 8 },
+    conflictTitle: { color: palette.p2 },
+    conflictText: { color: palette.ink },
+    conflictActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
+    archivedNotice: { color: palette.mute, backgroundColor: palette.bg2, borderRadius: radius.control, padding: 12, marginBottom: 8 },
+  });
+}
