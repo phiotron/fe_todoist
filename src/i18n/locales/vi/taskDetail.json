@@ -7,6 +7,23 @@
     "conflictTitle": "Đã có thay đổi ở nơi khác",
     "conflictHint": "Bản mới nhất đã được tải về. Nội dung bạn đang nhập vẫn được giữ.",
     "keepMine": "Lưu bản của tôi",
-    "useLatest": "Dùng bản mới"
+    "useLatest": "Dùng bản mới",
+    "date": {
+      "add": "Thêm ngày",
+      "row": "Ngày đến hạn"
+    },
+    "deadline": {
+      "chip": "Hạn chót",
+      "chipWithDate": "Hạn chót {{date}}",
+      "title": "Hạn chót",
+      "remove": "Bỏ hạn chót"
+    },
+    "priority": {
+      "chip": "Ưu tiên {{n}}"
+    },
+    "move": {
+      "chip": "Chuyển tới",
+      "title": "Chuyển tới"
+    }
   }
 }
