@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Task } from '../../api/models';
 import type { IconName } from '../../components/IconButton';
+import { openTaskReminders } from '../reminders/openTaskReminders';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -46,6 +47,7 @@ function swipeLookFor(palette: Palette): Partial<Record<SwipeAction, SwipeLook>>
   return {
     COMPLETE: { icon: 'check-circle', color: palette.ok },
     SCHEDULE: { icon: 'calendar', color: palette.vio },
+    REMINDERS: { icon: 'bell', color: palette.p2 },
     SELECT: { icon: 'check-square', color: palette.acc },
     DELETE: { icon: 'trash-2', color: palette.warn, iconColor: palette.onwarn },
   };
@@ -81,6 +83,7 @@ export function TaskRow({
   function run(action: SwipeAction) {
     if (action === 'COMPLETE' && !completed) onToggle(task);
     else if (action === 'SCHEDULE') onSchedule?.(task);
+    else if (action === 'REMINDERS') openTaskReminders(router, task.id);
     else if (action === 'SELECT') selection?.start(task.id);
     // Not deleted here: this only opens the confirmation (BR-11).
     else if (action === 'DELETE') requestDelete({ id: task.id, content: task.content, subtaskCount: task.subtaskCount });

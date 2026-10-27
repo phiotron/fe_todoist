@@ -8,6 +8,8 @@ import { lightPalette as palette } from '../../../../theme';
 import { draftFromTask } from '../draft';
 import { TaskChips } from '../TaskChips';
 
+// The reminders chip has its own tests and needs a QueryClient; this test renders the chips without providers.
+jest.mock('../../../reminders/TaskReminderChip', () => ({ TaskReminderChip: () => null }));
 jest.mock('../../../../lib/useNow', () => ({ useNow: () => new Date('2026-10-23T03:00:00Z') }));
 jest.mock('../../../auth/useUserTimeZone', () => ({
   useUserTimeZone: () => 'Asia/Ho_Chi_Minh',

@@ -9,6 +9,7 @@ import { useDisplayPrefs } from '../../../lib/dates/displayFormat';
 import { formatDateKey, formatDueLabel } from '../../../lib/dates/format';
 import { size, type, useTheme, useThemedStyles } from '../../../theme';
 import type { Palette } from '../../../theme/palette';
+import { TaskReminderChip } from '../../reminders/TaskReminderChip';
 import { NO_DUE, type DueValue } from '../../schedule/dueValue';
 import { LabelChip } from '../../labels/LabelChip';
 import { ScheduleSheet } from '../../schedule/ScheduleSheet';
@@ -93,6 +94,7 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
           disabled={readOnly}
           testID="task-label-chip"
         />
+        <TaskReminderChip task={task} timeZone={timeZone} readOnly={readOnly} />
         <Chip large icon="arrow-right" label={t('taskDetail.move.chip')} disabled={readOnly} onPress={onMove} testID="task-move-chip" />
       </View>
       <ScheduleSheet

@@ -62,6 +62,7 @@
       "projectSectionsTotal": "Dự án đã có tối đa {{max}} section (kể cả section đã lưu trữ)",
       "labels": "Bạn chỉ có thể tạo tối đa {{max}} label",
       "filters": "Bạn chỉ có thể tạo tối đa {{max}} filter",
+      "reminders": "Đã đạt tối đa {{max}} nhắc nhở",
       "other": "Đã đạt giới hạn tối đa ({{max}})"
     }
   }

@@ -36,6 +36,7 @@ import viPasswordReset from './locales/vi/passwordReset.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
 import viQuickAdd from './locales/vi/quickAdd.json';
+import viReminders from './locales/vi/reminders.json';
 import viReorder from './locales/vi/reorder.json';
 import viSearch from './locales/vi/search.json';
 import viSchedule from './locales/vi/schedule.json';
@@ -65,6 +66,7 @@ export const viTranslation = {
   ...viProjectScreen,
   ...viProjects,
   ...viQuickAdd,
+  ...viReminders,
   ...viReorder,
   ...viSearch,
   ...viSchedule,

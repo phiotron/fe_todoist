@@ -19,6 +19,8 @@ import type { Palette } from '../../theme/palette';
 import type { TextInputHandle } from '../auth/AuthTextField';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { LabelChip } from '../labels/LabelChip';
+import { QuickAddReminderChip } from '../reminders/QuickAddReminderChip';
+import { useQuickAddReminders } from '../reminders/useQuickAddReminders';
 import { projectDisplayName } from '../projects/appearance';
 import { ProjectSectionPicker } from '../projects/ProjectSectionPicker';
 import { useProjects } from '../projects/useProjects';
@@ -74,6 +76,8 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   const sectionName = sections.find((section) => section.id === target.sectionId)?.name;
   const projectLabel = project ? projectDisplayName(project) : '';
   const dueLabel = describeDue(due, now, timeZone);
+  const hasTime = due.dueDatetime !== null;
+  const reminders = useQuickAddReminders(hasTime);
 
   async function submit() {
     const problem = taskContentError(content);
@@ -93,8 +97,10 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
     });
     await run(async () => {
       try {
-        await create.mutateAsync({ body, idempotencyKey: keys.keyFor(body) });
+        const createdTask = await create.mutateAsync({ body, idempotencyKey: keys.keyFor(body) });
         keys.reset();
+        // Reminder drafts belong to the task just created; a failure is shown below and never undoes the task.
+        await reminders.attach(createdTask.id);
         setContent('');
         setDescription('');
         setError(undefined);
@@ -169,6 +175,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
             testID="quick-add-priority"
           />
           <LabelChip large labelIds={labelIds} onChange={setLabelIds} testID="quick-add-label" />
+          <QuickAddReminderChip reminders={reminders} hasTime={hasTime} timeZone={timeZone} />
         </View>
         {notice ? (
           <Text testID="quick-add-notice" style={styles.notice}>
@@ -176,6 +183,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
           </Text>
         ) : null}
         <ErrorText message={error} testID="quick-add-error" />
+        <ErrorText message={reminders.error} testID="quick-add-reminder-error" />
         <View style={styles.rule} />
         <View style={styles.bottom}>
           {isSubtask ? (

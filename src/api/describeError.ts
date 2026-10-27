@@ -54,6 +54,8 @@ function limitMessage(limit: string | undefined, max: number | undefined): strin
       return i18n.t('errors.limit.labels', { max: n });
     case 'FILTERS':
       return i18n.t('errors.limit.filters', { max: n });
+    case 'REMINDERS':
+      return i18n.t('errors.limit.reminders', { max: n });
     default:
       return i18n.t('errors.limit.other', { max: n });
   }
