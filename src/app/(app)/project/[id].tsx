@@ -1,0 +1,7 @@
+import { useLocalSearchParams } from 'expo-router';
+import { ProjectScreen } from '../../../features/projects/ProjectScreen';
+
+export default function ProjectRoute() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <ProjectScreen projectId={String(id)} />;
+}

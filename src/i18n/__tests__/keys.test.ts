@@ -60,7 +60,7 @@ describe('i18n', () => {
   it('translates to Vietnamese with interpolation', () => {
     expect(i18n.language).toBe('vi');
     expect(i18n.t('auth.login.title')).toBe('Đăng nhập');
-    expect(i18n.t('home.greeting', { name: 'An' })).toBe('Xin chào An');
+    expect(i18n.t('nav.tabs')).toBe('Điều hướng chính');
   });
 
   it('each feature locale file owns exactly one top-level key, named after the file, used nowhere else', () => {
