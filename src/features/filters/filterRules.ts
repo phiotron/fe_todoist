@@ -24,5 +24,9 @@ const EXCERPT_LENGTH = 12;
 /** Up to 12 characters of the query from the error position (… when more follow), for the syntax message. */
 export function syntaxErrorExcerpt(query: string, position: number): string {
   const rest = query.slice(position);
-  return rest.length > EXCERPT_LENGTH ? `${rest.slice(0, EXCERPT_LENGTH)}…` : rest;
+  if (rest.length <= EXCERPT_LENGTH) return rest;
+  // Cut by UTF-16 units (the server position is UTF-16) but never in the middle of a surrogate pair.
+  const lastUnit = rest.charCodeAt(EXCERPT_LENGTH - 1);
+  const end = lastUnit >= 0xd800 && lastUnit <= 0xdbff ? EXCERPT_LENGTH - 1 : EXCERPT_LENGTH;
+  return `${rest.slice(0, end)}…`;
 }
