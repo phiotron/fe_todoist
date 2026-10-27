@@ -59,3 +59,54 @@ không cần backend đang chạy. Mỗi khi backend đổi API:
 TypeScript 6. `overrides` ép nó dùng chung bản TypeScript của dự án. Sau mỗi lần nâng `typescript` hoặc
 `openapi-typescript`, chạy `npm run gen:api:smoke` để chắc việc sinh kiểu vẫn đúng; khi `openapi-typescript` hỗ trợ
 TypeScript 6 chính thức thì bỏ `overrides`.
+
+## Màn hình M1 (theo thiết kế `design-mobile/`)
+Thanh tab dưới: **Inbox · Hôm nay · Sắp tới · Duyệt**; nút **+** góc dưới phải mở Quick Add (bottom sheet) đúng ngữ cảnh từng tab
+(ẩn khi đang ở chế độ chọn nhiều, để không đè thanh thao tác). Duyệt: lối tắt, Yêu thích, Dự án của tôi (cây dự án con), Dự án đã lưu trữ,
+Completed, tài khoản / Đăng xuất. Từ danh sách mở **màn dự án** (`/project/<id>`), **chi tiết task** (`/task/<id>`), **form dự án** (`/project-form`).
+
+## Thư viện native thêm ở M1
+`react-native-gesture-handler`, `react-native-reanimated` (+ `react-native-worklets`), `@react-native-community/datetimepicker`, `expo-crypto`, `expo-font`
+(+ `@expo-google-fonts/figtree`), `@expo/vector-icons` (Feather), `react-native-draggable-flatlist` (JS). Sau khi kéo nhánh có M1 về, **build lại
+development build một lần**: `npx expo run:android`, rồi chạy như thường `npx expo start --dev-client`.
+
+## Quy ước code M1 (cho các mốc sau)
+- Giao diện: chỉ dùng token ở `src/theme/` (màu `palette`, chữ `type` Figtree, `space` / `radius` / `size`); không viết mã màu rời. Thành phần dùng lại ở `src/components/`.
+- Chữ hiển thị: mỗi tính năng một file `src/i18n/locales/vi/<ns>.json` (một key gốc `<ns>`), nối trong `src/i18n/index.ts`.
+- Gọi API: `src/api/<resource>.ts`; model ở `src/api/models.ts`; ghi dữ liệu qua `useDataMutation` (chặn khi offline); lỗi qua `describeError` (theo `code` của ProblemDetail).
+- Danh sách task: `usePagedList` / `useTaskList` + `TaskListView` (+ `taskRows` / `treeRows` / `sectionRow` / `nodeRow`).
+- Thêm tab: file route trong `src/app/(app)/(tabs)/` + một phần tử trong `TAB_DEFS` (`src/features/navigation/navTabs.ts`). Thêm màn push: file route + một dòng `<Stack.Screen>` trong `src/app/(app)/_layout.tsx`.
+- Browse: thêm khối vào `BROWSE_EXTRA_BLOCKS` (`src/features/browse/browseBlocks.ts`).
+- Mọi request có timeout 15 giây (`DEFAULT_TIMEOUT_MS` trong `src/api/client.ts`).
+- Cache task: sau `close` / `reopen` / `move` ghi câu trả lời vào cache bằng `applyTaskChange` (`src/api/taskCache.ts`) / `useMoveTask` — `version` chỉ đổi khi nội dung đổi, `reorder` thì không (dùng `useDataMutation(..., { keepDetail: true })`).
+- `afterId`: vắng = cuối vùng chứa, `null` = đầu; `reorder` luôn gửi `afterId`. `id` UUID client là tuỳ chọn (M1–M8 không gửi; M9 dùng).
+- Chỉ đọc: `isProjectReadOnly(project)`, `useTaskReadOnly(task)` / `useTaskAccess(task)` (`src/features/tasks/detail/taskReadOnly.ts`) — đã xong hoặc dự án / section lưu trữ.
+- Chế độ chọn nhiều: `TaskSelectionProvider` là theo từng màn; nút + của tab layout biết chế độ này qua `useAnySelectionActive()` (`src/features/tasks/selectionActiveStore.ts`).
+- Component dùng lại (chữ ký cố định cho M2–M5): `AppButton` (`variant` primary / danger / outline / ghost, `size` md / sm, `full`), `Chip` (`large` = 36), `Toggle({ value, onChange, label })`, `ListRow`, `RadioRow`, `BottomSheet` (`scroll` mặc định `true`).
+
+## M1 — kịch bản demo trên emulator
+**Chuẩn bị (người dùng tự chạy):**
+1. Backend M1 (bản 3.1, DB đã migrate Flyway V2): `cd backend; docker compose up -d; .\mvnw spring-boot:run`.
+2. Cửa sổ khác, trong thư mục `mobile`: `adb reverse tcp:8080 tcp:8080`, rồi `npx expo run:android` (lần đầu sau khi có M1 vì có thư viện native mới) hoặc
+   `npx expo start --dev-client` (các lần sau).
+3. **Người dùng tự đăng nhập / đăng ký** trên màn Đăng nhập của app (hoặc Swagger UI cho các bước 409 / 404); Claude và công cụ test không nhập mật khẩu.
+
+**Ghi chú nút Tools của Expo (bản dev):** ở development build, Expo dev client vẽ một nút nổi **Tools** (mở menu dev: reload, Element Inspector, Performance
+Monitor…) và nó nằm đè lên giao diện. Đó là công cụ của bản dev, không phải lỗi của app; bản release không có. Đừng nhầm nó với nút + của app; ẩn nó trong
+menu dev (lắc máy / `Ctrl+M`) nếu che thao tác khi chụp màn hình.
+
+**Các bước, mỗi mục báo Đạt / Không đạt:**
+- **Đăng nhập & nền tảng:** bàn phím không che nút Đăng nhập; sau đăng ký vào Hôm nay, Back không về Đăng nhập; Duyệt → avatar → Đăng xuất về Đăng nhập; tắt backend → lỗi mạng trong ~15 giây.
+- **Thêm việc (Quick Add):** nút + ở Inbox / Hôm nay / Sắp tới (chạm ngày 25 rồi +) / Duyệt mở sheet với chip dự án / ngày đúng; gõ tên, chọn Ngày mai + P1, Gửi → "Đã thêm vào Inbox", sheet vẫn mở để thêm tiếp; tên rỗng thì nút mờ, > 500 ký tự thì báo lỗi, không mất chữ.
+- **Hoàn thành + Hoàn tác:** chạm ô tròn → toast "Đã hoàn thành 1 công việc · Hoàn tác" 5 giây; Hoàn tác → task về; hoàn thành task cha → con xong theo, Hoàn tác → mở lại đúng nhóm đó; vuốt phải = hoàn thành.
+- **Đổi ngày:** vuốt trái → bộ chọn ngày → Ngày mai; chi tiết task → hàng Ngày (lối tắt, lịch, giờ, thời lượng, Bỏ giờ, Không có ngày); chip Hạn chót (ngày đã qua viền đỏ).
+- **Chọn nhiều:** nhấn giữ một task → "1 đã chọn"; chọn thêm; **nút + biến mất, thanh dưới đủ 5 nút: Hoàn thành / Dời lịch / Ưu tiên / Chuyển / Xoá**; mỗi thao tác một lần cho cả nhóm; ✕ thoát và nút + hiện lại.
+- **Sắp tới:** dải tuần (vuốt ngang, chạm ngày cuộn tới ngày đó, "Hôm nay" quay về, chọn tháng); cuộn cuối tải thêm 14 ngày; ngày trống có "Thêm công việc".
+- **Dự án / section / sub-task:** Duyệt → Dự án của tôi → + (tên, mô tả, 20 màu, dự án cha, yêu thích), dự án con tới cấp 3; trong dự án thêm section, thêm task vào section, thu gọn bằng mũi tên, ⋯ section (Sửa, Sắp xếp, Lưu trữ, Xoá); sub-task tới cấp 4 (cấp 4 hết nút "Thêm sub-task"), tiến độ "0/2", Sao chép, Xoá có đếm sub-task.
+- **Quá hạn:** tạo task hạn hôm qua + task hôm nay đã qua giờ → Hôm nay có khối **Quá hạn** (chỉ task hạn hôm qua; chữ đỏ) và nút **Dời lịch** (ngày trước hôm nay mờ); Dời lịch → Hôm nay / Ngày mai, toast "Đã dời N công việc"; hết việc → "Bạn đã xong hết việc hôm nay".
+- **Lưu trữ / xoá dự án:** ⋯ dự án → Lưu trữ (không hỏi) → biến khỏi Duyệt; Duyệt → Dự án đã lưu trữ → mở (băng "chỉ xem được", không có +) → Khôi phục; ⋯ → Xoá dự án → hộp ghi đúng số dự án con + task đang mở → xoá hẳn (không có thùng rác). Section: Lưu trữ → task đang mở thành đã xong; Xoá → xoá luôn task.
+- **Completed:** Duyệt → Completed, nhóm theo ngày hoàn thành, chip Từ ngày / Đến ngày, chạm ô tròn để mở lại.
+- **Lỗi & mạng:** 409 (sửa task qua Swagger rồi sửa trong app → băng "Đã có thay đổi ở nơi khác"); 404 (xoá task qua Swagger khi đang mở → "Mục này không còn tồn tại"); tắt mạng emulator → banner "Bạn đang offline" ở trên cùng, nút ghi bị khoá, bật lại không tự gửi gì.
+- **Đối chiếu thiết kế:** lề ngang 20, vùng chạm ≥ 44, FAB 56 cách phải 20 / cách đáy 100, chữ Figtree, màu ưu tiên P1 đỏ / P2 cam / P3 xanh dương / P4 xám.
+
+Lỗi: dán log Metro / ảnh màn hình vào chat để sửa (mỗi lỗi một test + một commit).
