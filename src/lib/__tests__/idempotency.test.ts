@@ -1,3 +1,4 @@
+import * as Crypto from 'expo-crypto';
 import { createIdempotencyKeys } from '../idempotency';
 import { newUuid } from '../uuid';
 
@@ -31,13 +32,9 @@ describe('newUuid', () => {
     expect(newUuid()).not.toBe(a);
   });
 
-  it('falls back to a generated v4 when the platform has no crypto.randomUUID', () => {
-    const original = globalThis.crypto;
-    Object.defineProperty(globalThis, 'crypto', { value: undefined, configurable: true });
-    try {
-      expect(newUuid()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-    } finally {
-      Object.defineProperty(globalThis, 'crypto', { value: original, configurable: true });
-    }
+  it('takes the id from expo-crypto (native secure random)', () => {
+    const randomUUID = jest.mocked(Crypto.randomUUID);
+    randomUUID.mockReturnValueOnce('11111111-1111-4111-8111-111111111111');
+    expect(newUuid()).toBe('11111111-1111-4111-8111-111111111111');
   });
 });
