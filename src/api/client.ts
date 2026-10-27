@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { API_URL } from '../lib/config';
 import { tokenStore, type AuthTokens, type TokenStore } from '../lib/tokenStore';
 import { ApiError, NetworkError, TimeoutError, problemToApiError } from './errors';
@@ -21,6 +22,8 @@ export interface ApiClientConfig {
   onSessionExpired: () => void;
   /** Give up waiting for the response headers after this many ms (default DEFAULT_TIMEOUT_MS). */
   timeoutMs?: number;
+  /** Current UI language; sent as Accept-Language so server messages (ProblemDetail) match the app. */
+  language?: () => string | null | undefined;
 }
 
 export type ApiFetch = <T>(path: string, options?: ApiRequestOptions) => Promise<T>;
@@ -66,6 +69,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
   async function send(path: string, options: ApiRequestOptions, accessToken: string | null): Promise<Response> {
     const body = options.getBody ? await options.getBody() : options.body;
     const headers: Record<string, string> = { Accept: 'application/json' };
+    const language = config.language?.();
+    if (language) headers['Accept-Language'] = language;
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
@@ -215,6 +220,7 @@ export function addSessionExpiredListener(listener: () => void): () => void {
 export const apiFetch: ApiClient = createApiClient({
   baseUrl: API_URL,
   tokens: tokenStore,
+  language: () => i18n.language,
   onSessionExpired: () => {
     // Iterate a copy and isolate each subscriber: one bad listener must not block the others or mask the 401.
     [...sessionExpiredListeners].forEach((listener) => {
