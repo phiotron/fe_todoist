@@ -1,6 +1,33 @@
 {
   "projectScreen": {
+    "subtitle": "{{n}} công việc",
     "addSection": "Thêm section",
+    "menu": "Tuỳ chọn dự án",
+    "menuEdit": "Sửa dự án",
+    "menuAddSubproject": "Thêm dự án con",
+    "menuAddSection": "Thêm section",
+    "menuFavorite": "Thêm vào yêu thích",
+    "menuUnfavorite": "Bỏ yêu thích",
+    "menuDisplay": "Hiển thị",
+    "menuReorderTasks": "Sắp xếp công việc",
+    "menuReorderSections": "Sắp xếp section",
+    "menuReorderSubprojects": "Sắp xếp dự án con",
+    "menuArchive": "Lưu trữ dự án",
+    "menuDelete": "Xoá dự án",
+    "reorderSubprojectsTitle": "Sắp xếp dự án con",
+    "deleteTitle": "Xoá \"{{name}}\"?",
+    "deleteMessage": "Dự án sẽ bị xoá vĩnh viễn cùng {{tasks}} công việc đang mở. Không hoàn tác được.",
+    "deleteMessageWithChildren": "Dự án sẽ bị xoá vĩnh viễn cùng {{projects}} dự án con và {{tasks}} công việc đang mở. Không hoàn tác được.",
+    "archivedBanner": "Dự án đã lưu trữ — chỉ xem được",
+    "restore": "Khôi phục",
+    "display": {
+      "title": "Hiển thị",
+      "completedTasks": "Công việc đã hoàn thành"
+    },
+    "completedBlock": {
+      "title": "Đã hoàn thành",
+      "empty": "Chưa có công việc nào hoàn thành"
+    },
     "section": {
       "createTitle": "Section mới",
       "editTitle": "Sửa section",
