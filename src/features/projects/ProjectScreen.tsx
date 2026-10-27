@@ -174,7 +174,7 @@ function ProjectBody({
       />
       {header}
       <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
-      {!tab && !readOnly ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} testID="project-fab" /> : null}
+      {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} testID="project-fab" /> : null}
       {body.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
       <DisplaySheet visible={displayOpen} viewKey={projectViewKey(project.id)} onClose={() => setDisplayOpen(false)} />

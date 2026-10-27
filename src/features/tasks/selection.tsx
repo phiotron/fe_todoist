@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { setSelectionActive } from './selectionActiveStore';
 
 /** `tasks/batch` accepts 1–200 ids (spec 12.5); more → 400. */
 export const MAX_BATCH_TASKS = 200;
@@ -18,6 +19,7 @@ const SelectionContext = createContext<TaskSelection | null>(null);
 export function TaskSelectionProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState(false);
   const [ids, setIds] = useState<ReadonlySet<string>>(new Set());
+  useEffect(() => setSelectionActive(active), [active]);
   const start = useCallback((taskId?: string) => {
     setActive(true);
     setIds(taskId ? new Set([taskId]) : new Set());

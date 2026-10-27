@@ -77,6 +77,16 @@ describe('ProjectScreen', () => {
     expect(router.back).toHaveBeenCalled();
   });
 
+  it('hides the + button in the multi-select mode (it would sit over the action bar)', async () => {
+    await open();
+    expect(screen.getByTestId('project-fab')).toBeOnTheScreen();
+    await fireEvent(screen.getByTestId('task-row-a'), 'longPress');
+    expect(screen.getByTestId('selection-count')).toBeOnTheScreen();
+    expect(screen.queryByTestId('project-fab')).toBeNull();
+    await fireEvent.press(screen.getByTestId('selection-close'));
+    expect(screen.getByTestId('project-fab')).toBeOnTheScreen();
+  });
+
   it('as the Inbox tab: no back button and no FAB (the tab bar layout draws the +), no edit / archive / delete', async () => {
     await renderSignedIn(<ProjectScreen projectId="p-inbox" tab />, {
       'GET /api/v1/projects': () => jsonResponse(200, [inboxProject]),
