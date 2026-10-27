@@ -32,7 +32,7 @@ describe('SettingsScreen', () => {
     expect(await screen.findByTestId('settings-screen')).toBeTruthy();
     expect(await screen.findByText(testUser.displayName)).toBeTruthy();
     expect(screen.getByText(testUser.email)).toBeTruthy();
-    for (const key of ['account', 'general', 'date-time', 'theme', 'navigation']) {
+    for (const key of ['account', 'general', 'date-time', 'reminders', 'theme', 'navigation']) {
       expect(screen.getByTestId(`settings-row-${key}`)).toBeTruthy();
     }
     expect(screen.getByTestId('settings-section-reset')).toBeTruthy();
@@ -44,6 +44,7 @@ describe('SettingsScreen', () => {
     ['account', '/settings/account'],
     ['general', '/settings/general'],
     ['date-time', '/settings/date-time'],
+    ['reminders', '/settings/reminders'],
     ['theme', '/settings/theme'],
     ['navigation', '/settings/navigation'],
   ])('the %s row opens %s', async (key, href) => {

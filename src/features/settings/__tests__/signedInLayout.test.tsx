@@ -8,7 +8,8 @@ import { serveSettings } from '../../../test/settingsFixtures';
 
 jest.mock('expo-router', () => {
   const Stack = Object.assign(() => null, { Screen: () => null });
-  return { Stack, Redirect: () => null, router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() } };
+  const router = { push: jest.fn(), back: jest.fn(), replace: jest.fn() };
+  return { Stack, Redirect: () => null, router, useRouter: () => router };
 });
 
 describe('signed-in layout', () => {

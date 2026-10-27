@@ -5,7 +5,8 @@ import type { SettingsResponse } from '../../../api/settings';
 import i18n from '../../../i18n';
 import { tokenStore } from '../../../lib/tokenStore';
 import { testUser } from '../../../test/fixtures';
-import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
+import { requestsTo } from '../../../test/apiRoutes';
+import { countRequests, jsonResponse, mockFetch, problem } from '../../../test/http';
 import { deferred, routeFetch } from '../../../test/m3Routes';
 import { memorySettingsStorage, type MemorySettingsStorage } from '../../../test/memorySettingsStorage';
 import { createTestQueryClient } from '../../../test/render';
@@ -183,7 +184,7 @@ describe('SettingsProvider', () => {
       const { result } = await renderSettingsHook({ storage });
 
       await waitFor(() => expect(storage.current()?.pending).toBeNull());
-      expect(requestAt(fetchMock, 0).body).toEqual({ autoReminderMinutes: null });
+      expect(requestsTo(fetchMock, 'PATCH', SETTINGS)[0]?.body).toEqual({ autoReminderMinutes: null });
       expect(result.current.settings.data).toMatchObject({ autoReminderMinutes: null });
       expect(storage.current()?.extra).toEqual({ remindersEnabled: true, autoReminderMinutes: null });
     });
@@ -228,7 +229,7 @@ describe('SettingsProvider', () => {
     await renderWithSettings(<Probe />, { storage });
 
     await waitFor(() => expect(storage.current()?.pending).toBeNull());
-    expect(requestAt(fetchMock, 0).body).toEqual({ appearance: 'DARK' });
+    expect(requestsTo(fetchMock, 'PATCH', SETTINGS)[0]?.body).toEqual({ appearance: 'DARK' });
     expect(countRequests(fetchMock, SETTINGS)).toBe(1);
     expect(probeText()).toBe('TASKLY|DARK|vi|Asia/Ho_Chi_Minh|false|false');
   });
@@ -274,7 +275,7 @@ describe('SettingsProvider', () => {
       patch.resolve(jsonResponse(200, settingsResponse({ locale: 'en', timeZone: 'Asia/Tokyo' })));
       await saving;
     });
-    expect(requestAt(fetchMock, 1).body).toEqual({ locale: 'en', timeZone: 'Asia/Tokyo' });
+    expect(requestsTo(fetchMock, 'PATCH', SETTINGS)[0]?.body).toEqual({ locale: 'en', timeZone: 'Asia/Tokyo' });
     expect(result.current.settings.hasPending).toBe(false);
     expect(storage.current()?.pending).toBeNull();
     expect(queryClient.getQueryData(meQueryKey)).toEqual({ ...testUser, locale: 'en', timeZone: 'Asia/Tokyo' });

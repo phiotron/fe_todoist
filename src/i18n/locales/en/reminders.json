@@ -1,0 +1,47 @@
+{
+  "reminders": {
+    "channelName": "Reminders",
+    "notification": {
+      "dueSoonBody": "Due soon",
+      "reminderBody": "Reminder",
+      "snoozedBody": "Snoozed for 15 minutes",
+      "snoozeAction": "Snooze",
+      "completeAction": "Complete"
+    },
+    "chip": {
+      "label": "Reminders",
+      "more": "{{label}} +{{count}}"
+    },
+    "editor": {
+      "title": "Reminders",
+      "empty": "No reminders yet",
+      "addAbsolute": "At a specific time",
+      "relativeTitle": "Remind before it is due",
+      "relativeNeedsTime": "The task needs a time to set a reminder before it is due",
+      "pastTime": "The reminder time must be in the future",
+      "remove": "Remove reminder {{label}}",
+      "close": "Close"
+    },
+    "offset": {
+      "atTime": "At the due time",
+      "minutes": "{{count}} minutes before",
+      "hours": "{{count}} hours before",
+      "days": "{{count}} days before"
+    },
+    "quickAdd": {
+      "partialFailure": "The task was added but {{count}} reminders could not be added"
+    },
+    "settings": {
+      "title": "Reminders",
+      "enabled": "Turn on reminders",
+      "autoTitle": "Automatic reminder",
+      "autoHint": "Applies to tasks with a time. Tasks with only a date get no automatic reminder.",
+      "autoOff": "Off",
+      "permissionMissing": "Taskly is not allowed to send notifications, so it will not remind you.",
+      "allowNotifications": "Allow notifications",
+      "openSystemSettings": "Open system settings",
+      "exactAlarmHint": "Android 14 and later: turn on “Alarms & reminders” for Taskly to be reminded on time. Otherwise reminders can be a few minutes late.",
+      "exactAlarmOpen": "Open alarm settings"
+    }
+  }
+}

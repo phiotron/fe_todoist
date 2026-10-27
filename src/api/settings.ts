@@ -23,6 +23,10 @@ export interface SettingsResponse {
   swipeRight: SettingsSwipeAction;
   /** 3–5 keys, "BROWSE" last, at most one pinned project / label / filter. */
   navTabs: string[];
+  /** M4 (spec 12.1.1). Optional: a settings cache written before M4 does not have them (never read that as "off"). */
+  remindersEnabled?: boolean;
+  /** Minutes before a timed task's due time; null = automatic reminders off. */
+  autoReminderMinutes?: number | null;
 }
 
 /**

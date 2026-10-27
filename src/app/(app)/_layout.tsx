@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { SnackbarProvider } from '../../components/Snackbar';
 import { useSession } from '../../features/auth/session';
+import { ReminderHost } from '../../features/reminders/ReminderHost';
 import { TimeZoneBanner } from '../../features/settings/TimeZoneBanner';
 import { useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -26,6 +27,8 @@ export default function SignedInLayout() {
         <OfflineBanner />
         {/* Spec 5.2: the device time zone differs from the account one. */}
         <TimeZoneBanner />
+        {/* M4: schedules the local reminders and handles the notification buttons; renders nothing. */}
+        <ReminderHost />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="project/[id]" />

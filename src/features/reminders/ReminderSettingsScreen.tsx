@@ -18,11 +18,11 @@ import { useReminderPermission } from './useReminderPermission';
 const AUTO_CHOICES: readonly (number | null)[] = [null, ...AUTO_REMINDER_MINUTES];
 
 /** The reminder fields of me/settings (spec 12.1.1). Fields the server did not send yet are undefined. */
-export interface ReminderSettingsValues {
+export type ReminderSettingsValues = {
   remindersEnabled?: boolean;
   /** null = automatic reminders off. */
   autoReminderMinutes?: number | null;
-}
+};
 
 export interface ReminderSettingsScreenProps {
   /** null while me/settings is loading. */

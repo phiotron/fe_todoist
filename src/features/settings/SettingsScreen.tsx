@@ -16,7 +16,7 @@ import { useSettings } from './useSettings';
 
 /**
  * Settings home (M-Settings). Rows are drawn directly in the JSX, in display order:
- * M4 adds <SettingsLinkRow testID="settings-row-reminders" icon="bell" … /> right after the "Date & time" row.
+ * The "Reminders" row (M4) sits right after "Date & time".
  */
 export function SettingsScreen() {
   const { t } = useTranslation();
@@ -55,6 +55,7 @@ export function SettingsScreen() {
       <SettingsLinkRow testID="settings-row-account" icon="user" label={t('settings.pages.account')} href="/settings/account" />
       <SettingsLinkRow testID="settings-row-general" icon="sliders" label={t('settings.pages.general')} href="/settings/general" />
       <SettingsLinkRow testID="settings-row-date-time" icon="calendar" label={t('settings.pages.dateTime')} href="/settings/date-time" />
+      <SettingsLinkRow testID="settings-row-reminders" icon="bell" label={t('reminders.settings.title')} href="/settings/reminders" />
       <SettingsLinkRow
         testID="settings-row-theme"
         icon="droplet"

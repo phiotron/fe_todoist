@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { ApiError } from '../../../api/errors';
 import i18n, { viTranslation as vi } from '../../../i18n';
 import { tokenStore } from '../../../lib/tokenStore';
+import { requestsTo } from '../../../test/apiRoutes';
 import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import type { RouteHandler } from '../../../test/m3Routes';
 import { renderWithSettings } from '../../../test/renderSettings';
@@ -58,7 +59,7 @@ describe('DeleteAccountSection', () => {
     await fireEvent.press(screen.getByTestId('delete-account-dialog-confirm'));
     expect((await screen.findByTestId('delete-account-dialog-error')).props.children).toBe(vi.settings.deleteAccount.codeRequired);
 
-    expect(countRequests(fetchMock, '/api/v1/me')).toBe(0);
+    expect(requestsTo(fetchMock, 'DELETE', '/api/v1/me')).toHaveLength(0);
   });
 
   it('deletes the account with the password, then signs this device out without calling /auth/logout', async () => {
@@ -123,7 +124,7 @@ describe('DeleteAccountSection', () => {
     await fireEvent.press(screen.getByTestId('delete-account-open'));
 
     expect(screen.getByTestId('delete-account-password').props.value).toBe('');
-    expect(countRequests(fetchMock, '/api/v1/me')).toBe(0);
+    expect(requestsTo(fetchMock, 'DELETE', '/api/v1/me')).toHaveLength(0);
   });
 });
 
