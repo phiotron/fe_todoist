@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { IconName } from '../../components/IconButton';
 import i18n from '../../i18n';
+import { BrowseLabels } from './BrowseLabels';
 
 export interface BrowseShortcut {
   key: string;
@@ -14,12 +15,13 @@ export interface BrowseShortcut {
   count?: 'inbox';
 }
 
-/** M1 shortcuts of M-Browse. M2 appends "Filters & Labels" (`push`, `/(tabs)/filters-labels` stays reachable). */
+/** Shortcuts of M-Browse: Inbox, Today, Filters & Labels (M2, pushed screen), Completed. */
 export const BROWSE_SHORTCUTS: readonly BrowseShortcut[] = [
   { key: 'inbox', title: () => i18n.t('views.inbox.title'), icon: 'inbox', kind: 'tab', href: '/inbox', count: 'inbox' },
   { key: 'today', title: () => i18n.t('views.today.title'), icon: 'calendar', kind: 'tab', href: '/today' },
+  { key: 'filters-labels', title: () => i18n.t('filtersLabels.title'), icon: 'filter', kind: 'push', href: '/filters-labels', chevron: true },
   { key: 'completed', title: () => i18n.t('views.completed.title'), icon: 'check-circle', kind: 'push', href: '/completed', chevron: true },
 ];
 
-/** Blocks rendered under My Projects: empty in M1; M2 adds Labels, M3 Settings, M8 team projects. */
-export const BROWSE_EXTRA_BLOCKS: readonly ComponentType[] = [];
+/** Blocks rendered under My Projects: Labels (M2); M3 adds Settings, M8 team projects. */
+export const BROWSE_EXTRA_BLOCKS: readonly ComponentType[] = [BrowseLabels];
