@@ -14,6 +14,7 @@ import enPasswordReset from './locales/en/passwordReset.json';
 import enProjectScreen from './locales/en/projectScreen.json';
 import enProjects from './locales/en/projects.json';
 import enQuickAdd from './locales/en/quickAdd.json';
+import enReminders from './locales/en/reminders.json';
 import enReorder from './locales/en/reorder.json';
 import enSchedule from './locales/en/schedule.json';
 import enSearch from './locales/en/search.json';
@@ -93,6 +94,7 @@ export const enTranslation = {
   ...enProjectScreen,
   ...enProjects,
   ...enQuickAdd,
+  ...enReminders,
   ...enReorder,
   ...enSchedule,
   ...enSearch,
