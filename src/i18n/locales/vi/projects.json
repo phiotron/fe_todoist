@@ -1,3 +1,48 @@
 {
-  "projects": {}
+  "projects": {
+    "form": {
+      "createTitle": "Dự án mới",
+      "editTitle": "Sửa dự án",
+      "create": "Thêm",
+      "save": "Lưu",
+      "close": "Đóng",
+      "name": "Tên",
+      "description": "Mô tả",
+      "color": "Màu",
+      "colorOption": "Màu {{name}}",
+      "parent": "Dự án cha",
+      "noParent": "Không có",
+      "parentTitle": "Chọn dự án cha",
+      "favorite": "Thêm vào yêu thích",
+      "nameRequired": "Hãy nhập tên dự án",
+      "nameTooLong": "Tên dự án tối đa 120 ký tự"
+    },
+    "archived": {
+      "title": "Dự án đã lưu trữ",
+      "empty": "Không có dự án lưu trữ",
+      "restore": "Khôi phục"
+    },
+    "colors": {
+      "berry_red": "Đỏ mận",
+      "red": "Đỏ",
+      "orange": "Cam",
+      "yellow": "Vàng",
+      "olive_green": "Xanh ô liu",
+      "lime_green": "Xanh chanh",
+      "green": "Xanh lá",
+      "mint_green": "Xanh bạc hà",
+      "teal": "Xanh mòng két",
+      "sky_blue": "Xanh da trời",
+      "light_blue": "Xanh nhạt",
+      "blue": "Xanh dương",
+      "grape": "Tím nho",
+      "violet": "Tím",
+      "lavender": "Tím oải hương",
+      "magenta": "Hồng tím",
+      "salmon": "Cam hồng",
+      "charcoal": "Xám than",
+      "grey": "Xám",
+      "taupe": "Nâu xám"
+    }
+  }
 }
