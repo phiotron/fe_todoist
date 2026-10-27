@@ -5,6 +5,7 @@ import { addSessionExpiredListener, apiFetch } from '../../api/client';
 import { ApiError } from '../../api/errors';
 import { queryPersister } from '../../lib/queryClient';
 import { tokenStore } from '../../lib/tokenStore';
+import { cancelAllReminders } from '../reminders/platform';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'signedIn';
 
@@ -33,6 +34,8 @@ const SessionContext = createContext<SessionContextValue | null>(null);
  */
 async function wipeCaches(clearMemory: () => void): Promise<void> {
   clearMemory();
+  // The previous user's reminders must never fire after sign-out / session end / another sign-in (spec 5.8).
+  await cancelAllReminders();
   try {
     await queryPersister.removeClient();
   } catch {
