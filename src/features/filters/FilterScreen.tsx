@@ -14,7 +14,7 @@ import { NotFoundView } from '../../components/NotFoundView';
 import { QueryStateView } from '../../components/QueryStateView';
 import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
-import { palette, type } from '../../theme';
+import { type, useTheme } from '../../theme';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { filterViewKey } from '../display/displayRules';
 import { displayRows } from '../display/groupTasks';
@@ -28,17 +28,18 @@ import { MAX_FILTER_PARTS, useFilterTaskLists } from './useFilterTaskLists';
 import { useDeleteFilter, useFilterValidation, useFilters, useSetFilterFavorite } from './useFilters';
 
 /** filter/[id]: open tasks matching the query, one block per top-level comma part (spec 9.5). */
-export function FilterScreen({ filterId }: { filterId: string }) {
+export function FilterScreen({ filterId, tab = false }: { filterId: string; tab?: boolean }) {
   const { query, filters } = useFilters();
   const filter = filters.find((item) => item.id === filterId);
-  if (filter) return <FilterView filter={filter} />;
+  if (filter) return <FilterView filter={filter} tab={tab} />;
   if (query.isSuccess) return <NotFoundView onBack={() => router.back()} testID="filter-not-found" />;
   return <QueryStateView query={query} testID="filter-state" />;
 }
 
 type Sheet = 'display' | 'menu' | 'edit' | 'delete' | null;
 
-function FilterView({ filter }: { filter: Filter }) {
+function FilterView({ filter, tab }: { filter: Filter; tab: boolean }) {
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const viewKey = filterViewKey(filter.id);
   const display = useViewDisplay(viewKey);
@@ -81,7 +82,7 @@ function FilterView({ filter }: { filter: Filter }) {
   return (
     <View style={[styles.fill, { backgroundColor: palette.bg }]}>
       <SubHeader
-        onBack={() => router.back()}
+        onBack={tab ? undefined : () => router.back()}
         center={
           <View>
             <Text style={[type.barTitle, { color: palette.ink }]} numberOfLines={1} accessibilityRole="header">
@@ -160,6 +161,7 @@ function prefixed(rows: readonly TaskListRow[], prefix: string): TaskListRow[] {
 }
 
 function FilterTasks({ parts, display }: { parts: readonly string[]; display: ViewDisplay }) {
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const { lists, combined, truncated } = useFilterTaskLists(parts, display.params);
   const groupBy = display.options.groupBy;

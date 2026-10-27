@@ -1,0 +1,23 @@
+{
+  "search": {
+    "title": "Search",
+    "open": "Search",
+    "placeholder": "Search tasks, projects, labels…",
+    "clear": "Clear the text",
+    "hint": "Type to search tasks, projects, sections, labels and filters",
+    "completedToggle": "Search completed tasks",
+    "completedTitle": "Completed tasks",
+    "recentTitle": "Recent searches",
+    "recentClear": "Clear history",
+    "tooLong": "A search has at most {{n}} characters",
+    "noTasks": "No matching tasks. Try a shorter keyword or fewer words.",
+    "noCompleted": "No completed task matches the keyword",
+    "groups": {
+      "projects": "Projects",
+      "sections": "Sections",
+      "labels": "Labels",
+      "filters": "Filters",
+      "tasks": "Tasks"
+    }
+  }
+}

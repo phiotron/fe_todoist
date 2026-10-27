@@ -49,6 +49,8 @@
     "inProgress": "The previous request is still being processed, please wait a moment",
     "targetArchived": "The destination is archived",
     "targetUnavailable": "The destination is no longer available",
+    "labelNameTaken": "A label with this name already exists",
+    "filterSyntax": "The query has a syntax error",
     "idempotencyMismatch": "The content changed since the last attempt, please try again",
     "tooManyRequests": "You are going too fast, please try again in a few minutes",
     "server": "The server had a problem (code {{code}}), please try again",
@@ -58,6 +60,8 @@
       "projectActiveTasks": "This project already has the maximum of {{max}} open tasks",
       "projectSections": "This project already has the maximum of {{max}} sections in use",
       "projectSectionsTotal": "This project already has the maximum of {{max}} sections (archived ones included)",
+      "labels": "You can create at most {{max}} labels",
+      "filters": "You can create at most {{max}} filters",
       "other": "You have reached the maximum ({{max}})"
     }
   }

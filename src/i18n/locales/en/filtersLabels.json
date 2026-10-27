@@ -1,0 +1,20 @@
+{
+  "filtersLabels": {
+    "title": "Filters & Labels",
+    "filtersTitle": "Filters",
+    "labelsTitle": "Labels",
+    "addFilter": "Add filter",
+    "addLabel": "Add label",
+    "noFilters": "No filters yet",
+    "noLabels": "No labels yet",
+    "favoriteMark": "Favorite",
+    "reorderFilters": "Reorder filters",
+    "reorderLabels": "Reorder labels",
+    "actions": {
+      "edit": "Edit",
+      "favorite": "Add to Favorites",
+      "unfavorite": "Remove from Favorites",
+      "delete": "Delete"
+    }
+  }
+}

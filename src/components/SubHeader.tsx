@@ -8,7 +8,8 @@ import { useTopInset } from './useTopInset';
 
 interface SubHeaderProps {
   title?: string;
-  onBack: () => void;
+  /** Omitted on a tab screen (no screen to go back to): no back button. */
+  onBack?: () => void;
   /** Replaces the title (task detail breadcrumb). */
   center?: ReactNode;
   right?: ReactNode;
@@ -22,7 +23,7 @@ export function SubHeader({ title, onBack, center, right, testID = 'sub-header' 
   const top = useTopInset();
   return (
     <View testID={testID} style={[styles.row, { paddingTop: top }]}>
-      <IconButton icon="chevron-left" label={t('common.back')} onPress={onBack} testID={`${testID}-back`} />
+      {onBack ? <IconButton icon="chevron-left" label={t('common.back')} onPress={onBack} testID={`${testID}-back`} /> : null}
       <View style={styles.center}>
         {center ?? (
           <Text style={[type.barTitle, styles.title]} numberOfLines={1} accessibilityRole="header">

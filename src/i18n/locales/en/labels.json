@@ -1,0 +1,36 @@
+{
+  "labels": {
+    "picker": {
+      "title": "Choose labels",
+      "searchPlaceholder": "Find or create a label",
+      "empty": "No labels yet. Type a name to create the first one.",
+      "create": "Create label “{{name}}”",
+      "full": "A task has at most {{n}} labels",
+      "done": "Done"
+    },
+    "form": {
+      "createTitle": "Add label",
+      "editTitle": "Edit label",
+      "name": "Label name",
+      "color": "Color",
+      "favorite": "Add to Favorites",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nameRequired": "Enter a label name",
+      "nameTooLong": "A label name has at most {{n}} characters",
+      "nameInvalid": "A label name cannot contain spaces or the characters @ % # / , ( ) | & ! \\ *",
+      "nameTaken": "A label with this name already exists"
+    },
+    "delete": {
+      "title": "Delete label?",
+      "message": "The label “{{name}}” will be deleted and removed from every task. This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "chip": { "empty": "Label" },
+    "batch": { "open": "Label", "add": "Add labels", "remove": "Remove labels" },
+    "screen": {
+      "empty": "No open task has this label",
+      "menu": "Label options"
+    }
+  }
+}

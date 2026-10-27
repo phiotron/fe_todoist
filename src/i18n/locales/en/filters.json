@@ -1,0 +1,37 @@
+{
+  "filters": {
+    "form": {
+      "createTitle": "Add filter",
+      "editTitle": "Edit filter",
+      "name": "Filter name",
+      "query": "Query",
+      "queryPlaceholder": "Example: today | overdue, p1 & #Work",
+      "color": "Color",
+      "favorite": "Add to Favorites",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nameRequired": "Enter a filter name",
+      "nameTooLong": "A filter name has at most {{n}} characters",
+      "queryRequired": "Enter a query",
+      "queryTooLong": "A query has at most {{n}} characters",
+      "valid": "Valid · {{n}} lists"
+    },
+    "syntax": {
+      "at": "Syntax error at character {{n}}: “{{near}}”",
+      "atEnd": "Syntax error at the end of the query",
+      "generic": "The query has a syntax error",
+      "edit": "Edit filter"
+    },
+    "delete": {
+      "title": "Delete filter?",
+      "message": "The filter “{{name}}” will be deleted. This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "screen": {
+      "empty": "No open task matches this filter",
+      "partEmpty": "No tasks",
+      "truncated": "Showing only the first {{n}} lists",
+      "menu": "Filter options"
+    }
+  }
+}

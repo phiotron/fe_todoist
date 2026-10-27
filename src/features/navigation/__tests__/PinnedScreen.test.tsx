@@ -9,6 +9,14 @@ import { serveSettings, settingsResponse } from '../../../test/settingsFixtures'
 import { PinnedScreen } from '../PinnedScreen';
 
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() } }));
+jest.mock('../../labels/LabelScreen', () => {
+  const { Text } = require('react-native');
+  return { LabelScreen: ({ labelId, tab }: { labelId: string; tab?: boolean }) => <Text testID="pinned-label" accessibilityHint={String(tab)}>{labelId}</Text> };
+});
+jest.mock('../../filters/FilterScreen', () => {
+  const { Text } = require('react-native');
+  return { FilterScreen: ({ filterId, tab }: { filterId: string; tab?: boolean }) => <Text testID="pinned-filter" accessibilityHint={String(tab)}>{filterId}</Text> };
+});
 jest.mock('../../projects/ProjectScreen', () => {
   const { Text } = require('react-native');
   return {
@@ -48,10 +56,12 @@ describe('PinnedScreen (the pinned tab)', () => {
     expect(node.props.accessibilityHint).toBe('true');
   });
 
-  it.each(['label', 'filter'])('a pinned %s has no screen until M2 ships its screens: it says so instead of failing', async (kind) => {
+  it.each(['label', 'filter'])('a pinned %s shows its screen as a tab screen (no back button)', async (kind) => {
     await renderWith(['INBOX', 'TODAY', `${kind}:${ID}`, 'BROWSE']);
 
-    expect(await screen.findByText(vi.settings.navigation.pinnedUnavailable)).toBeTruthy();
+    const node = await screen.findByTestId(`pinned-${kind}`);
+    expect(node.props.children).toBe(ID);
+    expect(node.props.accessibilityHint).toBe('true');
   });
 
   it('with nothing pinned it explains and links to the tab bar settings', async () => {

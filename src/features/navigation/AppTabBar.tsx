@@ -42,7 +42,7 @@ export function AppTabBar({ state, emitter, navigateToTab }: AppTabBarProps) {
             accessibilityHint={t('settings.navigation.editTabBar')}
             accessibilityState={{ selected }}
             onPress={() => {
-              if (!route && __DEV__) console.warn(`AppTabBar: tab '${def.route}' has no route in the navigator (missing screen file or name mismatch)`);
+              if (!route && __DEV__) console.warn(`AppTabBar: tab '${item.route}' has no route in the navigator (missing screen file or name mismatch)`);
               const event = emitter.emit({ type: 'tabPress', target: route?.key, canPreventDefault: true });
               if (!selected && !event.defaultPrevented && route) navigateToTab(route.key);
             }}

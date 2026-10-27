@@ -5,6 +5,10 @@ import enCore from './locales/en.json';
 import enBrowse from './locales/en/browse.json';
 import enCommon from './locales/en/common.json';
 import enDates from './locales/en/dates.json';
+import enDisplay from './locales/en/display.json';
+import enFilters from './locales/en/filters.json';
+import enFiltersLabels from './locales/en/filtersLabels.json';
+import enLabels from './locales/en/labels.json';
 import enNav from './locales/en/nav.json';
 import enPasswordReset from './locales/en/passwordReset.json';
 import enProjectScreen from './locales/en/projectScreen.json';
@@ -12,6 +16,7 @@ import enProjects from './locales/en/projects.json';
 import enQuickAdd from './locales/en/quickAdd.json';
 import enReorder from './locales/en/reorder.json';
 import enSchedule from './locales/en/schedule.json';
+import enSearch from './locales/en/search.json';
 import enSelection from './locales/en/selection.json';
 import enSettings from './locales/en/settings.json';
 import enTaskDetail from './locales/en/taskDetail.json';
@@ -77,6 +82,10 @@ export const enTranslation = {
   ...enBrowse,
   ...enCommon,
   ...enDates,
+  ...enDisplay,
+  ...enFilters,
+  ...enFiltersLabels,
+  ...enLabels,
   ...enNav,
   ...enPasswordReset,
   ...enProjectScreen,
@@ -84,6 +93,7 @@ export const enTranslation = {
   ...enQuickAdd,
   ...enReorder,
   ...enSchedule,
+  ...enSearch,
   ...enSelection,
   ...enSettings,
   ...enTaskDetail,

@@ -11,7 +11,7 @@ import { NotFoundView } from '../../components/NotFoundView';
 import { QueryStateView } from '../../components/QueryStateView';
 import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
-import { palette } from '../../theme';
+import { useTheme } from '../../theme';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { labelViewKey } from '../display/displayRules';
 import { displayRows } from '../display/groupTasks';
@@ -23,10 +23,10 @@ import { LabelFormSheet } from './LabelFormSheet';
 import { useDeleteLabel, useLabels, useSetLabelFavorite } from './useLabels';
 
 /** label/[id]: open tasks of one label (GET tasks?labelId=) with its own Display. */
-export function LabelScreen({ labelId }: { labelId: string }) {
+export function LabelScreen({ labelId, tab = false }: { labelId: string; tab?: boolean }) {
   const { query, labels } = useLabels();
   const label = labels.find((item) => item.id === labelId);
-  if (label) return <LabelView label={label} />;
+  if (label) return <LabelView label={label} tab={tab} />;
   // No GET labels/{id} (spec 12.7): a loaded list without the id means it is gone (spec 9.3, 404 rule).
   if (query.isSuccess) return <NotFoundView onBack={() => router.back()} testID="label-not-found" />;
   return <QueryStateView query={query} testID="label-state" />;
@@ -34,7 +34,8 @@ export function LabelScreen({ labelId }: { labelId: string }) {
 
 type Sheet = 'display' | 'menu' | 'edit' | 'delete' | null;
 
-function LabelView({ label }: { label: Label }) {
+function LabelView({ label, tab }: { label: Label; tab: boolean }) {
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const viewKey = labelViewKey(label.id);
   const display = useViewDisplay(viewKey);
@@ -56,7 +57,7 @@ function LabelView({ label }: { label: Label }) {
     <View style={[styles.fill, { backgroundColor: palette.bg }]}>
       <SubHeader
         title={label.name}
-        onBack={() => router.back()}
+        onBack={tab ? undefined : () => router.back()}
         right={
           <View style={styles.headerActions}>
             <IconButton

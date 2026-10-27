@@ -6,7 +6,7 @@ import { describeError } from '../../api/describeError';
 import type { AddOrRemoveLabelsAction } from '../../api/models';
 import { useIdempotencyKeys } from '../../lib/idempotency';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { palette, size, type } from '../../theme';
+import { size, type, useTheme } from '../../theme';
 import { LabelPickerSheet } from '../labels/LabelPickerSheet';
 import { useBatchLabels } from '../labels/useLabels';
 
@@ -21,6 +21,7 @@ interface SelectionLabelsActionProps {
  * from every selected task with ONE tasks/batch request. A retry after an error reuses the Idempotency-Key.
  */
 export function SelectionLabelsAction({ taskIds, onDone }: SelectionLabelsActionProps) {
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const online = useIsOnline();
   const [open, setOpen] = useState(false);

@@ -1,0 +1,51 @@
+{
+  "display": {
+    "title": "Display",
+    "open": "Display",
+    "sortTitle": "Sort by",
+    "orderTitle": "Order",
+    "groupTitle": "Group by",
+    "priorityTitle": "Filter by priority",
+    "dueTitle": "Filter by date",
+    "labelTitle": "Filter by label",
+    "all": "All",
+    "priorityN": "P{{n}}",
+    "completed": "Completed tasks",
+    "reset": "Reset to default",
+    "done": "Done",
+    "sort": {
+      "manual": "Manual",
+      "date": "Date",
+      "deadline": "Deadline",
+      "priority": "Priority",
+      "name": "Name",
+      "added": "Date added"
+    },
+    "order": { "asc": "Ascending", "desc": "Descending" },
+    "group": {
+      "none": "No grouping",
+      "bySection": "By section",
+      "date": "Date",
+      "deadline": "Deadline",
+      "priority": "Priority",
+      "project": "Project",
+      "label": "Label"
+    },
+    "groups": {
+      "noDate": "No date",
+      "deadline": "Deadline {{date}}",
+      "noDeadline": "No deadline",
+      "priority": "Priority {{n}}",
+      "noLabel": "No label"
+    },
+    "due": {
+      "today": "Today",
+      "thisWeek": "This week",
+      "next7Days": "Next 7 days",
+      "thisMonth": "This month",
+      "next30Days": "Next 30 days",
+      "noDate": "No date",
+      "overdue": "Overdue"
+    }
+  }
+}
