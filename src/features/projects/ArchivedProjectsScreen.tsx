@@ -8,7 +8,8 @@ import { ErrorText } from '../../components/ErrorText';
 import { QueryStateView } from '../../components/QueryStateView';
 import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
-import { gutter, palette, type } from '../../theme';
+import { gutter, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { projectDisplayName } from './appearance';
 import { ProjectIcon } from './ProjectIcon';
 import { projectTreeRows } from './projectTree';
@@ -16,6 +17,7 @@ import { useArchivedProjects, useUnarchiveProject } from './useProjects';
 
 /** Archived projects as a tree: open one (read-only) or restore it with its sub-projects (spec 5.7). */
 export function ArchivedProjectsScreen() {
+  const styles = useThemedStyles(createArchivedProjectsScreenStyles);
   const { t } = useTranslation();
   const { query, projects } = useArchivedProjects();
   const unarchive = useUnarchiveProject();
@@ -61,17 +63,19 @@ export function ArchivedProjectsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: 52,
-    paddingRight: gutter,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 52 },
-  name: { flex: 1, color: palette.ink },
-});
+function createArchivedProjectsScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      minHeight: 52,
+      paddingRight: gutter,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 52 },
+    name: { flex: 1, color: palette.ink },
+  });
+}

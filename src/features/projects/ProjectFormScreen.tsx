@@ -16,7 +16,8 @@ import { useTopInset } from '../../components/useTopInset';
 import { useIdempotencyKeys } from '../../lib/idempotency';
 import { LIMITS, checkOptionalText, checkRequiredText } from '../../lib/limits';
 import { useSingleFlight } from '../../lib/useSingleFlight';
-import { gutter, palette, radius, size, type } from '../../theme';
+import { gutter, radius, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { asProjectColor, projectColorHex, projectDisplayName } from './appearance';
 import { projectColorName } from './colorNames';
 import { ProjectIcon } from './ProjectIcon';
@@ -32,6 +33,8 @@ interface ProjectFormScreenProps {
 
 /** M-NewProject (without workspace / access / layout, M8 / M7): name, description, 20 colours, parent, favorite. */
 export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProps) {
+  const styles = useThemedStyles(createProjectFormScreenStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const top = useTopInset();
   const editing = projectId !== undefined;
@@ -219,27 +222,29 @@ export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProp
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  bar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingBottom: 4 },
-  barTitle: { flex: 1, textAlign: 'center', color: palette.ink },
-  content: { paddingHorizontal: gutter, paddingTop: 12, paddingBottom: 48 },
-  label: { ...type.label, color: palette.ink2, marginTop: 4, marginBottom: 8 },
-  swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 18 },
-  ring: { width: 40, height: 40, borderRadius: 20, borderWidth: 3, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
-  swatch: { width: size.swatch, height: size.swatch, borderRadius: size.swatch / 2, borderWidth: 3, borderColor: palette.bg },
-  parent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: size.input,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: palette.line2,
-    borderRadius: radius.control,
-    marginBottom: 8,
-  },
-  parentText: { flex: 1, color: palette.ink },
-  favorite: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.listRow },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.menuRow, borderBottomWidth: 1, borderBottomColor: palette.line },
-});
+function createProjectFormScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    bar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingBottom: 4 },
+    barTitle: { flex: 1, textAlign: 'center', color: palette.ink },
+    content: { paddingHorizontal: gutter, paddingTop: 12, paddingBottom: 48 },
+    label: { ...type.label, color: palette.ink2, marginTop: 4, marginBottom: 8 },
+    swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 18 },
+    ring: { width: 40, height: 40, borderRadius: 20, borderWidth: 3, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
+    swatch: { width: size.swatch, height: size.swatch, borderRadius: size.swatch / 2, borderWidth: 3, borderColor: palette.bg },
+    parent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      minHeight: size.input,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      borderColor: palette.line2,
+      borderRadius: radius.control,
+      marginBottom: 8,
+    },
+    parentText: { flex: 1, color: palette.ink },
+    favorite: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.listRow },
+    option: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.menuRow, borderBottomWidth: 1, borderBottomColor: palette.line },
+  });
+}

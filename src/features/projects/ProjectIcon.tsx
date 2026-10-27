@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import type { Project } from '../../api/models';
-import { palette, size as sizes } from '../../theme';
+import { size as sizes, useTheme } from '../../theme';
 import { projectColorHex } from './appearance';
 
 /** Design: "#" in the project colour (projects have no user-chosen icon, spec 10.1); the Inbox tray in the accent. */
@@ -13,6 +13,7 @@ export function ProjectIcon({
   size?: number;
   testID?: string;
 }) {
+  const { palette } = useTheme();
   return project.isInbox ? (
     <Feather testID={testID} name="inbox" size={size} color={palette.acc} />
   ) : (

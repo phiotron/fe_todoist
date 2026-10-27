@@ -17,7 +17,8 @@ import { QueryStateView } from '../../components/QueryStateView';
 import { ReorderModal } from '../../components/ReorderModal';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { SubHeader } from '../../components/SubHeader';
-import { gutter, palette, radius, type } from '../../theme';
+import { gutter, radius, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
@@ -46,6 +47,7 @@ interface ProjectScreenProps {
 }
 
 function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean; onLeave: () => void }) {
+  const styles = useThemedStyles(createProjectScreenStyles);
   const { t } = useTranslation();
   const selection = useTaskSelection();
   const readOnly = isProjectReadOnly(project);
@@ -193,6 +195,7 @@ function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean
 
 /** Project / Inbox screen (spec 9.2 "Màn dự án / Inbox (List)"): header, menu ⋯, sections, Completed tasks, read-only when archived. */
 export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
+  const styles = useThemedStyles(createProjectScreenStyles);
   const queryClient = useQueryClient();
   const projectQuery = useProject(projectId);
 
@@ -219,21 +222,23 @@ export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  pad: { paddingHorizontal: gutter },
-  description: { ...type.bodySmall, color: palette.mute, paddingHorizontal: gutter, paddingBottom: 8 },
-  banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginHorizontal: gutter,
-    marginBottom: 8,
-    paddingVertical: 8,
-    paddingLeft: 12,
-    paddingRight: 8,
-    borderRadius: radius.control,
-    backgroundColor: palette.soft,
-  },
-  bannerText: { flex: 1, color: palette.acc2 },
-});
+function createProjectScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    pad: { paddingHorizontal: gutter },
+    description: { ...type.bodySmall, color: palette.mute, paddingHorizontal: gutter, paddingBottom: 8 },
+    banner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginHorizontal: gutter,
+      marginBottom: 8,
+      paddingVertical: 8,
+      paddingLeft: 12,
+      paddingRight: 8,
+      borderRadius: radius.control,
+      backgroundColor: palette.soft,
+    },
+    bannerText: { flex: 1, color: palette.acc2 },
+  });
+}

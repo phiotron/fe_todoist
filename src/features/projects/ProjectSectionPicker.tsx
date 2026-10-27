@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { BottomSheet } from '../../components/BottomSheet';
-import { palette, size, type } from '../../theme';
+import { size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useSections } from '../sections/useSections';
 import { projectDisplayName } from './appearance';
 import { ProjectIcon } from './ProjectIcon';
@@ -37,6 +38,8 @@ export function ProjectSectionPicker({
   title,
   testID = 'project-picker',
 }: ProjectSectionPickerProps) {
+  const styles = useThemedStyles(createProjectSectionPickerStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const { all, inbox } = useProjects();
   const [chosen, setChosen] = useState<string | null>(null);
@@ -120,15 +123,17 @@ export function ProjectSectionPicker({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: size.menuRow,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  indented: { paddingLeft: 32 },
-  label: { flex: 1, color: palette.ink },
-});
+function createProjectSectionPickerStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      minHeight: size.menuRow,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    indented: { paddingLeft: 32 },
+    label: { flex: 1, color: palette.ink },
+  });
+}

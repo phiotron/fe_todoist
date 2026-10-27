@@ -9,7 +9,8 @@ import { AppButton } from '../../components/AppButton';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { IconButton } from '../../components/IconButton';
 import { ReorderModal } from '../../components/ReorderModal';
-import { gutter, palette, type } from '../../theme';
+import { gutter, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SectionFormDialog } from '../sections/SectionFormDialog';
 import {
@@ -44,6 +45,8 @@ interface Options {
  * sections, "Thêm section", and every dialog those need (`dialogs` must be rendered by the screen).
  */
 export function useProjectRows({ projectId, readOnly }: Options) {
+  const styles = useThemedStyles(createUseProjectRowsStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const { query, tasks } = useTaskList({ projectId });
   const { sections, archived } = useSections(projectId);
@@ -159,7 +162,7 @@ export function useProjectRows({ projectId, readOnly }: Options) {
     }
     return result;
     // The dialog setters and mutation callbacks are stable enough: rows only call them from event handlers.
-  }, [groups, archived, collapsed, readOnly, projectId, t, unarchive.isPending, unarchive.variables]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [groups, archived, collapsed, readOnly, projectId, t, unarchive.isPending, unarchive.variables, palette]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const menuSection = dialog.kind === 'menu' ? dialog.section : null;
   const reorderGroup = dialog.kind === 'reorderTasks' ? groups.find((g) => (g.section?.id ?? null) === dialog.sectionId) : undefined;
@@ -278,8 +281,10 @@ export function useProjectRows({ projectId, readOnly }: Options) {
   };
 }
 
-const styles = StyleSheet.create({
-  pad: { paddingHorizontal: gutter },
-  description: { ...type.meta, color: palette.mute, paddingHorizontal: gutter, paddingTop: 8 },
-  archivedActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-});
+function createUseProjectRowsStyles(palette: Palette) {
+  return StyleSheet.create({
+    pad: { paddingHorizontal: gutter },
+    description: { ...type.meta, color: palette.mute, paddingHorizontal: gutter, paddingTop: 8 },
+    archivedActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  });
+}

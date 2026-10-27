@@ -6,7 +6,8 @@ import { Avatar } from '../../components/Avatar';
 import { ListRow } from '../../components/ListRow';
 import { QueryStateView } from '../../components/QueryStateView';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { gutter, palette, size } from '../../theme';
+import { gutter, size, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
 import { useProjects } from '../projects/useProjects';
 import { AccountDialog } from './AccountDialog';
@@ -16,6 +17,7 @@ import { MyProjectsBlock } from './MyProjectsBlock';
 
 /** Browse (M-Browse): account avatar, shortcuts, Favorites, My Projects tree and the blocks later milestones add. */
 export function BrowseScreen() {
+  const styles = useThemedStyles(createBrowseScreenStyles);
   const { t } = useTranslation();
   const me = useMe();
   const { query, inbox } = useProjects();
@@ -71,8 +73,10 @@ export function BrowseScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  content: { paddingBottom: 120 },
-  shortcut: { paddingHorizontal: gutter },
-});
+function createBrowseScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    content: { paddingBottom: 120 },
+    shortcut: { paddingHorizontal: gutter },
+  });
+}

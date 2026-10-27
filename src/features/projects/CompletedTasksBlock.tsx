@@ -4,7 +4,8 @@ import { AppButton } from '../../components/AppButton';
 import { QueryStateView } from '../../components/QueryStateView';
 import { SectionHeader } from '../../components/SectionHeader';
 import { useNow } from '../../lib/useNow';
-import { gutter, palette, type } from '../../theme';
+import { gutter, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { treeRows } from '../tasks/taskRows';
 import { TaskRow } from '../tasks/TaskRow';
@@ -13,6 +14,8 @@ import { useTaskList } from '../tasks/useTaskList';
 
 /** Display → Completed tasks (spec 9.2): the project's completed tasks (with subtrees), reopened from their circle. */
 export function CompletedTasksBlock({ projectId, readOnly }: { projectId: string; readOnly: boolean }) {
+  const styles = useThemedStyles(createCompletedTasksBlockStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -58,7 +61,9 @@ export function CompletedTasksBlock({ projectId, readOnly }: { projectId: string
   );
 }
 
-const styles = StyleSheet.create({
-  pad: { paddingHorizontal: gutter },
-  empty: { ...type.body, color: palette.mute, paddingHorizontal: gutter, paddingVertical: 12 },
-});
+function createCompletedTasksBlockStyles(palette: Palette) {
+  return StyleSheet.create({
+    pad: { paddingHorizontal: gutter },
+    empty: { ...type.body, color: palette.mute, paddingHorizontal: gutter, paddingVertical: 12 },
+  });
+}

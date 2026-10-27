@@ -6,7 +6,8 @@ import { describeError } from '../../api/describeError';
 import { ActionMenu } from '../../components/ActionMenu';
 import { IconButton } from '../../components/IconButton';
 import { ReorderModal } from '../../components/ReorderModal';
-import { gutter, palette, type } from '../../theme';
+import { gutter, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { projectDisplayName } from '../projects/appearance';
 import { projectTreeRows } from '../projects/projectTree';
 import { useProjects, useReorderProject } from '../projects/useProjects';
@@ -14,6 +15,7 @@ import { BrowseProjectRow } from './BrowseProjectRow';
 
 /** "Dự án của tôi": the project tree (collapsible), + creates a project, ⋯ → archived projects / sort. */
 export function MyProjectsBlock() {
+  const styles = useThemedStyles(createMyProjectsBlockStyles);
   const { t } = useTranslation();
   const { all } = useProjects();
   const reorder = useReorderProject();
@@ -86,8 +88,10 @@ export function MyProjectsBlock() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', paddingLeft: gutter, paddingRight: 8, paddingTop: 12 },
-  title: { flex: 1, color: palette.ink },
-  empty: { ...type.body, color: palette.mute, paddingHorizontal: gutter, paddingVertical: 12 },
-});
+function createMyProjectsBlockStyles(palette: Palette) {
+  return StyleSheet.create({
+    header: { flexDirection: 'row', alignItems: 'center', paddingLeft: gutter, paddingRight: 8, paddingTop: 12 },
+    title: { flex: 1, color: palette.ink },
+    empty: { ...type.body, color: palette.mute, paddingHorizontal: gutter, paddingVertical: 12 },
+  });
+}

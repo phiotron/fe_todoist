@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { DialogFrame } from '../../components/DialogFrame';
 import { Toggle } from '../../components/Toggle';
-import { palette, size, type } from '../../theme';
+import { size, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 
 interface DisplayDialogProps {
   visible: boolean;
@@ -17,6 +18,7 @@ interface DisplayDialogProps {
  * sort / group / filter saved per account (view-options).
  */
 export function DisplayDialog({ visible, showCompleted, onShowCompletedChange, onClose }: DisplayDialogProps) {
+  const styles = useThemedStyles(createDisplayDialogStyles);
   const { t } = useTranslation();
   return (
     <DialogFrame visible={visible} title={t('projectScreen.display.title')} onRequestClose={onClose} testID="display-dialog">
@@ -36,8 +38,10 @@ export function DisplayDialog({ visible, showCompleted, onShowCompletedChange, o
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.listRow },
-  label: { flex: 1, color: palette.ink },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 },
-});
+function createDisplayDialogStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: size.listRow },
+    label: { flex: 1, color: palette.ink },
+    actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 },
+  });
+}
