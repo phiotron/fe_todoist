@@ -24,6 +24,14 @@
     "move": {
       "chip": "Chuyển tới",
       "title": "Chuyển tới"
+    },
+    "subtasks": {
+      "title": "Sub-task",
+      "add": "Thêm sub-task",
+      "complete": "Hoàn thành {{name}}",
+      "reopen": "Mở lại {{name}}",
+      "maxDepth": "Đã tới cấp 4 — không thêm sub-task được nữa",
+      "reorderTitle": "Sắp xếp sub-task"
     }
   }
 }
