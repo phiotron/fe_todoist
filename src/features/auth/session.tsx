@@ -1,19 +1,41 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { authApi, type AuthResponse, type LoginRequest, type RegisterRequest } from '../../api/auth';
 import { addSessionExpiredListener, apiFetch } from '../../api/client';
+import { twoFactorApi } from '../../api/twoFactor';
 import { queryPersister } from '../../lib/queryClient';
 import { tokenStore } from '../../lib/tokenStore';
+import {
+  TwoFactorExpiredError,
+  TwoFactorMissingError,
+  isChallengeExpired,
+  isChallengeSpent,
+  twoFactorTokenOf,
+} from '../two-factor/twoFactorToken';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'signedIn';
+
+export type SignInOutcome = 'signedIn' | 'twoFactorRequired';
 
 export interface SessionContextValue {
   status: SessionStatus;
   /** true after the server rejected the refresh token; the login screen shows a notice. */
   expired: boolean;
-  signIn(input: LoginRequest): Promise<void>;
+  signIn(input: LoginRequest): Promise<SignInOutcome>;
   signUp(input: RegisterRequest): Promise<void>;
   signOut(): Promise<void>;
+  /** true after a sign-in answered 401 two-factor-required and the code has not been entered yet. */
+  pendingTwoFactor: boolean;
+  /**
+   * Completes that sign-in with a 6-digit code or a recovery code (spec 12.1). One request per press (a second call
+   * while it is in flight shares it). A wrong code (401 two-factor-code-invalid), 400, 429, 5xx and a lost connection keep
+   * the challenge so the code can be entered again; only 401 two-factor-token-invalid (or 5 minutes at the device) ends it.
+   */
+  verifyTwoFactor(code: string): Promise<void>;
+  /** Forgets the pending two-factor sign-in (user went back). */
+  cancelTwoFactor(): void;
+  /** Signs this device out without calling the server (account deleted, logged out of every device). */
+  endLocalSession(): Promise<void>;
 }
 
 export const meQueryKey = ['me'] as const;
@@ -37,6 +59,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<SessionStatus>('loading');
   const [expired, setExpired] = useState(false);
+  const [pendingTwoFactor, setPendingTwoFactor] = useState(false);
+  // Memory only: a short-lived single-use secret, never written to disk, put in a route param or logged.
+  // `pending` is the verify request in flight: a second call shares it instead of sending the token twice.
+  const challengeRef = useRef<{ token: string; startedAt: number; pending: Promise<void> | null } | null>(null);
+
+  const clearTwoFactor = useCallback(() => {
+    challengeRef.current = null;
+    setPendingTwoFactor(false);
+  }, []);
+
+  const beginTwoFactor = useCallback((token: string) => {
+    challengeRef.current = { token, startedAt: Date.now(), pending: null };
+    setPendingTwoFactor(true);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -69,15 +105,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       await wipeCaches(() => queryClient.clear());
       await tokenStore.setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken });
       queryClient.setQueryData(meQueryKey, response.user);
+      clearTwoFactor();
       setExpired(false);
       setStatus('signedIn');
     },
-    [queryClient],
+    [queryClient, clearTwoFactor],
   );
 
   const signIn = useCallback(
-    async (input: LoginRequest) => applyAuth(await authApi.login(input)),
-    [applyAuth],
+    async (input: LoginRequest): Promise<SignInOutcome> => {
+      try {
+        await applyAuth(await authApi.login(input));
+        return 'signedIn';
+      } catch (error) {
+        const token = twoFactorTokenOf(error);
+        if (token === null) throw error;
+        beginTwoFactor(token);
+        return 'twoFactorRequired';
+      }
+    },
+    [applyAuth, beginTwoFactor],
   );
 
   const signUp = useCallback(
@@ -85,13 +132,41 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [applyAuth],
   );
 
-  const signOut = useCallback(async () => {
-    try {
-      const refreshToken = await tokenStore.getRefreshToken();
-      if (refreshToken) await authApi.logout();
-    } catch {
-      // Offline, 401/5xx or session already gone: signing out on this device never depends on the server.
-    }
+  const verifyTwoFactor = useCallback(
+    async (code: string) => {
+      const challenge = challengeRef.current;
+      if (!challenge) throw new TwoFactorMissingError();
+      if (isChallengeExpired(challenge.startedAt, Date.now())) {
+        clearTwoFactor();
+        throw new TwoFactorExpiredError();
+      }
+      // One request per press: a call made while it is in flight shares it (the token is burnt only by a successful verify).
+      if (challenge.pending) return challenge.pending;
+      const attempt = (async () => {
+        const response = await twoFactorApi
+          .verify({ twoFactorToken: challenge.token, code })
+          .catch((error: unknown) => {
+            // 401 two-factor-token-invalid = expired / unknown / already used: sign in again for a new token.
+            // 401 two-factor-code-invalid (wrong code), 400, 429, 5xx and no connection leave the token alive: the
+            // challenge stays so the user can enter the code again.
+            if (isChallengeSpent(error)) clearTwoFactor();
+            throw error;
+          });
+        clearTwoFactor(); // verified: the server burnt the token, so it is never sent again
+        await applyAuth(response);
+      })();
+      challenge.pending = attempt;
+      try {
+        await attempt;
+      } finally {
+        challenge.pending = null;
+      }
+    },
+    [applyAuth, clearTwoFactor],
+  );
+
+  const endLocalSession = useCallback(async () => {
+    clearTwoFactor();
     try {
       // Close the epoch before clearing: a refresh still on the wire must not write its tokens back afterwards.
       await apiFetch.resetSession();
@@ -102,11 +177,31 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setExpired(false);
       setStatus('signedOut');
     }
-  }, [queryClient]);
+  }, [clearTwoFactor, queryClient]);
+
+  const signOut = useCallback(async () => {
+    try {
+      const refreshToken = await tokenStore.getRefreshToken();
+      if (refreshToken) await authApi.logout();
+    } catch {
+      // Offline, 401/5xx or session already gone: signing out on this device never depends on the server.
+    }
+    await endLocalSession();
+  }, [endLocalSession]);
 
   const value = useMemo<SessionContextValue>(
-    () => ({ status, expired, signIn, signUp, signOut }),
-    [status, expired, signIn, signUp, signOut],
+    () => ({
+      status,
+      expired,
+      signIn,
+      signUp,
+      signOut,
+      pendingTwoFactor,
+      verifyTwoFactor,
+      cancelTwoFactor: clearTwoFactor,
+      endLocalSession,
+    }),
+    [status, expired, signIn, signUp, signOut, pendingTwoFactor, verifyTwoFactor, clearTwoFactor, endLocalSession],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
