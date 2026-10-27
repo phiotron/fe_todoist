@@ -28,7 +28,8 @@
       "expo-secure-store",
       "expo-localization",
       "./plugins/withAndroidBuildFixes",
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "scheme": "taskly"
   }
