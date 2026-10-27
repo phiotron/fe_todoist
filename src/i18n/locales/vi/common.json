@@ -1,3 +1,20 @@
 {
-  "common": {}
+  "common": {
+    "cancel": "Huỷ",
+    "save": "Lưu",
+    "add": "Thêm",
+    "delete": "Xoá",
+    "retry": "Thử lại",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "done": "Xong",
+    "restore": "Khôi phục",
+    "more": "Tuỳ chọn khác",
+    "undo": "Hoàn tác",
+    "loadMore": "Tải thêm",
+    "expand": "Mở {{name}}",
+    "collapse": "Thu gọn {{name}}",
+    "loadErrorTitle": "Không tải được dữ liệu",
+    "offlineBanner": "Bạn đang offline — chỉ xem được dữ liệu đã tải"
+  }
 }
