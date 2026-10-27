@@ -1,9 +1,20 @@
+import type { components } from './types.gen';
+
 /**
- * M1 API models.
- * TEMPORARY: hand-written from spec section 12 (v3) until Task 30 runs `npm run gen:api`; after that the type
- * aliases below point at the generated schemas. Every caller imports models from THIS file, never from
- * types.gen.ts, so Task 30 only edits this file.
+ * Generated-type aliases (Task 30). Every caller imports models from THIS file, never from types.gen.ts.
+ * Hand-written here: Page<T>, PROJECT_COLORS, TaskView, TaskListParams (app-side constants / query params).
  */
+
+type Schemas = components['schemas'];
+
+/** springdoc may mark response fields optional; the M1 contract guarantees they are present (spec 7.2). */
+type Strict<T> = { [K in keyof T]-?: Exclude<T[K], undefined> };
+
+/**
+ * springdoc does not emit `nullable` for optional request fields, but the contract uses `null` as "clear" / "first"
+ * (spec 12 "vắng ≠ null"). Widen exactly those fields until the backend declares them nullable (review-notes Task 30).
+ */
+type Nullable<T, K extends keyof T> = Omit<T, K> & { [P in K]?: T[P] | null };
 
 export interface Page<T> {
   items: T[];
@@ -37,96 +48,15 @@ export const PROJECT_COLORS = [
 export type ProjectColor = (typeof PROJECT_COLORS)[number];
 export const DEFAULT_PROJECT_COLOR: ProjectColor = 'charcoal';
 
-export interface Task {
-  id: string;
-  projectId: string;
-  sectionId: string | null;
-  parentId: string | null;
-  content: string;
-  /** Always a string; '' when empty. */
-  description: string;
-  /** 1 = P1 (highest) … 4 = P4 (default). */
-  priority: number;
-  /** yyyy-MM-dd, all-day due. */
-  dueDate: string | null;
-  /** Floating local time "yyyy-MM-ddTHH:mm:ss" (no Z / offset), read in the account time zone (spec 5.2). */
-  dueDatetime: string | null;
-  /** 1–1440, only with dueDatetime. */
-  durationMinutes: number | null;
-  /** yyyy-MM-dd; never makes the task overdue (BR-04). */
-  deadlineDate: string | null;
-  dueString: string | null;
-  isOverdue: boolean;
-  completedAt: string | null;
-  /** Direct subtasks (spec 5.4). */
-  subtaskCount: number;
-  completedSubtaskCount: number;
-  sortOrder: number;
-  version: number;
-  createdAt: string;
-  updatedAt: string;
-  projectName: string;
-  /** Content of the parent when this is a subtask, null for root tasks. */
-  parentContent: string | null;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  /** null only for the Inbox. */
-  color: string | null;
-  description: string;
-  /** Sub-projects (max 3 levels); null = root. */
-  parentId: string | null;
-  isInbox: boolean;
-  isFavorite: boolean;
-  archivedAt: string | null;
-  sortOrder: number;
-  viewStyle: string;
-  /** Open tasks (incl. subtasks) of this project only. */
-  activeTaskCount: number;
-  /** Sub-projects at every depth below this one, archived ones included (spec 10.1 / 12.2) — never re-summed on the client. */
-  descendantProjectCount: number;
-  /** Open tasks (incl. subtasks) of the descendant projects ONLY, not of this project (spec 10.1): the delete dialog shows `activeTaskCount + descendantActiveTaskCount`. */
-  descendantActiveTaskCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Section {
-  id: string;
-  projectId: string;
-  name: string;
-  description: string;
-  sortOrder: number;
-  archivedAt: string | null;
-  /** Open tasks (incl. subtasks). */
-  activeTaskCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type FavoriteTargetType = 'PROJECT' | 'LABEL' | 'FILTER';
-
-/** GET favorites, oldest first (spec 12.2); M1 only has PROJECT. */
-export interface Favorite {
-  targetType: FavoriteTargetType;
-  targetId: string;
-  createdAt: string;
-}
-
-/** A task changed by the cascade of close / reopen (spec 12.3); `completedAt` null = reopened. Not the task itself. */
-export interface CascadedTask {
-  id: string;
-  version: number;
-  completedAt: string | null;
-}
-
-/** close / reopen: the task plus what the cascade changed (spec 3.1 — replaces `cascadedTaskIds`). */
-export interface TaskChangeResponse {
-  task: Task;
-  cascaded: CascadedTask[];
-}
+export type Task = Strict<Schemas['TaskResponse']>;
+export type Project = Strict<Schemas['ProjectResponse']>;
+export type Section = Strict<Schemas['SectionResponse']>;
+export type Favorite = Strict<Schemas['FavoriteResponse']>;
+export type FavoriteTargetType = Favorite['targetType'];
+export type TaskChangeResponse = Strict<Schemas['TaskChangeResponse']>;
+export type CascadedTask = TaskChangeResponse['cascaded'][number];
+export type ReorderResponse = Strict<Schemas['ReorderResponse']>;
+export type AffectedTasksResponse = Strict<Schemas['AffectedTasksResponse']>;
 
 export type TaskView = 'today' | 'upcoming' | 'overdue' | 'completed';
 
@@ -153,115 +83,26 @@ export interface TaskListParams {
   today?: string;
 }
 
-export interface CreateTaskRequest {
-  /** Client-generated UUID (spec 12.11). Optional: M1–M8 do not send it (M9 offline create does). */
-  id?: string;
-  /** Absent = Inbox. */
-  projectId?: string;
-  sectionId?: string | null;
-  parentId?: string | null;
-  content: string;
-  description?: string;
-  priority?: number;
-  dueDate?: string | null;
-  dueDatetime?: string | null;
-  durationMinutes?: number | null;
-  deadlineDate?: string | null;
-  /** Absent = end of the container, null = first (spec 12 "Vắng ≠ null"). */
-  afterId?: string | null;
-}
+export type CreateTaskRequest = Nullable<
+  Schemas['CreateTaskRequest'],
+  'sectionId' | 'parentId' | 'dueDate' | 'dueDatetime' | 'durationMinutes' | 'deadlineDate' | 'afterId'
+>;
+export type UpdateTaskRequest = Nullable<
+  Schemas['UpdateTaskRequest'],
+  'dueDate' | 'dueDatetime' | 'durationMinutes' | 'deadlineDate'
+>;
+export type MoveTaskRequest = Nullable<Schemas['MoveTaskRequest'], 'sectionId' | 'parentId' | 'afterId'>;
+export type TaskBatchRequest = Schemas['BatchTasksRequest'];
+export type BatchAction = TaskBatchRequest['action'];
+export type CreateProjectRequest = Nullable<Schemas['CreateProjectRequest'], 'parentId'>;
+export type UpdateProjectRequest = Schemas['UpdateProjectRequest'];
+export type MoveProjectRequest = Schemas['MoveProjectRequest'];
+export type CreateSectionRequest = Schemas['CreateSectionRequest'];
+export type UpdateSectionRequest = Schemas['UpdateSectionRequest'];
+export type ReorderRequest = Schemas['ReorderRequest'];
+export type ReorderType = ReorderRequest['type'];
 
-/**
- * PATCH tasks/{id}: the version the edit started from + changed fields only.
- * Absent = keep, null = clear; sending dueDate or dueDatetime replaces the whole due.
- */
-export interface UpdateTaskRequest {
-  version: number;
-  content?: string;
-  description?: string;
-  priority?: number;
-  dueDate?: string | null;
-  dueDatetime?: string | null;
-  durationMinutes?: number | null;
-  deadlineDate?: string | null;
-}
-
-export interface MoveTaskRequest {
-  projectId: string;
-  /** null / absent = no section. */
-  sectionId?: string | null;
-  parentId?: string | null;
-  /** Absent = end of the container, null = first. */
-  afterId?: string | null;
-}
-
-export type BatchAction = 'CLOSE' | 'REOPEN' | 'MOVE' | 'DELETE' | 'SCHEDULE' | 'PRIORITY';
-
-/** POST tasks/batch (spec 12.5): all or nothing; extra fields only for their action. */
-export interface TaskBatchRequest {
-  action: BatchAction;
-  taskIds: string[];
-  /** REOPEN only: Undo after "complete" from multi-select. */
-  undo?: boolean;
-  /** MOVE only; sectionId absent = no section. */
-  projectId?: string;
-  sectionId?: string;
-  /** SCHEDULE only: timed tasks keep their time; null = remove the due. */
-  date?: string | null;
-  /** PRIORITY only. */
-  priority?: number;
-}
-
-export interface AffectedTasksResponse {
-  affectedTaskIds: string[];
-}
-
-export interface CreateProjectRequest {
-  /** Client-generated UUID (spec 12.11), optional — see CreateTaskRequest. */
-  id?: string;
-  name: string;
-  color?: ProjectColor;
-  description?: string;
-  parentId?: string | null;
-  afterId?: string | null;
-}
-
-export interface UpdateProjectRequest {
-  name?: string;
-  color?: ProjectColor;
-  description?: string;
-}
-
-/** POST projects/{id}/move: `parentId` must be PRESENT (null = root); afterId absent = last, null = first. */
-export interface MoveProjectRequest {
-  parentId: string | null;
-  afterId?: string | null;
-}
-
-export interface CreateSectionRequest {
-  /** Client-generated UUID (spec 12.11), optional — see CreateTaskRequest. */
-  id?: string;
-  name: string;
-  description?: string;
-  afterId?: string | null;
-}
-
-export interface UpdateSectionRequest {
-  name?: string;
-  description?: string;
-}
-
-export type ReorderType = 'PROJECT' | 'SECTION' | 'TASK';
-
-export interface ReorderRequest {
-  type: ReorderType;
-  id: string;
-  /** REQUIRED (absent → 400): null = first in its container, else the id of the item right before it. Never changes `version`. */
-  afterId: string | null;
-}
-
-export interface ReorderResponse {
-  type: ReorderType;
-  id: string;
-  sortOrder: number;
-}
+type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+/** Compile-time guard: fails when the server's 20 colour keys drift from PROJECT_COLORS. */
+const colorsInSync: Same<ProjectColor, NonNullable<Schemas['CreateProjectRequest']['color']>> = true;
+void colorsInSync;

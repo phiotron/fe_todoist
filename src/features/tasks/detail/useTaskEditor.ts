@@ -89,8 +89,9 @@ export function useTaskEditor(taskId: string) {
       setErrors({});
     } catch (failure) {
       if (isVersionConflict(failure)) {
-        // Spec 5.6: keep what the user typed, load the latest copy, let them choose. The backend's 409 carries no
-        // `current` (review B1), so without a usable one the latest copy is fetched before the banner opens.
+        // Spec 5.6: keep what the user typed, load the latest copy, let them choose. The backend's 409 for a stale
+        // `version` carries `current` (contract, Task 30); only a 409 from a DB race has none, so without a usable one
+        // the latest copy is fetched before the banner opens.
         let latest = isTask(failure.current) ? failure.current : undefined;
         let refetchFailure: unknown;
         if (!latest) {

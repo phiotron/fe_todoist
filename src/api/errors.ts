@@ -1,3 +1,5 @@
+import type { components } from './types.gen';
+
 export interface FieldError {
   field: string;
   message: string;
@@ -21,6 +23,9 @@ export interface ProblemDetail {
   limit?: string;
   max?: number;
 }
+
+/** Compile-time guard (Task 30): the generated ProblemDetail must stay assignable to the app's superset above. */
+export const generatedProblemIsCompatible = (generated: components['schemas']['ProblemDetail']): ProblemDetail => generated;
 
 export interface ApiErrorInit {
   status: number;
