@@ -1,0 +1,195 @@
+{
+  "settings": {
+    "title": "Cài đặt",
+    "edit": "Sửa",
+    "saved": "Đã lưu",
+    "saveFailed": "Chưa lưu được lên máy chủ. Lựa chọn vẫn được giữ trên máy này và sẽ tự gửi lại lần mở app sau.",
+    "pendingNotice": "Có thay đổi chưa lưu lên máy chủ, app sẽ tự gửi lại khi mở lần sau.",
+    "pages": {
+      "account": "Tài khoản",
+      "general": "Chung",
+      "dateTime": "Ngày & giờ",
+      "theme": "Giao diện",
+      "navigation": "Thanh điều hướng"
+    },
+    "appearance": {
+      "title": "Giao diện",
+      "auto": "Tự động",
+      "light": "Sáng",
+      "dark": "Tối",
+      "themes": "Chủ đề màu",
+      "sync": "Đồng bộ giao diện",
+      "syncHint": "Bật: dùng cùng giao diện trên mọi thiết bị của bạn. Tắt: chỉ đổi trên máy này."
+    },
+    "themeNames": {
+      "TASKLY": "Taskly",
+      "MOONSTONE": "Moonstone",
+      "TANGERINE": "Tangerine",
+      "KALE": "Kale",
+      "BLUEBERRY": "Blueberry",
+      "LAVENDER": "Lavender",
+      "RASPBERRY": "Raspberry"
+    },
+    "language": {
+      "title": "Ngôn ngữ",
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "timeZone": {
+      "title": "Múi giờ",
+      "current": "Múi giờ tài khoản: {{zone}}",
+      "device": "Múi giờ của máy: {{zone}}",
+      "useDevice": "Dùng múi giờ của máy",
+      "change": "Đổi múi giờ",
+      "close": "Đóng danh sách",
+      "search": "Tìm múi giờ",
+      "noResults": "Không tìm thấy múi giờ",
+      "mismatch": "Múi giờ của máy ({{device}}) khác múi giờ tài khoản ({{account}}). Cập nhật để \"Hôm nay\" tính đúng?",
+      "update": "Cập nhật",
+      "dismiss": "Bỏ qua"
+    },
+    "targets": {
+      "INBOX": "Inbox",
+      "TODAY": "Hôm nay",
+      "UPCOMING": "Sắp tới",
+      "SEARCH": "Tìm kiếm",
+      "FILTERS_LABELS": "Bộ lọc & Nhãn",
+      "TEAM": "Nhóm",
+      "BROWSE": "Duyệt"
+    },
+    "startPage": {
+      "title": "Trang mở đầu",
+      "choose": "Chọn dự án, nhãn hoặc bộ lọc…",
+      "unknown": "Mục không còn tồn tại"
+    },
+    "smartDate": {
+      "title": "Nhận diện ngày thông minh",
+      "hint": "Tự nhận ra ngày giờ khi gõ tên task ở Thêm nhanh."
+    },
+    "swipe": {
+      "title": "Thao tác vuốt",
+      "left": "Vuốt sang trái",
+      "right": "Vuốt sang phải",
+      "actions": {
+        "COMPLETE": "Hoàn thành",
+        "SCHEDULE": "Lên lịch",
+        "DELETE": "Xoá",
+        "REMINDERS": "Nhắc nhở",
+        "SELECT": "Chọn",
+        "NONE": "Không làm gì"
+      }
+    },
+    "swipeDelete": {
+      "title": "Xoá công việc?",
+      "message": "Công việc \"{{name}}\" sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
+      "messageWithSubtasks": "Công việc \"{{name}}\" và {{count}} công việc con sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
+      "confirm": "Xoá"
+    },
+    "dateTime": {
+      "startDay": "Ngày bắt đầu tuần",
+      "nextWeek": "\"Tuần sau\" là",
+      "nextWeekHint": "Ngày mà lối tắt \"Tuần sau\" chọn trong bộ chọn ngày.",
+      "weekend": "Cuối tuần bắt đầu",
+      "weekendHint": "Ngày mà lối tắt \"Cuối tuần này\" chọn: ngày này gần nhất sau hôm nay (hôm nay đã là ngày đó thì lấy tuần sau).",
+      "dateFormat": "Định dạng ngày",
+      "dmy": "Ngày/Tháng/Năm (26/10/2026)",
+      "mdy": "Tháng/Ngày/Năm (10/26/2026)",
+      "timeFormat": "Định dạng giờ",
+      "h24": "24 giờ (14:30)",
+      "h12": "12 giờ (2:30 PM)",
+      "example": "Ví dụ: {{date}} · {{time}}",
+      "weekdays": {
+        "1": "Thứ Hai",
+        "2": "Thứ Ba",
+        "3": "Thứ Tư",
+        "4": "Thứ Năm",
+        "5": "Thứ Sáu",
+        "6": "Thứ Bảy",
+        "7": "Chủ Nhật"
+      }
+    },
+    "navigation": {
+      "intro": "Chọn 3 đến 5 mục cho thanh tab. Duyệt luôn ở cuối. Thanh tab được lưu theo tài khoản.",
+      "current": "Trên thanh tab",
+      "available": "Thêm vào thanh tab",
+      "moveUp": "Đưa {{name}} lên",
+      "moveDown": "Đưa {{name}} xuống",
+      "remove": "Bỏ {{name}} khỏi thanh tab",
+      "add": "Thêm {{name}}",
+      "pin": "Ghim dự án, nhãn hoặc bộ lọc",
+      "changePin": "Đổi mục ghim",
+      "pinHint": "Chỉ ghim được một mục.",
+      "full": "Thanh tab đã đủ 5 mục. Bỏ bớt một mục trước.",
+      "minimum": "Thanh tab cần ít nhất 3 mục.",
+      "restore": "Khôi phục mặc định",
+      "restoreConfirmTitle": "Khôi phục thanh tab mặc định?",
+      "restoreConfirmMessage": "Thanh tab về Inbox, Hôm nay, Sắp tới, Duyệt. Không hoàn tác được.",
+      "restoreConfirm": "Khôi phục",
+      "rejected": "{{reason}} Thanh tab vẫn như trước.",
+      "editTabBar": "Sửa thanh tab",
+      "pinnedEmpty": "Chưa ghim mục nào. Ghim một dự án, nhãn hoặc bộ lọc ở Cài đặt › Thanh điều hướng.",
+      "openSettings": "Mở cài đặt thanh tab"
+    },
+    "picker": {
+      "title": "Chọn mục",
+      "projects": "Dự án",
+      "labels": "Nhãn",
+      "filters": "Bộ lọc",
+      "empty": "Chưa có dự án, nhãn hay bộ lọc nào",
+      "close": "Đóng"
+    },
+    "account": {
+      "twoFactor": "Xác thực hai lớp",
+      "twoFactorOn": "Đang bật",
+      "twoFactorOff": "Đang tắt"
+    },
+    "profile": {
+      "title": "Hồ sơ",
+      "email": "Email: {{email}}",
+      "displayName": "Tên hiển thị",
+      "save": "Lưu tên"
+    },
+    "password": {
+      "title": "Đổi mật khẩu",
+      "current": "Mật khẩu hiện tại",
+      "new": "Mật khẩu mới",
+      "hint": "Ít nhất 8 ký tự.",
+      "submit": "Đổi mật khẩu",
+      "success": "Đã đổi mật khẩu",
+      "wrongCurrent": "Mật khẩu hiện tại không đúng"
+    },
+    "logoutAll": {
+      "title": "Đăng xuất mọi thiết bị",
+      "description": "Kết thúc mọi phiên đăng nhập, kể cả trên máy này.",
+      "button": "Đăng xuất mọi thiết bị",
+      "confirmTitle": "Đăng xuất mọi thiết bị?",
+      "confirmMessage": "Bạn sẽ phải đăng nhập lại trên mọi thiết bị, kể cả máy này.",
+      "confirm": "Đăng xuất"
+    },
+    "deleteAccount": {
+      "title": "Xoá tài khoản",
+      "description": "Xoá vĩnh viễn tài khoản và mọi dữ liệu (dự án, task, nhãn, bộ lọc…). Không hoàn tác được.",
+      "button": "Xoá tài khoản",
+      "confirmTitle": "Xoá vĩnh viễn tài khoản?",
+      "confirmMessage": "Mọi dữ liệu sẽ mất và không hoàn tác được. Nhập mật khẩu để xác nhận.",
+      "password": "Mật khẩu",
+      "code": "Mã xác thực hai lớp hoặc mã khôi phục",
+      "confirm": "Xoá vĩnh viễn",
+      "wrongCredentials": "Mật khẩu hoặc mã không đúng",
+      "passwordRequired": "Tài khoản chưa có mật khẩu. Hãy đặt mật khẩu trước bằng \"Quên mật khẩu?\" ở màn đăng nhập.",
+      "codeRequired": "Vui lòng nhập mã"
+    },
+    "reset": {
+      "title": "Khôi phục mặc định",
+      "description": "Đưa mọi cài đặt về mặc định. Múi giờ giữ nguyên.",
+      "button": "Khôi phục mặc định",
+      "confirmTitle": "Khôi phục cài đặt mặc định?",
+      "confirmMessage": "Giao diện, ngôn ngữ, ngày & giờ, trang mở đầu, thao tác vuốt và thanh tab về mặc định. Không hoàn tác được.",
+      "confirm": "Khôi phục",
+      "done": "Đã khôi phục cài đặt mặc định"
+    },
+    "signOut": {
+      "button": "Đăng xuất"
+    }
+  }
+}

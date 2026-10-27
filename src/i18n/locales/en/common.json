@@ -1,0 +1,20 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add",
+    "delete": "Delete",
+    "retry": "Retry",
+    "close": "Close",
+    "back": "Back",
+    "done": "Done",
+    "restore": "Restore",
+    "more": "More options",
+    "undo": "Undo",
+    "loadMore": "Load more",
+    "expand": "Expand {{name}}",
+    "collapse": "Collapse {{name}}",
+    "loadErrorTitle": "Could not load the data",
+    "offlineBanner": "You are offline — only loaded data can be viewed"
+  }
+}

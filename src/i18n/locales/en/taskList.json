@@ -1,0 +1,18 @@
+{
+  "taskList": {
+    "complete": "Complete {{name}}",
+    "reopenTask": "Reopen {{name}}",
+    "completedOne": "1 task completed",
+    "completedMany": "{{n}} tasks completed",
+    "loadMore": "Load more",
+    "addTask": "Add task",
+    "progress": "{{done}} of {{total}} sub-tasks done",
+    "swipeComplete": "Complete",
+    "swipeSchedule": "Reschedule",
+    "validation": {
+      "contentRequired": "Please enter a task name",
+      "contentTooLong": "Task name must be at most 500 characters",
+      "descriptionTooLong": "Description must be at most 16,383 characters"
+    }
+  }
+}

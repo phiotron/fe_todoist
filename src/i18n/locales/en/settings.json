@@ -1,0 +1,195 @@
+{
+  "settings": {
+    "title": "Settings",
+    "edit": "Edit",
+    "saved": "Saved",
+    "saveFailed": "Could not save to the server. Your choice is kept on this device and will be sent again next time you open the app.",
+    "pendingNotice": "Some changes are not saved to the server yet; the app will send them next time it opens.",
+    "pages": {
+      "account": "Account",
+      "general": "General",
+      "dateTime": "Date & time",
+      "theme": "Theme",
+      "navigation": "Navigation"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "auto": "Auto",
+      "light": "Light",
+      "dark": "Dark",
+      "themes": "Color theme",
+      "sync": "Sync theme",
+      "syncHint": "On: use the same theme on all your devices. Off: change it on this device only."
+    },
+    "themeNames": {
+      "TASKLY": "Taskly",
+      "MOONSTONE": "Moonstone",
+      "TANGERINE": "Tangerine",
+      "KALE": "Kale",
+      "BLUEBERRY": "Blueberry",
+      "LAVENDER": "Lavender",
+      "RASPBERRY": "Raspberry"
+    },
+    "language": {
+      "title": "Language",
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "timeZone": {
+      "title": "Time zone",
+      "current": "Account time zone: {{zone}}",
+      "device": "Device time zone: {{zone}}",
+      "useDevice": "Use device time zone",
+      "change": "Change time zone",
+      "close": "Close list",
+      "search": "Search time zones",
+      "noResults": "No time zone found",
+      "mismatch": "Your device time zone ({{device}}) differs from your account time zone ({{account}}). Update it so \"Today\" is correct?",
+      "update": "Update",
+      "dismiss": "Dismiss"
+    },
+    "targets": {
+      "INBOX": "Inbox",
+      "TODAY": "Today",
+      "UPCOMING": "Upcoming",
+      "SEARCH": "Search",
+      "FILTERS_LABELS": "Filters & Labels",
+      "TEAM": "Team",
+      "BROWSE": "Browse"
+    },
+    "startPage": {
+      "title": "Start page",
+      "choose": "Choose a project, label or filter…",
+      "unknown": "Item no longer exists"
+    },
+    "smartDate": {
+      "title": "Smart date recognition",
+      "hint": "Detect dates and times as you type a task name in Quick Add."
+    },
+    "swipe": {
+      "title": "Swipe actions",
+      "left": "Swipe left",
+      "right": "Swipe right",
+      "actions": {
+        "COMPLETE": "Complete",
+        "SCHEDULE": "Schedule",
+        "DELETE": "Delete",
+        "REMINDERS": "Reminders",
+        "SELECT": "Select",
+        "NONE": "None"
+      }
+    },
+    "swipeDelete": {
+      "title": "Delete task?",
+      "message": "The task \"{{name}}\" will be permanently deleted. This cannot be undone.",
+      "messageWithSubtasks": "The task \"{{name}}\" and its {{count}} sub-tasks will be permanently deleted. This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "dateTime": {
+      "startDay": "Start of the week",
+      "nextWeek": "\"Next week\" is",
+      "nextWeekHint": "The day the \"Next week\" shortcut picks in the date picker.",
+      "weekend": "Weekend starts on",
+      "weekendHint": "The day the \"This weekend\" shortcut picks: the nearest such day after today (if today is that day, next week's).",
+      "dateFormat": "Date format",
+      "dmy": "Day/Month/Year (26/10/2026)",
+      "mdy": "Month/Day/Year (10/26/2026)",
+      "timeFormat": "Time format",
+      "h24": "24-hour (14:30)",
+      "h12": "12-hour (2:30 PM)",
+      "example": "Example: {{date}} · {{time}}",
+      "weekdays": {
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday",
+        "7": "Sunday"
+      }
+    },
+    "navigation": {
+      "intro": "Choose 3 to 5 items for the tab bar. Browse always stays last. The tab bar is saved with your account.",
+      "current": "In the tab bar",
+      "available": "Add to the tab bar",
+      "moveUp": "Move {{name}} up",
+      "moveDown": "Move {{name}} down",
+      "remove": "Remove {{name}} from the tab bar",
+      "add": "Add {{name}}",
+      "pin": "Pin a project, label or filter",
+      "changePin": "Change the pinned item",
+      "pinHint": "Only one item can be pinned.",
+      "full": "The tab bar already has 5 items. Remove one first.",
+      "minimum": "The tab bar needs at least 3 items.",
+      "restore": "Restore defaults",
+      "restoreConfirmTitle": "Restore the default tab bar?",
+      "restoreConfirmMessage": "The tab bar goes back to Inbox, Today, Upcoming, Browse. This cannot be undone.",
+      "restoreConfirm": "Restore",
+      "rejected": "{{reason}} Your tab bar is unchanged.",
+      "editTabBar": "Edit tab bar",
+      "pinnedEmpty": "Nothing is pinned yet. Pin a project, label or filter in Settings › Navigation.",
+      "openSettings": "Open tab bar settings"
+    },
+    "picker": {
+      "title": "Choose an item",
+      "projects": "Projects",
+      "labels": "Labels",
+      "filters": "Filters",
+      "empty": "No projects, labels or filters yet",
+      "close": "Close"
+    },
+    "account": {
+      "twoFactor": "Two-factor authentication",
+      "twoFactorOn": "On",
+      "twoFactorOff": "Off"
+    },
+    "profile": {
+      "title": "Profile",
+      "email": "Email: {{email}}",
+      "displayName": "Display name",
+      "save": "Save name"
+    },
+    "password": {
+      "title": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "hint": "At least 8 characters.",
+      "submit": "Change password",
+      "success": "Password changed",
+      "wrongCurrent": "Current password is incorrect"
+    },
+    "logoutAll": {
+      "title": "Log out of all devices",
+      "description": "Ends every session, including this device.",
+      "button": "Log out of all devices",
+      "confirmTitle": "Log out of all devices?",
+      "confirmMessage": "You will have to log in again on every device, including this one.",
+      "confirm": "Log out"
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "description": "Permanently deletes your account and all your data (projects, tasks, labels, filters…). This cannot be undone.",
+      "button": "Delete account",
+      "confirmTitle": "Permanently delete your account?",
+      "confirmMessage": "All your data will be lost and this cannot be undone. Enter your password to confirm.",
+      "password": "Password",
+      "code": "Two-factor code or recovery code",
+      "confirm": "Delete permanently",
+      "wrongCredentials": "Incorrect password or code",
+      "passwordRequired": "This account has no password yet. Set one first with \"Forgot your password?\" on the log in screen.",
+      "codeRequired": "Please enter the code"
+    },
+    "reset": {
+      "title": "Restore defaults",
+      "description": "Reset every setting to its default. Your time zone stays the same.",
+      "button": "Restore defaults",
+      "confirmTitle": "Restore default settings?",
+      "confirmMessage": "Theme, language, date & time, start page, swipe actions and tab bar go back to their defaults. This cannot be undone.",
+      "confirm": "Restore",
+      "done": "Default settings restored"
+    },
+    "signOut": {
+      "button": "Log out"
+    }
+  }
+}

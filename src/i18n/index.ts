@@ -1,25 +1,45 @@
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import enCore from './locales/en.json';
+import enBrowse from './locales/en/browse.json';
+import enCommon from './locales/en/common.json';
+import enDates from './locales/en/dates.json';
+import enNav from './locales/en/nav.json';
+import enPasswordReset from './locales/en/passwordReset.json';
+import enProjectScreen from './locales/en/projectScreen.json';
+import enProjects from './locales/en/projects.json';
+import enQuickAdd from './locales/en/quickAdd.json';
+import enReorder from './locales/en/reorder.json';
+import enSchedule from './locales/en/schedule.json';
+import enSelection from './locales/en/selection.json';
+import enSettings from './locales/en/settings.json';
+import enTaskDetail from './locales/en/taskDetail.json';
+import enTaskList from './locales/en/taskList.json';
+import enTwoFactor from './locales/en/twoFactor.json';
+import enViews from './locales/en/views.json';
 import viCore from './locales/vi.json';
 import viBrowse from './locales/vi/browse.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
 import viNav from './locales/vi/nav.json';
+import viPasswordReset from './locales/vi/passwordReset.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
 import viQuickAdd from './locales/vi/quickAdd.json';
 import viReorder from './locales/vi/reorder.json';
 import viSchedule from './locales/vi/schedule.json';
 import viSelection from './locales/vi/selection.json';
+import viSettings from './locales/vi/settings.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
 import viTaskList from './locales/vi/taskList.json';
+import viTwoFactor from './locales/vi/twoFactor.json';
 import viViews from './locales/vi/views.json';
 
 /**
  * Vietnamese strings. vi.json keeps the M0 keys (auth, errors); every later feature owns one file in
  * locales/vi/ whose single top-level key equals the file name, so parallel work never edits the same file.
- * A new feature adds one import and one spread below.
+ * A new feature adds one import and one spread below AND the same in enTranslation (keys.test.ts compares both).
  */
 export const viTranslation = {
   ...viCore,
@@ -27,29 +47,64 @@ export const viTranslation = {
   ...viCommon,
   ...viDates,
   ...viNav,
+  ...viPasswordReset,
   ...viProjectScreen,
   ...viProjects,
   ...viQuickAdd,
   ...viReorder,
   ...viSchedule,
   ...viSelection,
+  ...viSettings,
   ...viTaskDetail,
   ...viTaskList,
+  ...viTwoFactor,
   ...viViews,
 };
 
-export const resources = { vi: { translation: viTranslation } } as const;
+/** English strings: same files and keys as viTranslation, under locales/en/. */
+export const enTranslation = {
+  ...enCore,
+  ...enBrowse,
+  ...enCommon,
+  ...enDates,
+  ...enNav,
+  ...enPasswordReset,
+  ...enProjectScreen,
+  ...enProjects,
+  ...enQuickAdd,
+  ...enReorder,
+  ...enSchedule,
+  ...enSelection,
+  ...enSettings,
+  ...enTaskDetail,
+  ...enTaskList,
+  ...enTwoFactor,
+  ...enViews,
+};
+
+export const resources = { vi: { translation: viTranslation }, en: { translation: enTranslation } } as const;
 export type SupportedLanguage = keyof typeof resources;
+export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = ['vi', 'en'];
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'vi';
 
+export function isSupportedLanguage(code: string): code is SupportedLanguage {
+  return (SUPPORTED_LANGUAGES as readonly string[]).includes(code);
+}
+
+/** First supported language among the codes ("en-US" counts as "en"); anything else falls back to Vietnamese. */
 export function pickLanguage(codes: (string | null | undefined)[]): SupportedLanguage {
-  const match = codes.find((code): code is SupportedLanguage => !!code && code in resources);
-  return match ?? DEFAULT_LANGUAGE;
+  for (const code of codes) {
+    const base = code?.trim().toLowerCase().split(/[-_]/)[0];
+    if (base && isSupportedLanguage(base)) return base;
+  }
+  return DEFAULT_LANGUAGE;
 }
 
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources,
+    // First start (no saved settings yet): the device language when supported; SettingsProvider then applies
+    // the cached / account language before anything is shown.
     lng: pickLanguage(getLocales().map((locale) => locale.languageCode)),
     fallbackLng: DEFAULT_LANGUAGE,
     interpolation: { escapeValue: false },

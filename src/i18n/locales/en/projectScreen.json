@@ -1,0 +1,56 @@
+{
+  "projectScreen": {
+    "subtitle": "{{n}} tasks",
+    "addSection": "Add section",
+    "menu": "Project options",
+    "menuEdit": "Edit project",
+    "menuAddSubproject": "Add sub-project",
+    "menuAddSection": "Add section",
+    "menuFavorite": "Add to favorites",
+    "menuUnfavorite": "Remove from favorites",
+    "menuDisplay": "Display",
+    "menuReorderTasks": "Reorder tasks",
+    "menuReorderSections": "Reorder sections",
+    "menuReorderSubprojects": "Reorder sub-projects",
+    "menuArchive": "Archive project",
+    "menuDelete": "Delete project",
+    "reorderSubprojectsTitle": "Reorder sub-projects",
+    "deleteTitle": "Delete \"{{name}}\"?",
+    "deleteMessage": "The project will be permanently deleted with its {{tasks}} open tasks. This cannot be undone.",
+    "deleteMessageWithChildren": "The project will be permanently deleted with {{projects}} sub-projects and {{tasks}} open tasks. This cannot be undone.",
+    "archivedBanner": "This project is archived — view only",
+    "restore": "Restore",
+    "display": {
+      "title": "Display",
+      "completedTasks": "Completed tasks"
+    },
+    "completedBlock": {
+      "title": "Completed",
+      "empty": "No completed tasks yet"
+    },
+    "section": {
+      "createTitle": "New section",
+      "editTitle": "Edit section",
+      "name": "Section name",
+      "description": "Description",
+      "create": "Add",
+      "save": "Save",
+      "menu": "Options for {{name}}",
+      "edit": "Edit section",
+      "addTask": "Add task",
+      "reorderTasks": "Reorder tasks",
+      "reorderTasksTitle": "Reorder tasks",
+      "reorderSectionsTitle": "Reorder sections",
+      "archive": "Archive section",
+      "archiveTitle": "Archive section \"{{name}}\"?",
+      "archiveMessage": "The {{n}} open tasks in this section will be marked completed. You can restore the section later, but the tasks stay completed.",
+      "archiveConfirm": "Archive",
+      "delete": "Delete section",
+      "deleteTitle": "Delete section \"{{name}}\"?",
+      "deleteMessage": "The section \"{{name}}\" with its {{n}} open tasks (and every completed task in it) will be permanently deleted. This cannot be undone.",
+      "restore": "Restore",
+      "nameRequired": "Please enter a section name",
+      "nameTooLong": "Section name must be at most 2048 characters"
+    }
+  }
+}

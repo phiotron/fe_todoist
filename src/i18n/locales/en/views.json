@@ -1,0 +1,52 @@
+{
+  "views": {
+    "inbox": {
+      "title": "Inbox",
+      "subtitle": "{{n}} tasks",
+      "emptyTitle": "Your Inbox is empty",
+      "emptyText": "Tap + to capture what you need to do."
+    },
+    "today": {
+      "title": "Today",
+      "subtitle": "{{n}} tasks · {{date}}",
+      "emptyTitle": "You're all done for today",
+      "emptyText": "Enjoy the rest of your day, or plan ahead.",
+      "menu": "Today options"
+    },
+    "upcoming": {
+      "title": "Upcoming",
+      "menu": "Upcoming options",
+      "goToday": "Today",
+      "pickDate": "Pick a date to view",
+      "day": "{{weekday}} {{day}}",
+      "week": "Week strip, swipe sideways to change week"
+    },
+    "overdue": {
+      "title": "Overdue",
+      "reschedule": "Reschedule",
+      "rescheduleTitle": "Reschedule all overdue tasks to",
+      "rescheduled": "{{n}} tasks rescheduled",
+      "loadMore": "Load more overdue tasks"
+    },
+    "completed": {
+      "title": "Completed",
+      "emptyTitle": "No completed tasks yet",
+      "emptyRange": "No tasks were completed in this date range",
+      "today": "Today · {{weekday}}",
+      "yesterday": "Yesterday · {{weekday}}",
+      "day": "{{weekday}} {{date}}",
+      "sinceEmpty": "From date",
+      "untilEmpty": "To date",
+      "sinceChip": "From {{date}}",
+      "untilChip": "To {{date}}",
+      "sinceTitle": "Completed from",
+      "untilTitle": "Completed until",
+      "noBound": "No limit"
+    },
+    "browse": {
+      "title": "Browse"
+    },
+    "selectTasks": "Select tasks",
+    "addTask": "Add task"
+  }
+}

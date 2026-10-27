@@ -1,0 +1,15 @@
+{
+  "selection": {
+    "limit": "You can act on at most {{n}} tasks at once — deselect some.",
+    "count": "{{n}} selected",
+    "close": "Exit selection mode",
+    "complete": "Complete",
+    "schedule": "Reschedule",
+    "priority": "Priority",
+    "move": "Move",
+    "delete": "Delete",
+    "moveTitle": "Move the selected tasks to",
+    "deleteTitle": "Delete {{n}} tasks?",
+    "deleteMessage": "The selected tasks and all their sub-tasks will be permanently deleted. This cannot be undone."
+  }
+}

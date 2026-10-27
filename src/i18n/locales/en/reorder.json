@@ -1,0 +1,9 @@
+{
+  "reorder": {
+    "hint": "Hold and drag the ≡ handle, or use the arrow buttons",
+    "drag": "Hold to drag {{name}}",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "done": "Done"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "browse": {
+    "account": "Account",
+    "accountClose": "Close",
+    "favorites": "Favorites",
+    "myProjects": "My Projects",
+    "addProject": "Add project",
+    "projectsMenu": "Project options",
+    "archivedProjects": "Archived projects",
+    "reorderProjects": "Reorder projects",
+    "reorderTitle": "Reorder projects",
+    "noProjects": "No projects yet — tap + to create your first project",
+    "toggleFavorite": "Toggle favorite for {{name}}",
+    "signOut": "Log out"
+  }
+}
