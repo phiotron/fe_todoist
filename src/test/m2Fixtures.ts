@@ -1,5 +1,6 @@
 import type { Filter } from '../api/filters';
 import type { Label } from '../api/labels';
+import type { ViewOptions } from '../api/viewOptions';
 
 let seq = 0;
 const nextId = (prefix: string) => `${prefix}-auto-${(seq += 1)}`;
@@ -23,6 +24,21 @@ export function makeFilter(overrides: Partial<Filter> = {}): Filter {
     color: 'charcoal',
     isFavorite: false,
     sortOrder: 1024,
+    ...overrides,
+  };
+}
+
+/** A saved Display row as GET view-options returns it (nulls for unset fields). */
+export function makeViewOptions(viewKey: string, overrides: Partial<ViewOptions> = {}): ViewOptions {
+  return {
+    viewKey,
+    sortBy: 'DATE',
+    sortDirection: 'ASC',
+    groupBy: 'NONE',
+    filterPriority: null,
+    filterLabelId: null,
+    filterDue: null,
+    showCompleted: null,
     ...overrides,
   };
 }
