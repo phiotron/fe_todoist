@@ -50,6 +50,10 @@ function limitMessage(limit: string | undefined, max: number | undefined): strin
       return i18n.t('errors.limit.projectSections', { max: n });
     case 'PROJECT_SECTIONS_TOTAL':
       return i18n.t('errors.limit.projectSectionsTotal', { max: n });
+    case 'LABELS':
+      return i18n.t('errors.limit.labels', { max: n });
+    case 'FILTERS':
+      return i18n.t('errors.limit.filters', { max: n });
     default:
       return i18n.t('errors.limit.other', { max: n });
   }
@@ -68,6 +72,8 @@ function conflictMessage(error: ApiError): string {
       return i18n.t('errors.taskCompleted');
     case 'idempotency-in-progress':
       return i18n.t('errors.inProgress');
+    case 'label-name-taken':
+      return i18n.t('errors.labelNameTaken');
     default:
       return error.detail || i18n.t('errors.conflict');
   }
@@ -101,6 +107,7 @@ export function describeError(error: unknown): ErrorView {
   }
   switch (error.status) {
     case 400: {
+      if (error.code === 'filter-syntax') return view(i18n.t('errors.filterSyntax'));
       const fields: Record<string, string> = {};
       for (const fieldError of error.errors ?? []) fields[fieldError.field] ??= fieldError.message;
       const message = Object.keys(fields).length > 0 ? i18n.t('errors.invalid') : error.detail || i18n.t('errors.invalid');

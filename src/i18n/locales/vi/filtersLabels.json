@@ -1,0 +1,20 @@
+{
+  "filtersLabels": {
+    "title": "Filters & Labels",
+    "filtersTitle": "Filters",
+    "labelsTitle": "Labels",
+    "addFilter": "Thêm filter",
+    "addLabel": "Thêm label",
+    "noFilters": "Chưa có filter nào",
+    "noLabels": "Chưa có label nào",
+    "favoriteMark": "Yêu thích",
+    "reorderFilters": "Sắp xếp filter",
+    "reorderLabels": "Sắp xếp label",
+    "actions": {
+      "edit": "Sửa",
+      "favorite": "Thêm vào Yêu thích",
+      "unfavorite": "Bỏ khỏi Yêu thích",
+      "delete": "Xoá"
+    }
+  }
+}

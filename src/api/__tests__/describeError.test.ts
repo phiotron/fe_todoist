@@ -72,7 +72,7 @@ describe('describeError', () => {
     expect(describeError(api(422, { code: 'limit-reached', limit: 'PROJECT_SECTIONS_TOTAL', max: 100 })).message).toBe(
       vi.errors.limit.projectSectionsTotal.replace('{{max}}', '100'),
     );
-    expect(describeError(api(422, { code: 'limit-reached', limit: 'LABELS', max: 500 })).message).toBe(
+    expect(describeError(api(422, { code: 'limit-reached', limit: 'REMINDERS', max: 500 })).message).toBe(
       vi.errors.limit.other.replace('{{max}}', '500'),
     );
     expect(describeError(api(422)).message).toBe(vi.errors.targetUnavailable);
