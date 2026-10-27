@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ActionMenu } from '../../components/ActionMenu';
 import { AddRow } from '../../components/AddRow';
 import { AppButton } from '../../components/AppButton';
@@ -13,6 +13,9 @@ import { formatDayHeader, monthTitle } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
 import { gutter, palette, size, type } from '../../theme';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
+import { DisplaySheet } from '../display/DisplaySheet';
+import { UPCOMING_VIEW_KEY } from '../display/displayRules';
+import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { NO_DUE } from '../schedule/dueValue';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
@@ -27,7 +30,7 @@ import { setUpcomingDay, useUpcomingDay } from './upcomingDayStore';
 import { useUpcomingDays } from './useUpcomingDays';
 import { WeekStrip } from './WeekStrip';
 
-function UpcomingBody() {
+function UpcomingBody({ display }: { display: ViewDisplay }) {
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -40,11 +43,12 @@ function UpcomingBody() {
   const [weekStartKey, setWeekStartKey] = useState(thisWeek);
   const [overdueCollapsed, setOverdueCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [displayOpen, setDisplayOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [target, setTarget] = useState<string | null>(null);
   const listRef = useRef<FlatList<TaskListRow>>(null);
   // Day windows from today (spec 12.3): every day up to `loadedThrough` gets a header, even when empty.
-  const upcoming = useUpcomingDays(today);
+  const upcoming = useUpcomingDays(today, display.params);
   const overdue = useTaskList({ view: 'overdue', today });
   const reschedule = useOverdueReschedule();
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = upcoming.query;
@@ -200,17 +204,26 @@ function UpcomingBody() {
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
         testID="upcoming-menu"
-        items={[{ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() }]}
+        items={[
+          { key: 'display', label: t('display.open'), icon: 'sliders', onPress: () => setDisplayOpen(true) },
+          { key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() },
+        ]}
       />
+      <DisplaySheet visible={displayOpen} viewKey={UPCOMING_VIEW_KEY} onClose={() => setDisplayOpen(false)} />
     </View>
   );
 }
 
 /** Upcoming (M-Upcoming): week strip + one block per day from today on, Overdue with Reschedule at the top. */
 export function UpcomingScreen() {
+  const display = useViewDisplay(UPCOMING_VIEW_KEY);
   return (
     <SelectionScope>
-      <UpcomingBody />
+      {display.ready ? (
+        <UpcomingBody display={display} />
+      ) : (
+        <ActivityIndicator testID="upcoming-display-loading" color={palette.acc} style={styles.loading} />
+      )}
     </SelectionScope>
   );
 }
@@ -222,4 +235,5 @@ const styles = StyleSheet.create({
   add: { paddingHorizontal: gutter },
   more: { paddingHorizontal: gutter, alignItems: 'flex-start' },
   error: { paddingHorizontal: gutter },
+  loading: { padding: 24 },
 });

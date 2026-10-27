@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import type { Page, Task } from '../../api/models';
+import type { DisplayParams, Page, Task } from '../../api/models';
 import { queryKeys } from '../../api/queryKeys';
 import { tasksApi } from '../../api/tasks';
 import { addDays, nextUpcomingWindow, taskDateKey, type DayWindow } from '../../lib/dates';
@@ -23,12 +23,15 @@ const taskId = (task: Task) => task.id;
  * `hasNextPage` is false. `loadedThrough` = the last day whose tasks are fully loaded: `to` of a finished window; while a
  * window still has pages, the day of the last task loaded so far (earlier days are complete, the later ones unknown).
  */
-export function useUpcomingDays(today: string) {
+export function useUpcomingDays(today: string, displayParams?: DisplayParams) {
   const query = useInfiniteQuery({
-    queryKey: queryKeys.tasks.upcoming(today),
+    queryKey: [...queryKeys.tasks.upcoming(today), displayParams ?? null],
     initialPageParam: { ...(nextUpcomingWindow(today, today) as DayWindow), cursor: null } as WindowParam,
     queryFn: async ({ pageParam }): Promise<WindowPage> => {
-      const result = await tasksApi.list({ view: 'upcoming', from: pageParam.from, to: pageParam.to }, pageParam.cursor);
+      const result = await tasksApi.list(
+        { view: 'upcoming', from: pageParam.from, to: pageParam.to, ...displayParams },
+        pageParam.cursor,
+      );
       return { ...result, window: { from: pageParam.from, to: pageParam.to } };
     },
     getNextPageParam: (lastPage): WindowParam | undefined => {

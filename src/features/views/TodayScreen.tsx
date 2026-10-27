@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ActionMenu } from '../../components/ActionMenu';
 import { AddRow } from '../../components/AddRow';
 import { ErrorText } from '../../components/ErrorText';
@@ -12,23 +12,31 @@ import { formatDateKey, formatDayHeader, weekdayName } from '../../lib/dates/for
 import { useNow } from '../../lib/useNow';
 import { gutter, palette } from '../../theme';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
+import { DisplaySheet } from '../display/DisplaySheet';
+import { TODAY_VIEW_KEY } from '../display/displayRules';
+import { displayRows } from '../display/groupTasks';
+import { useGroupContext } from '../display/useGroupContext';
+import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
 import { TaskListView } from '../tasks/TaskListView';
-import { nodeRow, sectionRow, taskRows, type TaskListRow } from '../tasks/taskRows';
+import { nodeRow, sectionRow, type TaskListRow } from '../tasks/taskRows';
 import { useTaskList } from '../tasks/useTaskList';
 import { overdueRows, useOverdueReschedule } from './overdue';
 
-function TodayBody() {
+function TodayBody({ display }: { display: ViewDisplay }) {
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
   const today = dateKeyInZone(now, timeZone);
   const selection = useTaskSelection();
-  const { query, tasks } = useTaskList({ view: 'today', today });
+  const { query, tasks } = useTaskList({ view: 'today', today, ...display.params });
+  const groupBy = display.options.groupBy;
+  const ctx = useGroupContext(groupBy);
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [displayOpen, setDisplayOpen] = useState(false);
   const overdue = useOverdueReschedule();
 
   const rows = useMemo(() => {
@@ -39,7 +47,7 @@ function TodayBody() {
       onReschedule: overdue.start,
     });
     if (groups.today.length > 0) {
-      result.push(sectionRow('today', { title: formatDayHeader(today, today), count: groups.today.length }), ...taskRows(groups.today));
+      result.push(sectionRow('today', { title: formatDayHeader(today, today), count: groups.today.length }), ...displayRows(groups.today, groupBy, ctx));
     }
     if (result.length > 0) {
       result.push(
@@ -53,7 +61,7 @@ function TodayBody() {
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, t]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subtitle = query.isPending
     ? undefined
@@ -91,17 +99,26 @@ function TodayBody() {
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
         testID="today-menu"
-        items={[{ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() }]}
+        items={[
+          { key: 'display', label: t('display.open'), icon: 'sliders', onPress: () => setDisplayOpen(true) },
+          { key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() },
+        ]}
       />
+      <DisplaySheet visible={displayOpen} viewKey={TODAY_VIEW_KEY} onClose={() => setDisplayOpen(false)} />
     </View>
   );
 }
 
 /** Today (M-Main): Overdue (collapsible, Reschedule) + today's tasks; the + button adds due today. */
 export function TodayScreen() {
+  const display = useViewDisplay(TODAY_VIEW_KEY);
   return (
     <SelectionScope>
-      <TodayBody />
+      {display.ready ? (
+        <TodayBody display={display} />
+      ) : (
+        <ActivityIndicator testID="today-display-loading" color={palette.acc} style={styles.loading} />
+      )}
     </SelectionScope>
   );
 }
@@ -110,4 +127,5 @@ const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: palette.bg },
   add: { paddingHorizontal: gutter },
   error: { paddingHorizontal: gutter },
+  loading: { padding: 24 },
 });
