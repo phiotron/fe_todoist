@@ -10,6 +10,9 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { IconButton } from '../../components/IconButton';
 import { ReorderModal } from '../../components/ReorderModal';
 import { gutter, palette, type } from '../../theme';
+import { displayRows } from '../display/groupTasks';
+import { useGroupContext } from '../display/useGroupContext';
+import type { ViewDisplay } from '../display/useViewDisplay';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SectionFormDialog } from '../sections/SectionFormDialog';
 import {
@@ -37,15 +40,21 @@ interface Options {
   projectId: string;
   /** Archived project: nothing can change (decision #22). */
   readOnly: boolean;
+  /** M2: the saved Display of the project (sort / group / filters); absent = the plain M1 layout. */
+  display?: ViewDisplay;
 }
 
 /**
  * Body of a project / Inbox screen (spec 9.2): task rows by section (collapsible), section menu, add rows, archived
  * sections, "Thêm section", and every dialog those need (`dialogs` must be rendered by the screen).
  */
-export function useProjectRows({ projectId, readOnly }: Options) {
+export function useProjectRows({ projectId, readOnly, display }: Options) {
   const { t } = useTranslation();
-  const { query, tasks } = useTaskList({ projectId });
+  const { query, tasks } = useTaskList({ projectId, ...(display?.params ?? {}) });
+  const groupBy = display?.options.groupBy ?? 'NONE';
+  const ctx = useGroupContext(groupBy);
+  /** Manual task order ("Sắp xếp công việc") only makes sense while the list shows sort_order. */
+  const manualOrder = !display || (display.options.sortBy === 'MANUAL' && groupBy === 'NONE');
   const { sections, archived } = useSections(projectId);
   const groups = useMemo(() => groupProjectTasks(tasks, sections), [tasks, sections]);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -68,43 +77,62 @@ export function useProjectRows({ projectId, readOnly }: Options) {
 
   const rows = useMemo(() => {
     const result: TaskListRow[] = [];
-    for (const group of groups) {
-      const section = group.section;
-      const key = section?.id ?? 'none';
-      const isCollapsed = section !== null && collapsed.has(section.id);
-      if (section) {
-        result.push(
-          sectionRow(`s-${section.id}`, {
-            title: section.name,
-            count: section.activeTaskCount,
-            collapsed: isCollapsed,
-            onToggle: () => toggle(section.id),
-            right: readOnly ? undefined : (
-              <IconButton
-                icon="more-horizontal"
-                label={t('projectScreen.section.menu', { name: section.name })}
-                onPress={() => setDialog({ kind: 'menu', section })}
-                testID={`section-menu-open-${section.id}`}
-              />
+    if (groupBy === 'NONE') {
+      for (const group of groups) {
+        const section = group.section;
+        const key = section?.id ?? 'none';
+        const isCollapsed = section !== null && collapsed.has(section.id);
+        if (section) {
+          result.push(
+            sectionRow(`s-${section.id}`, {
+              title: section.name,
+              count: section.activeTaskCount,
+              collapsed: isCollapsed,
+              onToggle: () => toggle(section.id),
+              right: readOnly ? undefined : (
+                <IconButton
+                  icon="more-horizontal"
+                  label={t('projectScreen.section.menu', { name: section.name })}
+                  onPress={() => setDialog({ kind: 'menu', section })}
+                  testID={`section-menu-open-${section.id}`}
+                />
+              ),
+            }),
+          );
+          if (section.description && !isCollapsed) {
+            result.push(nodeRow(`sd-${section.id}`, <Text style={styles.description}>{section.description}</Text>));
+          }
+        }
+        if (isCollapsed) continue;
+        for (const { task, depth } of group.rows) result.push({ type: 'task', key: task.id, task, depth });
+        if (!readOnly) {
+          result.push(
+            nodeRow(
+              `add-${key}`,
+              <View style={styles.pad}>
+                <AddRow
+                  label={t('views.addTask')}
+                  requiresOnline
+                  onPress={() => openQuickAdd({ projectId, ...(section ? { sectionId: section.id } : {}) })}
+                  testID={`project-add-${key}`}
+                />
+              </View>,
             ),
-          }),
-        );
-        if (section.description && !isCollapsed) {
-          result.push(nodeRow(`sd-${section.id}`, <Text style={styles.description}>{section.description}</Text>));
+          );
         }
       }
-      if (isCollapsed) continue;
-      for (const { task, depth } of group.rows) result.push({ type: 'task', key: task.id, task, depth });
+    } else {
+      result.push(...displayRows(tasks.filter((task) => task.completedAt === null), groupBy, ctx, 'tree'));
       if (!readOnly) {
         result.push(
           nodeRow(
-            `add-${key}`,
+            'add-grouped',
             <View style={styles.pad}>
               <AddRow
                 label={t('views.addTask')}
                 requiresOnline
-                onPress={() => openQuickAdd({ projectId, ...(section ? { sectionId: section.id } : {}) })}
-                testID={`project-add-${key}`}
+                onPress={() => openQuickAdd({ projectId })}
+                testID="project-add-grouped"
               />
             </View>,
           ),
@@ -141,7 +169,7 @@ export function useProjectRows({ projectId, readOnly }: Options) {
         }),
       );
     }
-    if (!readOnly) {
+    if (!readOnly && groupBy === 'NONE') {
       result.push(
         nodeRow(
           'add-section',
@@ -159,7 +187,7 @@ export function useProjectRows({ projectId, readOnly }: Options) {
     }
     return result;
     // The dialog setters and mutation callbacks are stable enough: rows only call them from event handlers.
-  }, [groups, archived, collapsed, readOnly, projectId, t, unarchive.isPending, unarchive.variables]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [groups, tasks, groupBy, ctx, archived, collapsed, readOnly, projectId, t, unarchive.isPending, unarchive.variables]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const menuSection = dialog.kind === 'menu' ? dialog.section : null;
   const reorderGroup = dialog.kind === 'reorderTasks' ? groups.find((g) => (g.section?.id ?? null) === dialog.sectionId) : undefined;
@@ -193,7 +221,7 @@ export function useProjectRows({ projectId, readOnly }: Options) {
                   label: t('projectScreen.section.reorderTasks'),
                   icon: 'move',
                   requiresOnline: true,
-                  disabled: (groups.find((g) => g.section?.id === menuSection.id)?.rootTasks.length ?? 0) < 2,
+                  disabled: !manualOrder || (groups.find((g) => g.section?.id === menuSection.id)?.rootTasks.length ?? 0) < 2,
                   onPress: () => {
                     reorderTask.reset();
                     setDialog({ kind: 'reorderTasks', sectionId: menuSection.id });
@@ -263,6 +291,7 @@ export function useProjectRows({ projectId, readOnly }: Options) {
     query,
     groups,
     sections,
+    manualOrder,
     dialogs,
     actions: {
       addSection: () => setDialog({ kind: 'form' }),

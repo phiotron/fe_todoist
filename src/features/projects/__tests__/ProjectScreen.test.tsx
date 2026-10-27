@@ -6,6 +6,7 @@ import { requestsTo, type ApiRoutes } from '../../../test/apiRoutes';
 import { jsonResponse, problem } from '../../../test/http';
 import { inboxProject, makeProject, makeSection, makeTask, page, taskChange } from '../../../test/m1Fixtures';
 import { renderSignedIn } from '../../../test/screen';
+import { viewOptionsRoutes } from '../../../test/viewOptionsServer';
 import { ProjectScreen } from '../ProjectScreen';
 
 jest.mock('expo-router', () => ({
@@ -44,6 +45,7 @@ function routes(extra: ApiRoutes = {}, current = project): ApiRoutes {
       request.query.get('completed') === 'true'
         ? jsonResponse(200, page([makeTask({ id: 'x', projectId: 'p1', content: 'Đã xong', completedAt: '2026-10-22T00:00:00Z' })]))
         : jsonResponse(200, page(tasks)),
+    ...viewOptionsRoutes([`project:${current.id}`]),
     ...extra,
   };
 }
@@ -81,6 +83,7 @@ describe('ProjectScreen', () => {
       'GET /api/v1/projects/p-inbox': () => jsonResponse(200, { ...inboxProject, activeTaskCount: 1 }),
       'GET /api/v1/projects/p-inbox/sections': () => jsonResponse(200, []),
       'GET /api/v1/tasks': () => jsonResponse(200, page([makeTask({ id: 'i1', content: 'Việc trong Inbox' })])),
+      ...viewOptionsRoutes(['project:p-inbox']),
     });
     await screen.findByText('Việc trong Inbox');
     expect(screen.getByText('Inbox')).toBeOnTheScreen();
@@ -111,6 +114,7 @@ describe('ProjectScreen', () => {
       'GET /api/v1/projects/p1a1': () => jsonResponse(200, leaf),
       'GET /api/v1/projects/p1a1/sections': () => jsonResponse(200, []),
       'GET /api/v1/tasks': () => jsonResponse(200, page([makeTask({ id: 'z', content: 'Việc cấp ba' })])),
+      ...viewOptionsRoutes(['project:p1a1']),
     });
     await screen.findByText('Việc cấp ba');
     await fireEvent.press(screen.getByTestId('project-menu-open'));
