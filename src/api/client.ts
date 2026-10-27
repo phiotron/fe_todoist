@@ -114,7 +114,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     const refreshToken = await config.tokens.getRefreshToken();
     if (epoch !== startEpoch || !refreshToken) return false;
     const res = await send(REFRESH_PATH, { method: 'POST', body: { refreshToken } }, null);
-    if (res.status >= 500) throw problemToApiError(res.status, res.statusText, await readText(res));
+    // 5xx and 429 (rate limit) are temporary: surface them without ending the session.
+    if (res.status >= 500 || res.status === 429) throw problemToApiError(res.status, res.statusText, await readText(res));
     if (!res.ok) return false;
     const pair = await parse<AuthTokens | undefined>(res);
     if (typeof pair?.accessToken !== 'string' || typeof pair.refreshToken !== 'string') {

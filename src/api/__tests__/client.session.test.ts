@@ -109,6 +109,19 @@ describe('apiFetch — session epoch', () => {
     await expect(pending).resolves.toMatchObject({ title: SESSION_CHANGED });
   });
 
+  it('treats a 429 on refresh as a temporary failure: the session and tokens are kept (review C4)', async () => {
+    const { api, tokens, fetchMock, onSessionExpired } = setup();
+    fetchMock.mockImplementation(async (input) =>
+      String(input).endsWith(REFRESH_PATH) ? problem(429, 'Too Many Requests') : problem(401, 'Unauthorized'),
+    );
+
+    await expect(api('/api/v1/me')).rejects.toMatchObject({ status: 429 });
+
+    expect(onSessionExpired).not.toHaveBeenCalled();
+    await expect(tokens.getAccessToken()).resolves.toBe('acc-1');
+    await expect(tokens.getRefreshToken()).resolves.toBe('ref-1');
+  });
+
   it('a request started after resetSession refreshes on its own and succeeds', async () => {
     const { api, fetchMock } = setup();
     fetchMock.mockImplementation(async (input, init) => {
