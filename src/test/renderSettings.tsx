@@ -4,6 +4,7 @@ import { render } from '@testing-library/react-native';
 import type { ReactElement, ReactNode } from 'react';
 import { SessionProvider } from '../features/auth/session';
 import { SettingsProvider } from '../features/settings/SettingsProvider';
+import { SettingsThemeProvider } from '../features/settings/SettingsThemeProvider';
 import type { SettingsStorage } from '../features/settings/settingsStore';
 import { memorySettingsStorage } from './memorySettingsStorage';
 import { createTestQueryClient } from './render';
@@ -21,9 +22,8 @@ export function createSettingsWrapper({ queryClient, storage, deviceTimeZone }: 
     return (
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          {/* Task 8 wraps the children in <SettingsThemeProvider> once the M1 design tokens are merged. */}
           <SettingsProvider storage={storage} deviceTimeZone={deviceTimeZone}>
-            {children}
+            <SettingsThemeProvider>{children}</SettingsThemeProvider>
           </SettingsProvider>
         </SessionProvider>
       </QueryClientProvider>
