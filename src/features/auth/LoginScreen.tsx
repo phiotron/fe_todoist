@@ -18,6 +18,11 @@ export function goHomeAfterAuth() {
   router.replace('/');
 }
 
+/** Opens the code screen after a sign-in answered 401 two-factor-required (password; M5 adds Google). */
+export function goToTwoFactor() {
+  router.push('/two-factor');
+}
+
 export function LoginScreen() {
   const { t } = useTranslation();
   const styles = useAuthStyles();
@@ -43,7 +48,14 @@ export function LoginScreen() {
     setErrors({ fields: {} });
     setSubmitting(true);
     try {
-      await signIn({ email: values.email.trim(), password: values.password });
+      const outcome = await signIn({ email: values.email.trim(), password: values.password });
+      if (outcome === 'twoFactorRequired') {
+        // The password was right; the code screen finishes the sign-in. Release the lock so Back lands on a usable form.
+        setSubmitting(false);
+        inFlight.current = false;
+        goToTwoFactor();
+        return;
+      }
       // On success keep the lock and the busy state until navigation unmounts this screen.
       goHomeAfterAuth();
     } catch (error) {
