@@ -1,3 +1,29 @@
 {
-  "projectScreen": {}
+  "projectScreen": {
+    "addSection": "Thêm section",
+    "section": {
+      "createTitle": "Section mới",
+      "editTitle": "Sửa section",
+      "name": "Tên section",
+      "description": "Mô tả",
+      "create": "Thêm",
+      "save": "Lưu",
+      "menu": "Tuỳ chọn của {{name}}",
+      "edit": "Sửa section",
+      "addTask": "Thêm công việc",
+      "reorderTasks": "Sắp xếp công việc",
+      "reorderTasksTitle": "Sắp xếp công việc",
+      "reorderSectionsTitle": "Sắp xếp section",
+      "archive": "Lưu trữ section",
+      "archiveTitle": "Lưu trữ section \"{{name}}\"?",
+      "archiveMessage": "{{n}} công việc đang mở trong section sẽ chuyển thành đã hoàn thành. Có thể khôi phục section sau, nhưng công việc vẫn ở trạng thái đã hoàn thành.",
+      "archiveConfirm": "Lưu trữ",
+      "delete": "Xoá section",
+      "deleteTitle": "Xoá section \"{{name}}\"?",
+      "deleteMessage": "Section \"{{name}}\" cùng {{n}} công việc đang mở (và mọi công việc đã hoàn thành trong đó) sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
+      "restore": "Khôi phục",
+      "nameRequired": "Hãy nhập tên section",
+      "nameTooLong": "Tên section tối đa 2048 ký tự"
+    }
+  }
 }
