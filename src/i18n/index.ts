@@ -5,11 +5,16 @@ import viCore from './locales/vi.json';
 import viBrowse from './locales/vi/browse.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
+import viDisplay from './locales/vi/display.json';
+import viFilters from './locales/vi/filters.json';
+import viFiltersLabels from './locales/vi/filtersLabels.json';
+import viLabels from './locales/vi/labels.json';
 import viNav from './locales/vi/nav.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
 import viQuickAdd from './locales/vi/quickAdd.json';
 import viReorder from './locales/vi/reorder.json';
+import viSearch from './locales/vi/search.json';
 import viSchedule from './locales/vi/schedule.json';
 import viSelection from './locales/vi/selection.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
@@ -26,11 +31,16 @@ export const viTranslation = {
   ...viBrowse,
   ...viCommon,
   ...viDates,
+  ...viDisplay,
+  ...viFilters,
+  ...viFiltersLabels,
+  ...viLabels,
   ...viNav,
   ...viProjectScreen,
   ...viProjects,
   ...viQuickAdd,
   ...viReorder,
+  ...viSearch,
   ...viSchedule,
   ...viSelection,
   ...viTaskDetail,

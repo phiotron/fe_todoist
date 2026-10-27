@@ -1,7 +1,7 @@
 import type { IconName } from '../../components/IconButton';
 import i18n from '../../i18n';
 
-export type NavTabKey = 'INBOX' | 'TODAY' | 'UPCOMING' | 'BROWSE';
+export type NavTabKey = 'INBOX' | 'TODAY' | 'UPCOMING' | 'SEARCH' | 'FILTERS_LABELS' | 'BROWSE';
 
 export interface TabDef {
   key: NavTabKey;
@@ -19,6 +19,8 @@ export const TAB_DEFS: Record<NavTabKey, TabDef> = {
   INBOX: { key: 'INBOX', route: 'inbox', title: () => i18n.t('views.inbox.title'), icon: 'inbox' },
   TODAY: { key: 'TODAY', route: 'today', title: () => i18n.t('views.today.title'), icon: 'calendar' },
   UPCOMING: { key: 'UPCOMING', route: 'upcoming', title: () => i18n.t('views.upcoming.title'), icon: 'grid' },
+  SEARCH: { key: 'SEARCH', route: 'search', title: () => i18n.t('search.title'), icon: 'search' },
+  FILTERS_LABELS: { key: 'FILTERS_LABELS', route: 'filters-labels', title: () => i18n.t('filtersLabels.title'), icon: 'filter' },
   BROWSE: { key: 'BROWSE', route: 'browse', title: () => i18n.t('views.browse.title'), icon: 'menu' },
 };
 

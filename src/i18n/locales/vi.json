@@ -48,6 +48,8 @@
     "targetArchived": "Nơi chuyển đến đang được lưu trữ",
     "targetUnavailable": "Nơi chuyển đến không còn khả dụng",
     "idempotencyMismatch": "Nội dung đã đổi so với lần gửi trước, hãy thử lại",
+    "labelNameTaken": "Đã có label cùng tên",
+    "filterSyntax": "Truy vấn không đúng cú pháp",
     "tooManyRequests": "Bạn thao tác quá nhanh, hãy thử lại sau ít phút",
     "server": "Máy chủ gặp lỗi (mã {{code}}), vui lòng thử lại",
     "limit": {
@@ -56,6 +58,8 @@
       "projectActiveTasks": "Dự án đã có tối đa {{max}} công việc đang mở",
       "projectSections": "Dự án đã có tối đa {{max}} section đang dùng",
       "projectSectionsTotal": "Dự án đã có tối đa {{max}} section (kể cả section đã lưu trữ)",
+      "labels": "Bạn chỉ có thể tạo tối đa {{max}} label",
+      "filters": "Bạn chỉ có thể tạo tối đa {{max}} filter",
       "other": "Đã đạt giới hạn tối đa ({{max}})"
     }
   }

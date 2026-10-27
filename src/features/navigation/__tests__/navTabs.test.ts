@@ -23,7 +23,7 @@ describe('tab registry', () => {
 
   it('maps a route name back to its tab key', () => {
     expect(tabKeyForRoute('upcoming')).toBe('UPCOMING');
-    expect(tabKeyForRoute('search')).toBeUndefined();
+    expect(tabKeyForRoute('not-a-tab')).toBeUndefined();
   });
 
   it('the pushed screens, the sheets and the root redirect exist; the old M0 home route is gone', () => {

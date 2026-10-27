@@ -6,6 +6,7 @@ import { jsonResponse } from '../../../test/http';
 import { affected, makeTask, page } from '../../../test/m1Fixtures';
 import { SnackbarProvider } from '../../../components/Snackbar';
 import { renderSignedIn } from '../../../test/screen';
+import { viewOptionsRoutes } from '../../../test/viewOptionsServer';
 import { getUpcomingDay, setUpcomingDay } from '../upcomingDayStore';
 import { UpcomingScreen } from '../UpcomingScreen';
 
@@ -55,6 +56,7 @@ function routes(extra: Parameters<typeof renderSignedIn>[1] = {}) {
         ),
       );
     },
+    ...viewOptionsRoutes(['UPCOMING']),
     ...extra,
   };
 }

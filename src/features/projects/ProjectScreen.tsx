@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { describeError, isNotFound } from '../../api/describeError';
 import type { Project } from '../../api/models';
 import { invalidateData, queryKeys } from '../../api/queryKeys';
@@ -18,6 +18,9 @@ import { ReorderModal } from '../../components/ReorderModal';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { SubHeader } from '../../components/SubHeader';
 import { gutter, palette, radius, type } from '../../theme';
+import { DisplaySheet } from '../display/DisplaySheet';
+import { projectViewKey } from '../display/displayRules';
+import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
@@ -25,7 +28,6 @@ import { TaskListView } from '../tasks/TaskListView';
 import { nodeRow } from '../tasks/taskRows';
 import { projectDisplayName } from './appearance';
 import { CompletedTasksBlock } from './CompletedTasksBlock';
-import { DisplayDialog } from './DisplayDialog';
 import { MAX_PROJECT_DEPTH, deleteImpact, projectDepth, projectTreeRows } from './projectTree';
 import { isProjectReadOnly } from './projectReadOnly';
 import { useProjectRows } from './useProjectRows';
@@ -45,11 +47,21 @@ interface ProjectScreenProps {
   tab?: boolean;
 }
 
-function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean; onLeave: () => void }) {
+function ProjectBody({
+  project,
+  tab,
+  onLeave,
+  display,
+}: {
+  project: Project;
+  tab: boolean;
+  onLeave: () => void;
+  display: ViewDisplay;
+}) {
   const { t } = useTranslation();
   const selection = useTaskSelection();
   const readOnly = isProjectReadOnly(project);
-  const body = useProjectRows({ projectId: project.id, readOnly });
+  const body = useProjectRows({ projectId: project.id, readOnly, display });
   const { all } = useProjects();
   const favorite = useSetProjectFavorite();
   const archive = useArchiveProject();
@@ -58,9 +70,10 @@ function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean
   const reorderProject = useReorderProject();
   const [menuOpen, setMenuOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
-  const [showCompleted, setShowCompleted] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
+
+  const showCompleted = display.options.showCompleted === true;
 
   // Spec 3.1: the numbers of the delete dialog are the server's (never re-summed from `all`).
   const counts = deleteImpact(project);
@@ -103,7 +116,7 @@ function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean
   items.push({ key: 'display', label: t('projectScreen.menuDisplay'), icon: 'sliders', onPress: () => setDisplayOpen(true) });
   if (!readOnly) {
     items.push({ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() });
-    items.push({ key: 'reorder-tasks', label: t('projectScreen.menuReorderTasks'), icon: 'move', requiresOnline: true, disabled: noSectionRoots < 2, onPress: () => body.actions.reorderTasks(null) });
+    items.push({ key: 'reorder-tasks', label: t('projectScreen.menuReorderTasks'), icon: 'move', requiresOnline: true, disabled: !body.manualOrder || noSectionRoots < 2, onPress: () => body.actions.reorderTasks(null) });
     items.push({ key: 'reorder-sections', label: t('projectScreen.menuReorderSections'), icon: 'move', requiresOnline: true, disabled: body.sections.length < 2, onPress: body.actions.reorderSections });
     if (!project.isInbox) {
       items.push({
@@ -162,7 +175,7 @@ function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean
       {!tab && !readOnly ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} testID="project-fab" /> : null}
       {body.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
-      <DisplayDialog visible={displayOpen} showCompleted={showCompleted} onShowCompletedChange={setShowCompleted} onClose={() => setDisplayOpen(false)} />
+      <DisplaySheet visible={displayOpen} viewKey={projectViewKey(project.id)} onClose={() => setDisplayOpen(false)} />
       <ConfirmDialog
         visible={deleteOpen}
         title={t('projectScreen.deleteTitle', { name: project.name })}
@@ -191,6 +204,15 @@ function ProjectBody({ project, tab, onLeave }: { project: Project; tab: boolean
   );
 }
 
+/** Waits for the saved Display, so the open tasks are fetched once with the right parameters (Quyết định 14). */
+function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: boolean; onLeave: () => void }) {
+  const display = useViewDisplay(projectViewKey(project.id));
+  if (!display.ready) {
+    return <ActivityIndicator testID="project-display-loading" color={palette.acc} style={styles.loading} />;
+  }
+  return <ProjectBody project={project} tab={tab} onLeave={onLeave} display={display} />;
+}
+
 /** Project / Inbox screen (spec 9.2 "Màn dự án / Inbox (List)"): header, menu ⋯, sections, Completed tasks, read-only when archived. */
 export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
   const queryClient = useQueryClient();
@@ -214,7 +236,7 @@ export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
   }
   return (
     <SelectionScope>
-      <ProjectBody project={project} tab={tab} onLeave={leave} />
+      <ProjectWithDisplay project={project} tab={tab} onLeave={leave} />
     </SelectionScope>
   );
 }
@@ -222,6 +244,7 @@ export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: palette.bg },
   pad: { paddingHorizontal: gutter },
+  loading: { padding: 24 },
   description: { ...type.bodySmall, color: palette.mute, paddingHorizontal: gutter, paddingBottom: 8 },
   banner: {
     flexDirection: 'row',

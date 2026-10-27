@@ -1,0 +1,36 @@
+{
+  "labels": {
+    "picker": {
+      "title": "Chọn label",
+      "searchPlaceholder": "Tìm hoặc tạo label",
+      "empty": "Chưa có label nào. Gõ tên để tạo label đầu tiên.",
+      "create": "Tạo label “{{name}}”",
+      "full": "Mỗi task có tối đa {{n}} label",
+      "done": "Xong"
+    },
+    "form": {
+      "createTitle": "Thêm label",
+      "editTitle": "Sửa label",
+      "name": "Tên label",
+      "color": "Màu",
+      "favorite": "Thêm vào Yêu thích",
+      "save": "Lưu",
+      "cancel": "Huỷ",
+      "nameRequired": "Hãy nhập tên label",
+      "nameTooLong": "Tên label tối đa {{n}} ký tự",
+      "nameInvalid": "Tên label không được có dấu cách và các ký tự @ % # / , ( ) | & ! \\ *",
+      "nameTaken": "Đã có label cùng tên"
+    },
+    "delete": {
+      "title": "Xoá label?",
+      "message": "Label “{{name}}” sẽ bị xoá và gỡ khỏi mọi task. Không hoàn tác được.",
+      "confirm": "Xoá"
+    },
+    "chip": { "empty": "Label" },
+    "batch": { "open": "Label", "add": "Gắn label", "remove": "Gỡ label" },
+    "screen": {
+      "empty": "Không có task đang mở nào có label này",
+      "menu": "Tuỳ chọn label"
+    }
+  }
+}

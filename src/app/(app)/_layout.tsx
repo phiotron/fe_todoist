@@ -23,6 +23,8 @@ export default function SignedInLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="project/[id]" />
+          <Stack.Screen name="label/[id]" />
+          <Stack.Screen name="filter/[id]" />
           <Stack.Screen name="projects/archived" />
           <Stack.Screen name="completed" />
           <Stack.Screen name="task/[id]" />

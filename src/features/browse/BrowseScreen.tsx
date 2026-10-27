@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar } from '../../components/Avatar';
+import { IconButton } from '../../components/IconButton';
 import { ListRow } from '../../components/ListRow';
 import { QueryStateView } from '../../components/QueryStateView';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -38,6 +39,7 @@ export function BrowseScreen() {
             <Avatar name={me.data?.displayName ?? '?'} seed={me.data?.id ?? 'me'} size="l" />
           </Pressable>
         }
+        right={<IconButton icon="search" label={t('search.open')} onPress={() => router.push('/search')} testID="browse-search" />}
       />
       <ScrollView contentContainerStyle={styles.content}>
         {BROWSE_SHORTCUTS.map((shortcut) => (

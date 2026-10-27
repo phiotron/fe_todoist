@@ -1,0 +1,51 @@
+{
+  "display": {
+    "title": "Hiển thị",
+    "open": "Hiển thị",
+    "sortTitle": "Sắp xếp theo",
+    "orderTitle": "Thứ tự",
+    "groupTitle": "Nhóm theo",
+    "priorityTitle": "Lọc theo ưu tiên",
+    "dueTitle": "Lọc theo ngày",
+    "labelTitle": "Lọc theo label",
+    "all": "Tất cả",
+    "priorityN": "P{{n}}",
+    "completed": "Completed tasks",
+    "reset": "Đặt lại mặc định",
+    "done": "Xong",
+    "sort": {
+      "manual": "Thủ công",
+      "date": "Ngày",
+      "deadline": "Deadline",
+      "priority": "Ưu tiên",
+      "name": "Tên",
+      "added": "Ngày thêm"
+    },
+    "order": { "asc": "Tăng dần", "desc": "Giảm dần" },
+    "group": {
+      "none": "Không nhóm",
+      "bySection": "Theo section",
+      "date": "Ngày",
+      "deadline": "Deadline",
+      "priority": "Ưu tiên",
+      "project": "Dự án",
+      "label": "Label"
+    },
+    "groups": {
+      "noDate": "Không có ngày",
+      "deadline": "Deadline {{date}}",
+      "noDeadline": "Không có deadline",
+      "priority": "Ưu tiên {{n}}",
+      "noLabel": "Không có label"
+    },
+    "due": {
+      "today": "Hôm nay",
+      "thisWeek": "Tuần này",
+      "next7Days": "7 ngày tới",
+      "thisMonth": "Tháng này",
+      "next30Days": "30 ngày tới",
+      "noDate": "Không có ngày",
+      "overdue": "Quá hạn"
+    }
+  }
+}

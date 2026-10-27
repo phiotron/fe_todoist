@@ -7,6 +7,7 @@ import { jsonResponse } from '../../../test/http';
 import { affected, makeTask, page } from '../../../test/m1Fixtures';
 import { SnackbarProvider } from '../../../components/Snackbar';
 import { renderSignedIn } from '../../../test/screen';
+import { viewOptionsRoutes } from '../../../test/viewOptionsServer';
 import { palette } from '../../../theme';
 import { TodayScreen } from '../TodayScreen';
 
@@ -37,6 +38,7 @@ describe('TodayScreen', () => {
 
   it('Overdue block = due DAY before today; a timed task already past TODAY stays in Today, in red (spec 3.1)', async () => {
     const { fetchMock } = await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
     });
 
@@ -113,6 +115,7 @@ describe('TodayScreen', () => {
 
   it('with only a timed task that is late today there is no Overdue block and no Reschedule button', async () => {
     await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () => jsonResponse(200, page([tasks[1], tasks[2]])),
     });
     await screen.findByText('Gọi điện');
@@ -122,7 +125,9 @@ describe('TodayScreen', () => {
   });
 
   it('the Overdue block collapses and opens from its header', async () => {
-    await renderSignedIn(<TodayScreen />, { 'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)) });
+    await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
+      'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)) });
     await screen.findByText('Nộp thuế');
 
     await fireEvent.press(screen.getByTestId('section-header-overdue-toggle'));
@@ -135,6 +140,7 @@ describe('TodayScreen', () => {
 
   it('Reschedule moves every overdue task to the chosen day and says how many', async () => {
     const { fetchMock } = await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
       'POST /api/v1/tasks/overdue/reschedule': () => jsonResponse(200, affected(['a', 'b'])),
     });
@@ -150,6 +156,7 @@ describe('TodayScreen', () => {
 
   it('Reschedule accepts today but never an earlier day (the server answers 400 for it)', async () => {
     const { fetchMock } = await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
       'POST /api/v1/tasks/overdue/reschedule': () => jsonResponse(200, affected(['a'])),
     });
@@ -167,7 +174,9 @@ describe('TodayScreen', () => {
   });
 
   it('"Thêm công việc" under the list opens Quick Add due today', async () => {
-    await renderSignedIn(<TodayScreen />, { 'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)) });
+    await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
+      'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)) });
     await screen.findByText('Họp nhóm');
 
     await fireEvent.press(screen.getByTestId('today-add'));
@@ -176,7 +185,9 @@ describe('TodayScreen', () => {
   });
 
   it('with nothing to do shows the "all done" state whose button opens Quick Add', async () => {
-    await renderSignedIn(<TodayScreen />, { 'GET /api/v1/tasks': () => jsonResponse(200, page([])) });
+    await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
+      'GET /api/v1/tasks': () => jsonResponse(200, page([])) });
     expect(await screen.findByText(viViews.views.today.emptyTitle)).toBeOnTheScreen();
 
     await fireEvent.press(screen.getByTestId('today-empty-action'));
@@ -185,7 +196,9 @@ describe('TodayScreen', () => {
   });
 
   it('the ⋯ menu offers "Chọn công việc", which starts the selection mode', async () => {
-    await renderSignedIn(<TodayScreen />, { 'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)) });
+    await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
+      'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)) });
     await screen.findByText('Họp nhóm');
 
     await fireEvent.press(screen.getByTestId('today-menu-open'));
@@ -196,6 +209,7 @@ describe('TodayScreen', () => {
 
   it('refetches after midnight: the new account-zone day is part of the list query key (review C1)', async () => {
     const { fetchMock, rerender } = await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
     });
     await screen.findByText('Họp nhóm');

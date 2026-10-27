@@ -1,0 +1,37 @@
+{
+  "filters": {
+    "form": {
+      "createTitle": "Thêm filter",
+      "editTitle": "Sửa filter",
+      "name": "Tên filter",
+      "query": "Truy vấn",
+      "queryPlaceholder": "Ví dụ: today | overdue, p1 & #Công việc",
+      "color": "Màu",
+      "favorite": "Thêm vào Yêu thích",
+      "save": "Lưu",
+      "cancel": "Huỷ",
+      "nameRequired": "Hãy nhập tên filter",
+      "nameTooLong": "Tên filter tối đa {{n}} ký tự",
+      "queryRequired": "Hãy nhập truy vấn",
+      "queryTooLong": "Truy vấn tối đa {{n}} ký tự",
+      "valid": "Hợp lệ · {{n}} danh sách"
+    },
+    "syntax": {
+      "at": "Lỗi cú pháp ở ký tự thứ {{n}}: “{{near}}”",
+      "atEnd": "Lỗi cú pháp ở cuối truy vấn",
+      "generic": "Truy vấn không đúng cú pháp",
+      "edit": "Sửa filter"
+    },
+    "delete": {
+      "title": "Xoá filter?",
+      "message": "Filter “{{name}}” sẽ bị xoá. Không hoàn tác được.",
+      "confirm": "Xoá"
+    },
+    "screen": {
+      "empty": "Không có task đang mở khớp filter này",
+      "partEmpty": "Không có task",
+      "truncated": "Chỉ hiện {{n}} danh sách đầu",
+      "menu": "Tuỳ chọn filter"
+    }
+  }
+}

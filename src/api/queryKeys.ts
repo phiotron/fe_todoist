@@ -23,10 +23,38 @@ export const queryKeys = {
     all: ['favorites'] as const,
     list: () => ['favorites', 'list'] as const,
   },
+  labels: {
+    all: ['labels'] as const,
+    list: () => ['labels', 'list'] as const,
+  },
+  filters: {
+    all: ['filters'] as const,
+    list: () => ['filters', 'list'] as const,
+  },
+  /** POST filters/validate only parses syntax: cached by query text, never invalidated by writes. */
+  filterValidation: (query: string) => ['filterValidation', query] as const,
+  search: {
+    all: ['search'] as const,
+    tasks: (q: string, completed: boolean) => ['search', 'tasks', { q, completed }] as const,
+    objects: (q: string) => ['search', 'objects', q] as const,
+  },
+  viewOptions: {
+    all: ['viewOptions'] as const,
+    list: () => ['viewOptions', 'list'] as const,
+  },
 };
 
-/** Query roots touched by writes. M2 adds 'search', 'labels', 'filters', 'viewOptions'. */
-export const DATA_ROOTS: ReadonlySet<string> = new Set(['tasks', 'projects', 'sections', 'favorites']);
+/** Query roots touched by writes (M2 added 'labels', 'filters', 'search', 'viewOptions'). */
+export const DATA_ROOTS: ReadonlySet<string> = new Set([
+  'tasks',
+  'projects',
+  'sections',
+  'favorites',
+  'labels',
+  'filters',
+  'search',
+  'viewOptions',
+]);
 
 export interface InvalidateOptions {
   /**

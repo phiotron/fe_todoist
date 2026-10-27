@@ -59,3 +59,25 @@ không cần backend đang chạy. Mỗi khi backend đổi API:
 TypeScript 6. `overrides` ép nó dùng chung bản TypeScript của dự án. Sau mỗi lần nâng `typescript` hoặc
 `openapi-typescript`, chạy `npm run gen:api:smoke` để chắc việc sinh kiểu vẫn đúng; khi `openapi-typescript` hỗ trợ
 TypeScript 6 chính thức thì bỏ `overrides`.
+
+## Màn hình M2
+Tìm kiếm (tab `search`, mở từ biểu tượng kính lúp ở Browse): task, dự án, section, label, filter; "Tìm trong task đã
+hoàn thành"; 5 từ khoá gần nhất (lưu trên máy). Browse → **Filters & Labels** (tạo / sửa / xoá, 20 màu, yêu thích,
+nhấn giữ để mở menu, vuốt phải để yêu thích) và khối Labels; màn `label/[id]`, `filter/[id]`. Chọn label ở chi tiết
+task, Quick Add (chip Labels) và chọn nhiều. **Display** (menu ⋯ → "Hiển thị" ở Today, Upcoming và dự án / Inbox; nút
+thanh trượt ở label, filter) lưu theo tài khoản; Display không áp cho khối Quá hạn, màn Completed và "Completed tasks".
+
+## Thư viện native thêm ở M2
+Không có — **không cần build lại** development build sau khi kéo nhánh M2 (chỉ cần `npx expo start --dev-client`).
+
+## Quy ước code M2 (cho các mốc sau)
+- Màu: lấy từ `palette` của `src/theme` (token `taskly.css`); màu label / filter / dự án qua `projectColorHex`. Chữ: chỉ
+  `type.*` (không `fontSize` / `fontWeight` rời).
+- Danh sách task có Display: `useViewDisplay(viewKey)` → `{ params, options, ready, save, reset }`, đợi `ready` rồi gọi
+  `useTaskList({ …, ...display.params })`; nhóm bằng `displayRows(tasks, groupBy, ctx)`. `tasksApi.list` tự bỏ tham số
+  Display của `view=overdue` / `completed`.
+- Chọn label: `LabelChip` (một chip, lưu khi bấm Xong) hoặc `LabelPickerSheet` (nhiều hành động).
+- Mục tab mới: thêm khoá vào `NavTabKey` + `TAB_DEFS` (`SEARCH`, `FILTERS_LABELS` đã có — đúng tên giá trị `navTabs` của
+  spec 12.1.1; M3 cho thêm vào thanh tab). Nhãn trong chi tiết task đi qua `TaskDraft.labelIds`.
+- Kiểu API M2 (`Label`, `Filter`, `ViewOptions`, `labelIds`) hiện viết tay theo spec 12.7; `npm run gen:api` từ backend M2
+  (Task 24) sẽ thay bằng kiểu sinh.

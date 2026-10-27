@@ -4,6 +4,7 @@ import vi from '../../../i18n/locales/vi.json';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeTask, page } from '../../../test/m1Fixtures';
 import { renderSignedIn } from '../../../test/screen';
+import { viewOptionsRoutes } from '../../../test/viewOptionsServer';
 import { InboxScreen } from '../InboxScreen';
 
 jest.mock('expo-router', () => ({
@@ -22,6 +23,7 @@ describe('InboxScreen', () => {
       'GET /api/v1/projects/p-inbox': () => jsonResponse(200, { ...inboxProject, activeTaskCount: 1 }),
       'GET /api/v1/projects/p-inbox/sections': () => jsonResponse(200, []),
       'GET /api/v1/tasks': () => jsonResponse(200, page([makeTask({ id: 'i1', content: 'Việc trong Inbox' })])),
+      ...viewOptionsRoutes(['project:p-inbox']),
     });
 
     expect(await screen.findByText('Việc trong Inbox')).toBeOnTheScreen();

@@ -16,6 +16,7 @@ import { useSingleFlight } from '../../lib/useSingleFlight';
 import { palette, radius, shadow, size, type } from '../../theme';
 import type { TextInputHandle } from '../auth/AuthTextField';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
+import { LabelChip } from '../labels/LabelChip';
 import { projectDisplayName } from '../projects/appearance';
 import { ProjectSectionPicker } from '../projects/ProjectSectionPicker';
 import { useProjects } from '../projects/useProjects';
@@ -46,6 +47,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   const [content, setContent] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState(DEFAULT_PRIORITY);
+  const [labelIds, setLabelIds] = useState<string[]>([]);
   const [due, setDue] = useState<DueValue>(() => (params.dueDate ? { ...NO_DUE, dueDate: params.dueDate } : NO_DUE));
   const [target, setTarget] = useState<{ projectId?: string; sectionId: string | null }>({
     projectId: params.projectId,
@@ -81,6 +83,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
       description,
       priority,
       due,
+      labelIds,
     });
     await run(async () => {
       try {
@@ -159,6 +162,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
             onPress={() => show('priority')}
             testID="quick-add-priority"
           />
+          <LabelChip large labelIds={labelIds} onChange={setLabelIds} testID="quick-add-label" />
         </View>
         {notice ? (
           <Text testID="quick-add-notice" style={styles.notice}>

@@ -28,7 +28,7 @@ export default function TabsLayout() {
   useTranslation(); // screen titles below are translated: re-render when the language changes (rare, unlike the clock).
   return (
     <View style={styles.fill}>
-      <Tabs tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.bg } }}>
+      <Tabs backBehavior="history" tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.bg } }}>
         {Object.values(TAB_DEFS).map((def) => (
           <Tabs.Screen key={def.key} name={def.route} options={{ title: def.title() }} />
         ))}
