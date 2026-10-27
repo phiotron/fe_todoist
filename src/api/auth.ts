@@ -1,3 +1,4 @@
+import { tokenStore } from '../lib/tokenStore';
 import { apiFetch } from './client';
 import type { components } from './types.gen';
 
@@ -16,7 +17,11 @@ export const authApi = {
     apiFetch<AuthResponse>('/api/v1/auth/login', { method: 'POST', body, auth: false }),
   register: (body: RegisterRequest) =>
     apiFetch<AuthResponse>('/api/v1/auth/register', { method: 'POST', body, auth: false }),
-  logout: (refreshToken: string) =>
-    apiFetch<void>('/api/v1/auth/logout', { method: 'POST', body: { refreshToken } }),
+  logout: () =>
+    apiFetch<void>('/api/v1/auth/logout', {
+      method: 'POST',
+      // Read at send time: a 401 -> refresh rotates the token, and the retry must revoke the NEW one.
+      getBody: async () => ({ refreshToken: await tokenStore.getRefreshToken() }),
+    }),
   me: () => apiFetch<UserResponse>('/api/v1/me'),
 };

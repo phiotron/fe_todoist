@@ -1,0 +1,51 @@
+import type { QueryClient } from '@tanstack/react-query';
+import type { TaskListParams } from './models';
+
+export const queryKeys = {
+  tasks: {
+    all: ['tasks'] as const,
+    list: (params: TaskListParams) => ['tasks', 'list', params] as const,
+    detail: (id: string) => ['tasks', 'detail', id] as const,
+    subtasks: (id: string) => ['tasks', 'subtasks', id] as const,
+    /** Upcoming = ONE infinite query whose pages are consecutive day windows (spec 12.3), keyed by the day it starts from. */
+    upcoming: (from: string) => ['tasks', 'upcoming', from] as const,
+  },
+  projects: {
+    all: ['projects'] as const,
+    list: (archived: boolean) => ['projects', 'list', { archived }] as const,
+    detail: (id: string) => ['projects', 'detail', id] as const,
+  },
+  sections: {
+    all: ['sections'] as const,
+    list: (projectId: string) => ['sections', 'list', projectId] as const,
+  },
+  favorites: {
+    all: ['favorites'] as const,
+    list: () => ['favorites', 'list'] as const,
+  },
+};
+
+/** Query roots touched by writes. M2 adds 'search', 'labels', 'filters', 'viewOptions'. */
+export const DATA_ROOTS: ReadonlySet<string> = new Set(['tasks', 'projects', 'sections', 'favorites']);
+
+export interface InvalidateOptions {
+  /**
+   * Leave `tasks.detail` queries alone. For writes that never change a task's `version` (reorder, spec 3.1): the open
+   * detail screen must not refetch for nothing. Lists, subtasks, projects, sections and favorites are still refreshed.
+   */
+  keepDetail?: boolean;
+}
+
+/**
+ * After any write: mark every data query stale (mounted screens refetch, others on next mount). Simpler and
+ * always right compared with patching caches by hand (Undo, archived sections, counts). The one thing patched by hand
+ * is the version / completedAt of tasks answered by close / reopen — see `applyTaskChange` (taskCache.ts).
+ */
+export function invalidateData(queryClient: QueryClient, options: InvalidateOptions = {}): Promise<void> {
+  return queryClient.invalidateQueries({
+    predicate: (query) => {
+      if (!DATA_ROOTS.has(String(query.queryKey[0]))) return false;
+      return !(options.keepDetail && query.queryKey[0] === 'tasks' && query.queryKey[1] === 'detail');
+    },
+  });
+}

@@ -1,0 +1,51 @@
+{
+  "taskDetail": {
+    "content": "Tên công việc",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Thêm mô tả",
+    "breadcrumb": "Chuyển công việc: {{place}}",
+    "conflictTitle": "Đã có thay đổi ở nơi khác",
+    "conflictHint": "Bản mới nhất đã được tải về. Nội dung bạn đang nhập vẫn được giữ.",
+    "keepMine": "Lưu bản của tôi",
+    "useLatest": "Dùng bản mới",
+    "complete": "Hoàn thành công việc",
+    "reopen": "Mở lại công việc",
+    "menu": "Tuỳ chọn công việc",
+    "menuAddSubtask": "Thêm sub-task",
+    "menuDuplicate": "Sao chép",
+    "menuHideCompleted": "Ẩn sub-task đã xong",
+    "menuShowCompleted": "Hiện sub-task đã xong",
+    "menuReorderSubtasks": "Sắp xếp sub-task",
+    "menuDelete": "Xoá công việc",
+    "duplicated": "Đã sao chép công việc",
+    "archivedNotice": "Công việc này nằm trong dự án hoặc section đã lưu trữ — chỉ xem được",
+    "deleteTitle": "Xoá công việc?",
+    "deleteMessage": "\"{{name}}\" sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
+    "deleteMessageWithSubtasks": "\"{{name}}\" cùng {{n}} sub-task sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
+    "date": {
+      "add": "Thêm ngày",
+      "row": "Ngày đến hạn"
+    },
+    "deadline": {
+      "chip": "Hạn chót",
+      "chipWithDate": "Hạn chót {{date}}",
+      "title": "Hạn chót",
+      "remove": "Bỏ hạn chót"
+    },
+    "priority": {
+      "chip": "Ưu tiên {{n}}"
+    },
+    "move": {
+      "chip": "Chuyển tới",
+      "title": "Chuyển tới"
+    },
+    "subtasks": {
+      "title": "Sub-task",
+      "add": "Thêm sub-task",
+      "complete": "Hoàn thành {{name}}",
+      "reopen": "Mở lại {{name}}",
+      "maxDepth": "Đã tới cấp 4 — không thêm sub-task được nữa",
+      "reorderTitle": "Sắp xếp sub-task"
+    }
+  }
+}

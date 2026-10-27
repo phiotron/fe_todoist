@@ -7,7 +7,16 @@ import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../.
 import { renderWithProviders } from '../../../test/render';
 import { RegisterScreen } from '../RegisterScreen';
 
-jest.mock('expo-router', () => ({ router: { replace: jest.fn(), push: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: {
+    replace: jest.fn(),
+    push: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    canDismiss: jest.fn(() => true),
+    dismissAll: jest.fn(),
+  },
+}));
 
 // RNTL 14: fireEvent is async and must be awaited.
 async function fill(displayName: string, email: string, password: string) {
@@ -168,5 +177,42 @@ describe('RegisterScreen', () => {
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
     expect(countRequests(fetchMock, '/auth/register')).toBe(1);
+  });
+
+  it('clears the auth stack before going home after registering', async () => {
+    mockFetch().mockResolvedValueOnce(jsonResponse(201, authResponse()));
+    await renderWithProviders(<RegisterScreen />);
+
+    await fillAndSubmit('An', 'an@example.com', 'fixture-pass-1');
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(router.dismissAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('"already have an account" goes back to the login screen instead of stacking another one', async () => {
+    await renderWithProviders(<RegisterScreen />);
+
+    await fireEvent.press(screen.getByTestId('register-go-login'));
+
+    expect(router.back).toHaveBeenCalledTimes(1);
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('is keyboard friendly: scrollable, "next" between fields, "go" on the last, no autocorrect on email', async () => {
+    await renderWithProviders(<RegisterScreen />);
+    expect(screen.getByTestId('keyboard-screen-scroll').props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screen.getByTestId('register-displayName').props.returnKeyType).toBe('next');
+    expect(screen.getByTestId('register-email').props.returnKeyType).toBe('next');
+    expect(screen.getByTestId('register-password').props.returnKeyType).toBe('go');
+    expect(screen.getByTestId('register-email').props.autoCorrect).toBe(false);
+  });
+
+  it('replaces with the login screen when there is nothing to go back to', async () => {
+    jest.mocked(router.canGoBack).mockReturnValueOnce(false);
+    await renderWithProviders(<RegisterScreen />);
+
+    await fireEvent.press(screen.getByTestId('register-go-login'));
+
+    expect(router.replace).toHaveBeenCalledWith('/login');
   });
 });

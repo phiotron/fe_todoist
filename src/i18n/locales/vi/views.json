@@ -1,0 +1,50 @@
+{
+  "views": {
+    "inbox": {
+      "title": "Inbox",
+      "subtitle": "{{n}} công việc",
+      "emptyTitle": "Inbox đang trống",
+      "emptyText": "Nhấn + để ghi lại việc cần làm."
+    },
+    "today": {
+      "title": "Hôm nay",
+      "subtitle": "{{n}} công việc · {{date}}",
+      "emptyTitle": "Bạn đã xong hết việc hôm nay",
+      "emptyText": "Tận hưởng phần còn lại của ngày, hoặc lên kế hoạch tiếp.",
+      "menu": "Tuỳ chọn của Hôm nay"
+    },
+    "upcoming": {
+      "title": "Sắp tới",
+      "menu": "Tuỳ chọn của Sắp tới",
+      "goToday": "Hôm nay",
+      "pickDate": "Chọn ngày để xem",
+      "day": "{{weekday}} {{day}}",
+      "week": "Dải tuần, vuốt ngang để đổi tuần"
+    },
+    "overdue": {
+      "title": "Quá hạn",
+      "reschedule": "Dời lịch",
+      "rescheduleTitle": "Dời mọi việc quá hạn sang",
+      "rescheduled": "Đã dời {{n}} công việc",
+      "loadMore": "Tải thêm việc quá hạn"
+    },
+    "completed": {
+      "title": "Đã hoàn thành",
+      "emptyTitle": "Chưa có công việc nào hoàn thành",
+      "emptyRange": "Không có công việc nào hoàn thành trong khoảng ngày này",
+      "today": "Hôm nay · {{weekday}}",
+      "yesterday": "Hôm qua · {{weekday}}",
+      "day": "{{weekday}} {{date}}",
+      "sinceEmpty": "Từ ngày",
+      "untilEmpty": "Đến ngày",
+      "sinceChip": "Từ {{date}}",
+      "untilChip": "Đến {{date}}",
+      "sinceTitle": "Hoàn thành từ ngày",
+      "untilTitle": "Hoàn thành đến ngày",
+      "noBound": "Không giới hạn"
+    },
+    "browse": { "title": "Duyệt" },
+    "selectTasks": "Chọn công việc",
+    "addTask": "Thêm công việc"
+  }
+}

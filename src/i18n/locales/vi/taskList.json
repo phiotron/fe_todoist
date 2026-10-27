@@ -1,0 +1,18 @@
+{
+  "taskList": {
+    "complete": "Hoàn thành {{name}}",
+    "reopenTask": "Mở lại {{name}}",
+    "completedOne": "Đã hoàn thành 1 công việc",
+    "completedMany": "Đã hoàn thành {{n}} công việc",
+    "loadMore": "Tải thêm",
+    "addTask": "Thêm công việc",
+    "progress": "{{done}} trên {{total}} sub-task đã xong",
+    "swipeComplete": "Hoàn thành",
+    "swipeSchedule": "Dời lịch",
+    "validation": {
+      "contentRequired": "Hãy nhập tên công việc",
+      "contentTooLong": "Tên công việc tối đa 500 ký tự",
+      "descriptionTooLong": "Mô tả tối đa 16.383 ký tự"
+    }
+  }
+}

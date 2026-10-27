@@ -1,0 +1,9 @@
+{
+  "reorder": {
+    "hint": "Giữ và kéo biểu tượng ≡ hoặc dùng nút mũi tên",
+    "drag": "Giữ để kéo {{name}}",
+    "moveUp": "Đưa {{name}} lên",
+    "moveDown": "Đưa {{name}} xuống",
+    "done": "Xong"
+  }
+}

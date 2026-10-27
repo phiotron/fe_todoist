@@ -1,0 +1,16 @@
+{
+  "browse": {
+    "account": "Tài khoản",
+    "accountClose": "Đóng",
+    "favorites": "Yêu thích",
+    "myProjects": "Dự án của tôi",
+    "addProject": "Thêm dự án",
+    "projectsMenu": "Tuỳ chọn dự án",
+    "archivedProjects": "Dự án đã lưu trữ",
+    "reorderProjects": "Sắp xếp dự án",
+    "reorderTitle": "Sắp xếp dự án",
+    "noProjects": "Chưa có dự án — nhấn + để tạo dự án đầu tiên",
+    "toggleFavorite": "Bật hoặc tắt yêu thích cho {{name}}",
+    "signOut": "Đăng xuất"
+  }
+}

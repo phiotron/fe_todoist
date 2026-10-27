@@ -1,4 +1,4 @@
-import { ApiError, NetworkError } from '../../../api/errors';
+import { ApiError, NetworkError, TimeoutError } from '../../../api/errors';
 import vi from '../../../i18n/locales/vi.json';
 import { describeAuthError } from '../authErrors';
 
@@ -73,5 +73,21 @@ describe('describeAuthError', () => {
 
   it('falls back to the generic message for unexpected errors', () => {
     expect(describeAuthError(new Error('boom'), 'login', true)).toEqual({ form: vi.errors.unknown, fields: {} });
+  });
+
+  it('says the server took too long when the request timed out', () => {
+    expect(describeAuthError(new TimeoutError(), 'register', true)).toEqual({ form: vi.errors.timeout, fields: {} });
+  });
+
+  it('moves 400 errors of fields the login form does not show to the form message', () => {
+    const error = new ApiError({
+      status: 400,
+      title: 'Bad Request',
+      errors: [
+        { field: 'email', message: 'email sai' },
+        { field: 'displayName', message: 'tên sai' },
+      ],
+    });
+    expect(describeAuthError(error, 'login', true)).toEqual({ form: 'tên sai', fields: { email: 'email sai' } });
   });
 });

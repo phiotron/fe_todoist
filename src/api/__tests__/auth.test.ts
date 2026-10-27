@@ -63,17 +63,37 @@ describe('authApi', () => {
     expect(request.headers.Authorization).toBe('Bearer acc-1');
   });
 
-  it('logout posts the refresh token with the bearer token and resolves on 204', async () => {
+  it('logout reads the stored refresh token and posts it with the bearer token', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
     fetchMock.mockResolvedValueOnce(jsonResponse(204));
 
-    await expect(authApi.logout('ref-1')).resolves.toBeUndefined();
+    await expect(authApi.logout()).resolves.toBeUndefined();
 
     const request = requestAt(fetchMock, 0);
     expect(request.url).toMatch(/\/api\/v1\/auth\/logout$/);
     expect(request.body).toEqual({ refreshToken: 'ref-1' });
     expect(request.headers.Authorization).toBe('Bearer acc-1');
+  });
+
+  it('logout after an expired access token revokes the ROTATED refresh token, not the old one', async () => {
+    await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
+    const fetchMock = mockFetch();
+    fetchMock.mockImplementation(async (input, init) => {
+      if (String(input).endsWith('/api/v1/auth/refresh')) {
+        return jsonResponse(200, { accessToken: 'acc-2', refreshToken: 'ref-2', accessTokenExpiresIn: 900 });
+      }
+      const headers = (init?.headers ?? {}) as Record<string, string>;
+      return headers.Authorization === 'Bearer acc-2' ? jsonResponse(204) : problem(401, 'Unauthorized');
+    });
+
+    await authApi.logout();
+
+    const logoutBodies = fetchMock.mock.calls
+      .map((_, index) => requestAt(fetchMock, index))
+      .filter((request) => request.url.endsWith('/api/v1/auth/logout'))
+      .map((request) => request.body);
+    expect(logoutBodies).toEqual([{ refreshToken: 'ref-1' }, { refreshToken: 'ref-2' }]);
   });
 
   it('notifies session-expired listeners when the refresh token is rejected', async () => {

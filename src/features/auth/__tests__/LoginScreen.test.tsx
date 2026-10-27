@@ -1,5 +1,6 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { TextInput } from 'react-native';
 import vi from '../../../i18n/locales/vi.json';
 import { tokenStore } from '../../../lib/tokenStore';
 import { authApi } from '../../../api/auth';
@@ -8,7 +9,16 @@ import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../.
 import { renderWithProviders } from '../../../test/render';
 import { LoginScreen } from '../LoginScreen';
 
-jest.mock('expo-router', () => ({ router: { replace: jest.fn(), push: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: {
+    replace: jest.fn(),
+    push: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    canDismiss: jest.fn(() => true),
+    dismissAll: jest.fn(),
+  },
+}));
 
 // RNTL 14: fireEvent is async and must be awaited.
 async function fillAndSubmit(email: string, password: string) {
@@ -139,13 +149,7 @@ describe('LoginScreen', () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     mockFetch().mockResolvedValue(problem(401, 'Unauthorized'));
     await renderWithProviders(<LoginScreen />);
-    expect(screen.queryByTestId('login-expired-notice')).toBeNull();
-
-    // A Bearer request gets 401, the refresh gets 401 too: the client fires the session-expired event.
-    await act(async () => {
-      await expect(authApi.me()).rejects.toMatchObject({ status: 401 });
-    });
-
+    // The startup account check gets 401, the refresh gets 401 too: the client fires the session-expired event.
     const notice = await screen.findByTestId('login-expired-notice');
     expect(notice.props.children).toBe(vi.auth.errors.sessionExpired);
     expect(notice.props.accessibilityRole).toBe('alert');
@@ -166,5 +170,50 @@ describe('LoginScreen', () => {
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
     expect(countRequests(fetchMock, '/auth/login')).toBe(1);
+  });
+
+  it('clears the auth stack before going home, so Back cannot return to the login screen', async () => {
+    mockFetch().mockResolvedValueOnce(jsonResponse(200, authResponse()));
+    await renderWithProviders(<LoginScreen />);
+
+    await fillAndSubmit('an@example.com', 'fixture-pass-1');
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    expect(router.dismissAll).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(router.dismissAll).mock.invocationCallOrder[0]).toBeLessThan(
+      jest.mocked(router.replace).mock.invocationCallOrder[0],
+    );
+  });
+
+  it('submits from the keyboard on the password field', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, authResponse()));
+    await renderWithProviders(<LoginScreen />);
+    await fireEvent.changeText(screen.getByTestId('login-email'), 'an@example.com');
+    await fireEvent.changeText(screen.getByTestId('login-password'), 'fixture-pass-1');
+
+    await fireEvent(screen.getByTestId('login-password'), 'submitEditing');
+
+    await waitFor(() => expect(countRequests(fetchMock, '/auth/login')).toBe(1));
+  });
+
+  it('turns off autocorrect on email and password', async () => {
+    await renderWithProviders(<LoginScreen />);
+    expect(screen.getByTestId('login-email').props.autoCorrect).toBe(false);
+    expect(screen.getByTestId('login-password').props.autoCorrect).toBe(false);
+  });
+
+  it('scrolls with the keyboard open and keeps taps working (keyboard does not hide the buttons)', async () => {
+    await renderWithProviders(<LoginScreen />);
+    expect(screen.getByTestId('keyboard-screen-scroll').props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screen.getByTestId('login-email').props.returnKeyType).toBe('next');
+    expect(screen.getByTestId('login-password').props.returnKeyType).toBe('go');
+  });
+
+  it('"next" on the email field keeps the keyboard open so the focus can move on', async () => {
+    await renderWithProviders(<LoginScreen />);
+    // The focus jump itself needs a real TextInput ref (not reachable in the Jest preset); checked by hand in the demo.
+    expect(screen.getByTestId('login-email').props.submitBehavior).toBe('submit');
+    expect(screen.getByTestId('login-email').props.onSubmitEditing).toEqual(expect.any(Function));
   });
 });
