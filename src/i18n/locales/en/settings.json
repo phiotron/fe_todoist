@@ -127,6 +127,7 @@
       "restoreConfirm": "Restore",
       "rejected": "{{reason}} Your tab bar is unchanged.",
       "editTabBar": "Edit tab bar",
+      "pinnedUnavailable": "The label and filter screens are still being finished. For now, pin a project.",
       "pinnedEmpty": "Nothing is pinned yet. Pin a project, label or filter in Settings › Navigation.",
       "openSettings": "Open tab bar settings"
     },

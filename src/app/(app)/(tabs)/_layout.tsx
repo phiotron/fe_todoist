@@ -28,6 +28,8 @@ export default function TabsLayout() {
         {Object.values(TAB_DEFS).map((def) => (
           <Tabs.Screen key={def.key} name={def.route} options={{ title: def.title() }} />
         ))}
+        {/* The pinned project / label / filter is not a fixed key, so it is not in TAB_DEFS. */}
+        <Tabs.Screen name="pinned" options={{ title: t('settings.navigation.pin') }} />
       </Tabs>
       {/* One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar. */}
       <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} testID="tab-fab" />

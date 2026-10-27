@@ -127,6 +127,7 @@
       "restoreConfirm": "Khôi phục",
       "rejected": "{{reason}} Thanh tab vẫn như trước.",
       "editTabBar": "Sửa thanh tab",
+      "pinnedUnavailable": "Màn hình cho nhãn và bộ lọc đang được hoàn thiện. Tạm thời hãy ghim một dự án.",
       "pinnedEmpty": "Chưa ghim mục nào. Ghim một dự án, nhãn hoặc bộ lọc ở Cài đặt › Thanh điều hướng.",
       "openSettings": "Mở cài đặt thanh tab"
     },

@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
-import type { Tabs } from 'expo-router';
+import { router, type Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { layout, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
-import { TAB_DEFS, useNavTabs } from './navTabs';
+import { useTabBarItems } from './useTabBarItems';
 
 /**
  * Props of the `tabBar` render prop. expo-router 58 ships its own copy of bottom-tabs whose bar receives `emitter` and
@@ -20,7 +20,7 @@ export function AppTabBar({ state, emitter, navigateToTab }: AppTabBarProps) {
   const { palette } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const keys = useNavTabs();
+  const items = useTabBarItems();
   const activeRoute = state.routes[state.index]?.name;
 
   return (
@@ -29,26 +29,27 @@ export function AppTabBar({ state, emitter, navigateToTab }: AppTabBarProps) {
       accessibilityLabel={t('nav.tabs')}
       style={[styles.bar, { paddingBottom: Math.max(insets.bottom, layout.tabBarBottom) }]}
     >
-      {keys.map((key) => {
-        const def = TAB_DEFS[key];
-        const route = state.routes.find((candidate) => candidate.name === def.route);
-        const selected = activeRoute === def.route;
+      {items.map((item) => {
+        const route = state.routes.find((candidate) => candidate.name === item.route);
+        const selected = activeRoute === item.route;
         const color = selected ? palette.acc : palette.mute;
         return (
           <Pressable
-            key={key}
-            testID={`tab-${def.route}`}
+            key={item.key}
+            testID={`tab-${item.route}`}
             accessibilityRole="tab"
-            accessibilityLabel={def.title()}
+            accessibilityLabel={item.title}
+            accessibilityHint={t('settings.navigation.editTabBar')}
             accessibilityState={{ selected }}
             onPress={() => {
               const event = emitter.emit({ type: 'tabPress', target: route?.key, canPreventDefault: true });
               if (!selected && !event.defaultPrevented && route) navigateToTab(route.key);
             }}
+            onLongPress={() => router.push('/settings/navigation')}
             style={styles.item}
           >
-            <Feather name={def.icon} size={size.iconLarge} color={color} />
-            <Text style={[type.tab, { color }]}>{def.title()}</Text>
+            <Feather name={item.icon} size={size.iconLarge} color={color} />
+            <Text style={[type.tab, { color }]}>{item.title}</Text>
           </Pressable>
         );
       })}
