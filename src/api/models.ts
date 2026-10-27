@@ -146,6 +146,11 @@ export interface TaskListParams {
   to?: string;
   since?: string;
   until?: string;
+  /**
+   * Client-only cache-key part (never sent): the account-zone "today" the list was built for, so a view that depends on
+   * the day (Today) is a different query after midnight and refetches.
+   */
+  today?: string;
 }
 
 export interface CreateTaskRequest {
