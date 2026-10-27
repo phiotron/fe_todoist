@@ -1,4 +1,4 @@
-import { ApiError, NetworkError } from '../../api/errors';
+import { ApiError, NetworkError, TimeoutError } from '../../api/errors';
 import { APPEARANCES, DEFAULT_APPEARANCE, DEFAULT_THEME, THEME_NAMES, type Appearance, type ThemeName } from '../../theme/themeNames';
 import { DEFAULT_NAV_TABS, DEFAULT_START_PAGE, isValidNavTabs, isValidStartPage } from './navTabsModel';
 
@@ -263,9 +263,9 @@ export function settlePending(current: SettingsPatch | null, sent: SettingsPatch
   return Object.keys(rest).length > 0 ? rest : null;
 }
 
-/** Network, 5xx and 429 may succeed later: keep the change. Other errors (400, 401…) never will. */
+/** Network, timeout, 5xx and 429 may succeed later: keep the change. Other errors (400, 401…) never will. */
 export function isRetryableSaveError(error: unknown): boolean {
-  if (error instanceof NetworkError) return true;
+  if (error instanceof NetworkError || error instanceof TimeoutError) return true;
   return error instanceof ApiError && (error.status >= 500 || error.status === 429);
 }
 

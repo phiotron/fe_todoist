@@ -1,5 +1,13 @@
 import vi from '../../../i18n/locales/vi.json';
-import { hasErrors, validateLogin, validateRegister } from '../validation';
+import {
+  displayNameError,
+  emailError,
+  hasErrors,
+  newPasswordError,
+  utf8ByteLength,
+  validateLogin,
+  validateRegister,
+} from '../validation';
 
 const messages = vi.auth.validation;
 
@@ -57,5 +65,39 @@ describe('hasErrors', () => {
     expect(hasErrors({})).toBe(false);
     expect(hasErrors({ email: undefined })).toBe(false);
     expect(hasErrors({ email: 'x' })).toBe(true);
+  });
+});
+
+describe('field validators shared by the M3 forms', () => {
+  it('emailError trims and validates', () => {
+    expect(emailError('  an@example.com ')).toBeUndefined();
+    expect(emailError('   ')).toBe(messages.emailRequired);
+    expect(emailError('an@')).toBe(messages.emailInvalid);
+    expect(emailError(`${'a'.repeat(250)}@x.vn`)).toBe(messages.emailTooLong);
+  });
+
+  it('displayNameError enforces 1–100 characters after trimming', () => {
+    expect(displayNameError('  An  ')).toBeUndefined();
+    expect(displayNameError('   ')).toBe(messages.displayNameRequired);
+    expect(displayNameError('a'.repeat(100))).toBeUndefined();
+    expect(displayNameError('a'.repeat(101))).toBe(messages.displayNameTooLong);
+  });
+
+  it('newPasswordError enforces 8–72 characters', () => {
+    expect(newPasswordError('')).toBe(messages.passwordRequired);
+    expect(newPasswordError('1234567')).toBe(messages.passwordLength);
+    expect(newPasswordError('12345678')).toBeUndefined();
+    expect(newPasswordError('a'.repeat(72))).toBeUndefined();
+    expect(newPasswordError('a'.repeat(73))).toBe(messages.passwordLength);
+  });
+
+  it('newPasswordError also enforces at most 72 bytes of UTF-8 (spec 5.9, 18.1 I18)', () => {
+    expect(utf8ByteLength('abc')).toBe(3);
+    expect(utf8ByteLength('é')).toBe(2);
+    expect(utf8ByteLength('€')).toBe(3);
+    expect(utf8ByteLength('😀')).toBe(4);
+    expect(newPasswordError('é'.repeat(36))).toBeUndefined(); // 72 bytes
+    expect(newPasswordError('é'.repeat(37))).toBe(messages.passwordBytes); // 37 characters, 74 bytes
+    expect(newPasswordError('😀'.repeat(19))).toBe(messages.passwordBytes); // 38 UTF-16 units, 76 bytes
   });
 });

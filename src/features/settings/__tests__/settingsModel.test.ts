@@ -1,4 +1,4 @@
-import { ApiError, NetworkError } from '../../../api/errors';
+import { ApiError, NetworkError, TimeoutError } from '../../../api/errors';
 import {
   APP_LANGUAGES,
   applyLocally,
@@ -239,6 +239,7 @@ describe('changes', () => {
 describe('isRetryableSaveError', () => {
   it.each([
     ['network', new NetworkError(), true],
+    ['timeout', new TimeoutError(), true],
     ['500', new ApiError({ status: 500, title: 'x' }), true],
     ['503', new ApiError({ status: 503, title: 'x' }), true],
     ['429', new ApiError({ status: 429, title: 'x' }), true],

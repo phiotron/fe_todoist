@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { palette, type } from '../theme';
@@ -16,6 +17,8 @@ export interface ConfirmDialogProps {
   busy?: boolean;
   error?: string;
   testID?: string;
+  /** Extra content between the message and the buttons (password / code fields of M3). */
+  children?: ReactNode;
 }
 
 /** BR-11 (M-Confirm): asked before every delete; Cancel never calls the API; the action is red when destructive. */
@@ -30,11 +33,13 @@ export function ConfirmDialog({
   busy = false,
   error,
   testID = 'confirm-dialog',
+  children,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
   return (
     <DialogFrame visible={visible} title={title} onRequestClose={onCancel} testID={testID}>
       {message ? <Text style={styles.message}>{message}</Text> : null}
+      {children}
       <ErrorText message={error} testID={`${testID}-error`} />
       <View style={styles.actions}>
         <AppButton variant="outline" label={t('common.cancel')} onPress={onCancel} disabled={busy} testID={`${testID}-cancel`} />
