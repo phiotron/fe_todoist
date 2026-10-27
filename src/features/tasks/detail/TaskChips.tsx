@@ -7,6 +7,7 @@ import { Chip } from '../../../components/Chip';
 import { dateKeyInZone, describeDeadline, describeDue } from '../../../lib/dates';
 import { formatDateKey, formatDueLabel } from '../../../lib/dates/format';
 import { palette, size, type } from '../../../theme';
+import { TaskReminderChip } from '../../reminders/TaskReminderChip';
 import { NO_DUE, type DueValue } from '../../schedule/dueValue';
 import { ScheduleSheet } from '../../schedule/ScheduleSheet';
 import { dueTone } from '../dueTone';
@@ -79,6 +80,7 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
           onPress={() => setSheet('priority')}
           testID="task-priority-chip"
         />
+        <TaskReminderChip task={task} timeZone={timeZone} readOnly={readOnly} />
         <Chip large icon="arrow-right" label={t('taskDetail.move.chip')} disabled={readOnly} onPress={onMove} testID="task-move-chip" />
       </View>
       <ScheduleSheet

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Task } from '../../api/models';
+import { openTaskReminders } from '../reminders/openTaskReminders';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { gutter, palette, size, type } from '../../theme';
 import { Checkbox } from './Checkbox';
@@ -32,9 +33,10 @@ export interface TaskRowProps {
   showCompletedTime?: boolean;
 }
 
-const SWIPE_LOOK: Partial<Record<SwipeAction, { icon: 'check-circle' | 'calendar' | 'check-square'; color: string }>> = {
+const SWIPE_LOOK: Partial<Record<SwipeAction, { icon: 'check-circle' | 'calendar' | 'check-square' | 'bell'; color: string }>> = {
   COMPLETE: { icon: 'check-circle', color: palette.ok },
   SCHEDULE: { icon: 'calendar', color: palette.vio },
+  REMINDERS: { icon: 'bell', color: palette.p2 },
   SELECT: { icon: 'check-square', color: palette.acc },
 };
 
@@ -65,6 +67,7 @@ export function TaskRow({
   function run(action: SwipeAction) {
     if (action === 'COMPLETE' && !completed) onToggle(task);
     else if (action === 'SCHEDULE') onSchedule?.(task);
+    else if (action === 'REMINDERS') openTaskReminders(router, task.id);
     else if (action === 'SELECT') selection?.start(task.id);
   }
 
