@@ -9,6 +9,8 @@ export interface QuickAddState {
   description: string;
   priority: number;
   due: DueValue;
+  /** M2: labels picked on the Labels chip; sent only when not empty. */
+  labelIds?: string[];
 }
 
 /**
@@ -24,5 +26,6 @@ export function buildCreateBody(state: QuickAddState): CreateTaskRequest {
   if (state.due.dueDate) body.dueDate = state.due.dueDate;
   if (state.due.dueDatetime) body.dueDatetime = state.due.dueDatetime;
   if (state.due.durationMinutes) body.durationMinutes = state.due.durationMinutes;
+  if (state.labelIds && state.labelIds.length > 0) body.labelIds = [...state.labelIds];
   return body;
 }
