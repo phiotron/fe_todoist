@@ -7,7 +7,7 @@ import { jsonResponse } from '../../../test/http';
 import { affected, makeTask, page } from '../../../test/m1Fixtures';
 import { SnackbarProvider } from '../../../components/Snackbar';
 import { renderSignedIn } from '../../../test/screen';
-import { palette } from '../../../theme';
+import { lightPalette as palette } from '../../../theme';
 import { TodayScreen } from '../TodayScreen';
 
 jest.mock('expo-router', () => ({

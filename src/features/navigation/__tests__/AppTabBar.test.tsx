@@ -1,7 +1,7 @@
 import '../../../i18n';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { palette } from '../../../theme';
+import { lightPalette as palette } from '../../../theme';
 import { AppTabBar, type AppTabBarProps } from '../AppTabBar';
 
 function setup(index: number, emitPrevented = false, extraRoutes: { key: string; name: string }[] = []) {

@@ -10,7 +10,7 @@ import { makeTask, page, taskChange } from '../../../test/m1Fixtures';
 import { goOffline, goOnline } from '../../../test/network';
 import { createTestQueryClient } from '../../../test/render';
 import { renderSignedIn } from '../../../test/screen';
-import { palette } from '../../../theme';
+import { lightPalette as palette } from '../../../theme';
 import { TaskSelectionProvider } from '../selection';
 import { TaskListView } from '../TaskListView';
 import { treeRows } from '../taskRows';

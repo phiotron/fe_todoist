@@ -5,7 +5,7 @@ import { ApiError } from '../../api/errors';
 import viCommon from '../../i18n/locales/vi/common.json';
 import vi from '../../i18n/locales/vi.json';
 import { goOffline, goOnline } from '../../test/network';
-import { layout, palette, size } from '../../theme';
+import { layout, lightPalette as palette, size } from '../../theme';
 import { AddRow } from '../AddRow';
 import { Fab } from '../Fab';
 import { OfflineBanner } from '../OfflineBanner';

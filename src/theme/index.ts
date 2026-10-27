@@ -1,4 +1,4 @@
-export { AVATAR_COLORS, PROJECT_PALETTE, darkPalette, lightPalette, palette, type Palette } from './palette';
+export { AVATAR_COLORS, PROJECT_PALETTE, darkPalette, lightPalette, type Palette } from './palette';
 export { fonts, type } from './typography';
 export { gutter, layout, radius, shadow, size, space } from './metrics';
 export { ThemeProvider, useTheme, useThemedStyles, type Theme } from './ThemeProvider';

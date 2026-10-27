@@ -1,5 +1,5 @@
 import { makeTask } from '../../../test/m1Fixtures';
-import { palette } from '../../../theme';
+import { lightPalette as palette } from '../../../theme';
 import { dueTone } from '../../tasks/dueTone';
 import { DEFAULT_PRIORITY, PRIORITIES, priorityColor, prioritySoft } from '../../tasks/priority';
 import { NO_DUE, dueValueOf, localTime, withDate, withDuration, withTime, withoutTime } from '../dueValue';

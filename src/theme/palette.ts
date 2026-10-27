@@ -75,9 +75,6 @@ export const darkPalette: Palette = {
   knob: '#FFFFFF',
 };
 
-/** M1 only draws the light base theme "TASKLY". */
-export const palette: Palette = lightPalette;
-
 /** Avatar backgrounds (white initials), picked by a stable hash of the user id. */
 export const AVATAR_COLORS = ['#0F766E', '#7C3AED', '#B45309', '#1D5FD0', '#BE185D'] as const;
 
