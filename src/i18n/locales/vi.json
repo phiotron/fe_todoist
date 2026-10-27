@@ -33,7 +33,8 @@
   "errors": {
     "offline": "Bạn đang offline, hãy kiểm tra kết nối mạng",
     "network": "Không kết nối được máy chủ, vui lòng thử lại",
-    "unknown": "Đã có lỗi xảy ra, vui lòng thử lại"
+    "unknown": "Đã có lỗi xảy ra, vui lòng thử lại",
+    "timeout": "Máy chủ phản hồi quá lâu, vui lòng thử lại"
   },
   "home": {
     "greeting": "Xin chào {{name}}",

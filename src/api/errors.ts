@@ -47,6 +47,15 @@ export class OfflineError extends NetworkError {
   }
 }
 
+/** The server did not answer within the client timeout (DEFAULT_TIMEOUT_MS in client.ts). */
+export class TimeoutError extends NetworkError {
+  constructor() {
+    super();
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.name = 'TimeoutError';
+  }
+}
+
 function isFieldError(value: unknown): value is FieldError {
   return (
     typeof value === 'object' &&

@@ -1,6 +1,6 @@
 import { API_URL } from '../lib/config';
 import { tokenStore, type AuthTokens, type TokenStore } from '../lib/tokenStore';
-import { ApiError, NetworkError, problemToApiError } from './errors';
+import { ApiError, NetworkError, TimeoutError, problemToApiError } from './errors';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -19,6 +19,8 @@ export interface ApiClientConfig {
   baseUrl: string;
   tokens: TokenStore;
   onSessionExpired: () => void;
+  /** Give up waiting for the response headers after this many ms (default DEFAULT_TIMEOUT_MS). */
+  timeoutMs?: number;
 }
 
 export type ApiFetch = <T>(path: string, options?: ApiRequestOptions) => Promise<T>;
@@ -33,6 +35,9 @@ export type ApiClient = ApiFetch & {
 };
 
 export const REFRESH_PATH = '/api/v1/auth/refresh';
+
+/** RN Android (OkHttp) waits forever by default; a dead connection must fail fast with a clear message. */
+export const DEFAULT_TIMEOUT_MS = 15_000;
 
 /** Title of the ApiError thrown by a request whose session ended while it was in flight. */
 export const SESSION_CHANGED = 'Session changed';
@@ -64,14 +69,19 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), config.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     try {
       return await fetch(`${config.baseUrl}${path}`, {
         method: options.method ?? 'GET',
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
+        signal: controller.signal,
       });
     } catch {
-      throw new NetworkError();
+      throw controller.signal.aborted ? new TimeoutError() : new NetworkError();
+    } finally {
+      clearTimeout(timer);
     }
   }
 
