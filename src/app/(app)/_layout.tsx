@@ -31,6 +31,7 @@ export default function SignedInLayout() {
           <Stack.Screen name="task/[id]" />
           <Stack.Screen name="quick-add" options={{ presentation: 'transparentModal', animation: 'fade' }} />
           <Stack.Screen name="project-form" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack>
       </View>
     </SnackbarProvider>
