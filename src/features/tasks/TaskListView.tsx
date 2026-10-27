@@ -31,6 +31,8 @@ export interface TaskListViewProps {
   showCompletedTime?: boolean;
   /** For scrollToIndex (Upcoming week strip). */
   listRef?: Ref<FlatList<TaskListRow>>;
+  /** Rows drawn on the first render (FlatList default 10); Upcoming draws a whole day window at once. */
+  initialNumToRender?: number;
 }
 
 /**
@@ -48,6 +50,7 @@ export function TaskListView({
   readOnly = false,
   showCompletedTime = false,
   listRef,
+  initialNumToRender,
 }: TaskListViewProps) {
   const { t } = useTranslation();
   const timeZone = useUserTimeZone();
@@ -110,6 +113,7 @@ export function TaskListView({
       ) : null}
       <FlatList
         ref={listRef}
+        {...(initialNumToRender === undefined ? {} : { initialNumToRender })}
         testID={testID}
         data={rows}
         keyExtractor={(row) => row.key}
