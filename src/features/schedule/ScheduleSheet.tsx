@@ -10,7 +10,8 @@ import { IconButton, type IconName } from '../../components/IconButton';
 import { dateKeyInZone, dueTime, quickDates, taskDateKey } from '../../lib/dates';
 import { formatDateKey, formatDuration, weekdayShort } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
-import { palette, size, type } from '../../theme';
+import { size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { useDateSettings } from '../settings/useDateSettings';
 import {
@@ -67,6 +68,8 @@ export function ScheduleSheet({
   minDate,
   testID = 'schedule',
 }: ScheduleSheetProps) {
+  const styles = useThemedStyles(createScheduleSheetStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -210,19 +213,21 @@ export function ScheduleSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  headerTitle: { flex: 1, textAlign: 'center', color: palette.ink },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    minHeight: size.shortcutRow,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  rowLabel: { flex: 1, color: palette.ink },
-  rowHint: { ...type.meta, color: palette.mute },
-  durationLabel: { ...type.label, color: palette.ink2, marginTop: 8, marginBottom: 6 },
-  durations: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-});
+function createScheduleSheetStyles(palette: Palette) {
+  return StyleSheet.create({
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+    headerTitle: { flex: 1, textAlign: 'center', color: palette.ink },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      minHeight: size.shortcutRow,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    rowLabel: { flex: 1, color: palette.ink },
+    rowHint: { ...type.meta, color: palette.mute },
+    durationLabel: { ...type.label, color: palette.ink2, marginTop: 8, marginBottom: 6 },
+    durations: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  });
+}

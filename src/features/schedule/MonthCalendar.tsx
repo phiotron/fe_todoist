@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { IconButton } from '../../components/IconButton';
 import { addDays, monthGrid, weekDays } from '../../lib/dates';
 import { formatDateKey, monthTitle, weekdayShort } from '../../lib/dates/format';
-import { fonts, palette, size, type } from '../../theme';
+import { fonts, size, type, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 
 interface MonthCalendarProps {
   /** Any day of the month to show (yyyy-MM-dd). */
@@ -26,6 +27,7 @@ function shiftMonth(month: string, delta: number): string {
 
 /** M-Schedule month grid: 44px cells, selected day = 40px accent circle, past days muted (still selectable). */
 export function MonthCalendar({ month, selected, today, minDate, startDay, onSelectDay, onMonthChange, testID }: MonthCalendarProps) {
+  const styles = useThemedStyles(createMonthCalendarStyles);
   const { t } = useTranslation();
   const [year, m] = month.split('-').map(Number);
   const weeks = monthGrid(year, m, startDay);
@@ -94,22 +96,24 @@ export function MonthCalendar({ month, selected, today, minDate, startDay, onSel
   );
 }
 
-const styles = StyleSheet.create({
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
-  nav: { flexDirection: 'row' },
-  week: { flexDirection: 'row' },
-  weekday: { ...type.caption, fontFamily: fonts.semibold, flex: 1, textAlign: 'center', color: palette.mute },
-  cell: { flex: 1, height: size.calendarCell, alignItems: 'center', justifyContent: 'center' },
-  day: {
-    width: size.calendarDay,
-    height: size.calendarDay,
-    borderRadius: size.calendarDay / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  daySelected: { backgroundColor: palette.acc },
-  dayText: { ...type.body, color: palette.ink },
-  past: { color: palette.mute },
-  today: { fontFamily: fonts.bold, color: palette.acc },
-  selectedText: { fontFamily: fonts.bold, color: palette.onacc },
-});
+function createMonthCalendarStyles(palette: Palette) {
+  return StyleSheet.create({
+    titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
+    nav: { flexDirection: 'row' },
+    week: { flexDirection: 'row' },
+    weekday: { ...type.caption, fontFamily: fonts.semibold, flex: 1, textAlign: 'center', color: palette.mute },
+    cell: { flex: 1, height: size.calendarCell, alignItems: 'center', justifyContent: 'center' },
+    day: {
+      width: size.calendarDay,
+      height: size.calendarDay,
+      borderRadius: size.calendarDay / 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    daySelected: { backgroundColor: palette.acc },
+    dayText: { ...type.body, color: palette.ink },
+    past: { color: palette.mute },
+    today: { fontFamily: fonts.bold, color: palette.acc },
+    selectedText: { fontFamily: fonts.bold, color: palette.onacc },
+  });
+}

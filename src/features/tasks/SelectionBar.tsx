@@ -10,7 +10,8 @@ import { ErrorText } from '../../components/ErrorText';
 import { IconButton, type IconName } from '../../components/IconButton';
 import { useTopInset } from '../../components/useTopInset';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { gutter, palette, shadow, size, type } from '../../theme';
+import { gutter, shadow, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { ProjectSectionPicker } from '../projects/ProjectSectionPicker';
 import { NO_DUE } from '../schedule/dueValue';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
@@ -30,6 +31,8 @@ interface BarAction {
 
 /** Top "N selected" bar + bottom action bar of the multi-select mode (spec 9.2). */
 export function SelectionBar() {
+  const styles = useThemedStyles(createSelectionBarStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const selection = useTaskSelection();
   const online = useIsOnline();
@@ -138,33 +141,35 @@ export function SelectionBar() {
   );
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 8,
-    paddingBottom: 8,
-    backgroundColor: palette.soft,
-  },
-  count: { color: palette.acc2 },
-  bottomBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: gutter,
-    paddingTop: 6,
-    backgroundColor: palette.bg,
-    borderTopWidth: 1,
-    borderTopColor: palette.line,
-    ...shadow,
-  },
-  actions: { flexDirection: 'row', justifyContent: 'space-between' },
-  action: { alignItems: 'center', justifyContent: 'center', gap: 2, minWidth: size.touch, minHeight: size.tabItem },
-  inactive: { opacity: 0.4 },
-});
+function createSelectionBarStyles(palette: Palette) {
+  return StyleSheet.create({
+    topBar: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingHorizontal: 8,
+      paddingBottom: 8,
+      backgroundColor: palette.soft,
+    },
+    count: { color: palette.acc2 },
+    bottomBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: gutter,
+      paddingTop: 6,
+      backgroundColor: palette.bg,
+      borderTopWidth: 1,
+      borderTopColor: palette.line,
+      ...shadow,
+    },
+    actions: { flexDirection: 'row', justifyContent: 'space-between' },
+    action: { alignItems: 'center', justifyContent: 'center', gap: 2, minWidth: size.touch, minHeight: size.tabItem },
+    inactive: { opacity: 0.4 },
+  });
+}

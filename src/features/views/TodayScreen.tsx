@@ -10,7 +10,8 @@ import { StateView } from '../../components/StateView';
 import { dateKeyInZone, groupTodayView } from '../../lib/dates';
 import { formatDateKey, formatDayHeader, weekdayName } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
-import { gutter, palette } from '../../theme';
+import { gutter, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
@@ -21,6 +22,8 @@ import { useTaskList } from '../tasks/useTaskList';
 import { overdueRows, useOverdueReschedule } from './overdue';
 
 function TodayBody() {
+  const styles = useThemedStyles(createTodayScreenStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -37,7 +40,7 @@ function TodayBody() {
       collapsed,
       onToggle: () => setCollapsed((value) => !value),
       onReschedule: overdue.start,
-    });
+    }, palette);
     if (groups.today.length > 0) {
       result.push(sectionRow('today', { title: formatDayHeader(today, today), count: groups.today.length }), ...taskRows(groups.today));
     }
@@ -53,7 +56,7 @@ function TodayBody() {
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, t]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, now, timeZone, collapsed, today, t, palette]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subtitle = query.isPending
     ? undefined
@@ -106,8 +109,10 @@ export function TodayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  add: { paddingHorizontal: gutter },
-  error: { paddingHorizontal: gutter },
-});
+function createTodayScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    add: { paddingHorizontal: gutter },
+    error: { paddingHorizontal: gutter },
+  });
+}

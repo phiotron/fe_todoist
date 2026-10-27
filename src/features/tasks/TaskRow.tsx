@@ -6,7 +6,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Task } from '../../api/models';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { gutter, palette, size, type } from '../../theme';
+import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { Checkbox } from './Checkbox';
 import { useTaskSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
@@ -32,11 +33,13 @@ export interface TaskRowProps {
   showCompletedTime?: boolean;
 }
 
-const SWIPE_LOOK: Partial<Record<SwipeAction, { icon: 'check-circle' | 'calendar' | 'check-square'; color: string }>> = {
-  COMPLETE: { icon: 'check-circle', color: palette.ok },
-  SCHEDULE: { icon: 'calendar', color: palette.vio },
-  SELECT: { icon: 'check-square', color: palette.acc },
-};
+function swipeLookFor(palette: Palette): Partial<Record<SwipeAction, { icon: 'check-circle' | 'calendar' | 'check-square'; color: string }>> {
+  return {
+    COMPLETE: { icon: 'check-circle', color: palette.ok },
+    SCHEDULE: { icon: 'calendar', color: palette.vio },
+    SELECT: { icon: 'check-square', color: palette.acc },
+  };
+}
 
 /** .task row: checkbox, 16/500 title, one line of description, meta; swipe actions; long press = multi-select. */
 export function TaskRow({
@@ -51,6 +54,8 @@ export function TaskRow({
   readOnly = false,
   showCompletedTime = false,
 }: TaskRowProps) {
+  const styles = useThemedStyles(createTaskRowStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const online = useIsOnline();
   const selection = useTaskSelection();
@@ -101,7 +106,7 @@ export function TaskRow({
 
   if (readOnly || completed || selecting || !online) return row;
   const renderPanel = (action: SwipeAction) => {
-    const look = SWIPE_LOOK[action];
+    const look = swipeLookFor(palette)[action];
     if (!look) return null;
     return (
       <View style={[styles.panel, { backgroundColor: look.color }]}>
@@ -128,21 +133,23 @@ export function TaskRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 12,
-    paddingRight: gutter,
-    backgroundColor: palette.bg,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.line,
-  },
-  selected: { backgroundColor: palette.soft },
-  body: { flex: 1 },
-  title: { color: palette.ink },
-  done: { color: palette.mute, textDecorationLine: 'line-through' },
-  description: { ...type.meta, color: palette.mute, marginTop: 2 },
-  panel: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
-});
+function createTaskRowStyles(palette: Palette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      paddingVertical: 12,
+      paddingRight: gutter,
+      backgroundColor: palette.bg,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.line,
+    },
+    selected: { backgroundColor: palette.soft },
+    body: { flex: 1 },
+    title: { color: palette.ink },
+    done: { color: palette.mute, textDecorationLine: 'line-through' },
+    description: { ...type.meta, color: palette.mute, marginTop: 2 },
+    panel: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
+  });
+}

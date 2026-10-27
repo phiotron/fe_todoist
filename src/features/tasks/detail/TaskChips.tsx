@@ -6,7 +6,8 @@ import type { Task } from '../../../api/models';
 import { Chip } from '../../../components/Chip';
 import { dateKeyInZone, describeDeadline, describeDue } from '../../../lib/dates';
 import { formatDateKey, formatDueLabel } from '../../../lib/dates/format';
-import { palette, size, type } from '../../../theme';
+import { size, type, useTheme, useThemedStyles } from '../../../theme';
+import type { Palette } from '../../../theme/palette';
 import { NO_DUE, type DueValue } from '../../schedule/dueValue';
 import { ScheduleSheet } from '../../schedule/ScheduleSheet';
 import { dueTone } from '../dueTone';
@@ -34,11 +35,13 @@ type Sheet = 'none' | 'date' | 'deadline' | 'priority';
  * "Chuyển tới". M2 adds Labels, M4 Reminders, M12 Location, M8 Assignee to the chip row.
  */
 export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOnly = false }: TaskChipsProps) {
+  const styles = useThemedStyles(createTaskChipsStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const [sheet, setSheet] = useState<Sheet>('none');
   const due: DueValue = { dueDate: draft.dueDate, dueDatetime: draft.dueDatetime, durationMinutes: draft.durationMinutes };
   const dueLabel = describeDue(due, now, timeZone);
-  const tone = dueTone({ ...due, completedAt: task.completedAt }, now, timeZone);
+  const tone = dueTone({ ...due, completedAt: task.completedAt }, now, timeZone, palette);
   const deadline = describeDeadline(draft.deadlineDate, now, timeZone);
   const deadlinePassed = deadline !== null && deadline.daysLeft < 0;
 
@@ -74,7 +77,7 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
           icon="flag"
           label={`P${draft.priority}`}
           accessibilityLabel={t('taskDetail.priority.chip', { n: draft.priority })}
-          color={draft.priority < 4 ? priorityColor(draft.priority) : undefined}
+          color={draft.priority < 4 ? priorityColor(draft.priority, palette) : undefined}
           disabled={readOnly}
           onPress={() => setSheet('priority')}
           testID="task-priority-chip"
@@ -103,16 +106,18 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
   );
 }
 
-const styles = StyleSheet.create({
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    height: 48,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: palette.line,
-  },
-  dateText: { flex: 1 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12, marginBottom: 4 },
-});
+function createTaskChipsStyles(palette: Palette) {
+  return StyleSheet.create({
+    dateRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      height: 48,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: palette.line,
+    },
+    dateText: { flex: 1 },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12, marginBottom: 4 },
+  });
+}

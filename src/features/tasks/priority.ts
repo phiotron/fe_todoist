@@ -1,11 +1,11 @@
-import { palette } from '../../theme';
+import type { Palette } from '../../theme/palette';
 
 /** BR-03: 1 = P1 (highest) … 4 = P4, default P4. */
 export const PRIORITIES = [1, 2, 3, 4] as const;
 export const DEFAULT_PRIORITY = 4;
 
 /** Ring / flag colour of a priority (design: P1 red, P2 orange, P3 blue, P4 grey). */
-export function priorityColor(priority: number): string {
+export function priorityColor(priority: number, palette: Palette): string {
   switch (priority) {
     case 1:
       return palette.p1;
@@ -19,7 +19,7 @@ export function priorityColor(priority: number): string {
 }
 
 /** Light fill inside the checkbox (.chk.p1 …); P4 has none. */
-export function prioritySoft(priority: number): string {
+export function prioritySoft(priority: number, palette: Palette): string {
   switch (priority) {
     case 1:
       return palette.p1s;

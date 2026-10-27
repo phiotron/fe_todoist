@@ -5,7 +5,8 @@ import type { Task } from '../../api/models';
 import { describeDeadline, describeDue, nowLocal } from '../../lib/dates';
 import { formatDeadline, formatDueLabel } from '../../lib/dates/format';
 import { parseInstant } from '../../lib/dates/instant';
-import { palette, size, type } from '../../theme';
+import { size, type, useTheme, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { progressLabel } from '../subtasks/tree';
 import { dueTone } from './dueTone';
 
@@ -20,11 +21,13 @@ interface TaskMetaProps {
 
 /** .meta line: due (date tone), deadline, sub-task progress, project / parent. M2 adds labels (.tag) here. */
 export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime = false }: TaskMetaProps) {
+  const styles = useThemedStyles(createTaskMetaStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
   const due = describeDue(task, now, timeZone);
   const deadline = describeDeadline(task.deadlineDate, now, timeZone);
   const progress = progressLabel(task);
-  const tone = dueTone(task, now, timeZone);
+  const tone = dueTone(task, now, timeZone, palette);
   const completedTime = showCompletedTime && task.completedAt ? nowLocal(parseInstant(task.completedAt), timeZone).slice(11, 16) : null;
   const items = [
     completedTime ? (
@@ -73,8 +76,10 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
   return <View style={styles.meta}>{items}</View>;
 }
 
-const styles = StyleSheet.create({
-  meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 12, rowGap: 4, marginTop: 4 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  text: { ...type.meta, color: palette.mute },
-});
+function createTaskMetaStyles(palette: Palette) {
+  return StyleSheet.create({
+    meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 12, rowGap: 4, marginTop: 4 },
+    item: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    text: { ...type.meta, color: palette.mute },
+  });
+}

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Menu } from '../../components/Menu';
+import { useTheme } from '../../theme';
 import { PRIORITIES, priorityColor } from './priority';
 
 interface PriorityMenuProps {
@@ -14,6 +15,7 @@ interface PriorityMenuProps {
 /** M-AddTask priority menu: four flags in the priority colours, the current one checked. */
 export function PriorityMenu({ visible, value, onSelect, onClose, bottom }: PriorityMenuProps) {
   const { t } = useTranslation();
+  const { palette } = useTheme();
   return (
     <Menu
       visible={visible}
@@ -24,7 +26,7 @@ export function PriorityMenu({ visible, value, onSelect, onClose, bottom }: Prio
         key: String(priority),
         label: t('schedule.priority.option', { n: priority }),
         icon: 'flag' as const,
-        iconColor: priorityColor(priority),
+        iconColor: priorityColor(priority, palette),
         selected: priority === value,
       }))}
       onSelect={(key) => onSelect(Number(key))}

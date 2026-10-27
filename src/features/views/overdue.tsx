@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { describeError } from '../../api/describeError';
 import type { Task } from '../../api/models';
 import { AppButton } from '../../components/AppButton';
+import type { Palette } from '../../theme/palette';
 import { useSnackbar } from '../../components/Snackbar';
 import i18n from '../../i18n';
 import { dateKeyInZone } from '../../lib/dates';
 import { useNow } from '../../lib/useNow';
-import { palette } from '../../theme';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { NO_DUE } from '../schedule/dueValue';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
@@ -24,7 +24,11 @@ interface OverdueRowsOptions {
  * "Quá hạn" (warn) + count + "Dời lịch", then its tasks unless collapsed (Today and Upcoming). `tasks` = the Overdue BLOCK
  * (due day before today, spec 5.1): already split by `groupTodayView` / `view=overdue`, never by `isOverdue`.
  */
-export function overdueRows(tasks: readonly Task[], { collapsed, onToggle, onReschedule }: OverdueRowsOptions): TaskListRow[] {
+export function overdueRows(
+  tasks: readonly Task[],
+  { collapsed, onToggle, onReschedule }: OverdueRowsOptions,
+  palette: Palette,
+): TaskListRow[] {
   if (tasks.length === 0) return [];
   const reschedule = (
     <AppButton

@@ -10,7 +10,8 @@ import { addDays, dateKeyInZone, nowLocal } from '../../lib/dates';
 import { formatDateKey, weekdayName } from '../../lib/dates/format';
 import { parseInstant } from '../../lib/dates/instant';
 import { useNow } from '../../lib/useNow';
-import { gutter, palette } from '../../theme';
+import { gutter, useThemedStyles } from '../../theme';
+import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { NO_DUE, type DueValue } from '../schedule/dueValue';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
@@ -25,6 +26,7 @@ import { useTaskList } from '../tasks/useTaskList';
  * both ends included; the screen never sends since > until (400). The Activity log tab is M10.
  */
 export function CompletedScreen() {
+  const styles = useThemedStyles(createCompletedScreenStyles);
   const { t } = useTranslation();
   const now = useNow();
   const timeZone = useUserTimeZone();
@@ -125,7 +127,9 @@ export function CompletedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: palette.bg },
-  range: { flexDirection: 'row', gap: 8, paddingHorizontal: gutter, paddingVertical: 8 },
-});
+function createCompletedScreenStyles(palette: Palette) {
+  return StyleSheet.create({
+    fill: { flex: 1, backgroundColor: palette.bg },
+    range: { flexDirection: 'row', gap: 8, paddingHorizontal: gutter, paddingVertical: 8 },
+  });
+}

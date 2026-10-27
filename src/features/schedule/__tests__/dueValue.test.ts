@@ -42,15 +42,15 @@ describe('priority and date colours (design section 2)', () => {
   it('maps P1–P4 to the priority tokens, default P4 (BR-03)', () => {
     expect(PRIORITIES).toEqual([1, 2, 3, 4]);
     expect(DEFAULT_PRIORITY).toBe(4);
-    expect(priorityColor(1)).toBe(palette.p1);
-    expect(prioritySoft(2)).toBe(palette.p2s);
-    expect(priorityColor(4)).toBe(palette.p4);
-    expect(prioritySoft(4)).toBe('transparent');
-    expect(priorityColor(9)).toBe(palette.p4);
+    expect(priorityColor(1, palette)).toBe(palette.p1);
+    expect(prioritySoft(2, palette)).toBe(palette.p2s);
+    expect(priorityColor(4, palette)).toBe(palette.p4);
+    expect(prioritySoft(4, palette)).toBe('transparent');
+    expect(priorityColor(9, palette)).toBe(palette.p4);
   });
 
   it('colours a due: overdue warn, today ok, tomorrow p2, later vio, none / done mute', () => {
-    const tone = (task: Parameters<typeof dueTone>[0]) => dueTone(task, now, TZ);
+    const tone = (task: Parameters<typeof dueTone>[0]) => dueTone(task, now, TZ, palette);
     expect(tone({ dueDate: '2026-10-22', dueDatetime: null })).toBe(palette.warn);
     expect(tone({ dueDate: null, dueDatetime: '2026-10-23T09:00:00' })).toBe(palette.warn); // 09:00 already passed
     expect(tone({ dueDate: null, dueDatetime: '2026-10-23T18:00:00' })).toBe(palette.ok);
