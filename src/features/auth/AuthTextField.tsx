@@ -1,17 +1,24 @@
+import type { ComponentRef, Ref } from 'react';
 import { Text, TextInput, View, type TextInputProps } from 'react-native';
 import { authStyles as styles } from './styles';
+
+/** Instance type of a TextInput ref (focus, blur…). */
+export type TextInputHandle = ComponentRef<typeof TextInput>;
 
 interface AuthTextFieldProps extends Omit<TextInputProps, 'style' | 'testID'> {
   label: string;
   testID: string;
   error?: string;
+  /** React 19 passes ref as a regular prop to function components. */
+  ref?: Ref<TextInputHandle>;
 }
 
-export function AuthTextField({ label, testID, error, ...inputProps }: AuthTextFieldProps) {
+export function AuthTextField({ label, testID, error, ref, ...inputProps }: AuthTextFieldProps) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        ref={ref}
         accessibilityLabel={label}
         testID={testID}
         style={[styles.input, error ? styles.inputError : null]}

@@ -1,11 +1,13 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { colors } from '../../lib/theme';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { KeyboardScreen } from '../../components/KeyboardScreen';
+import { palette } from '../../theme';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { AuthTextField } from './AuthTextField';
+import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
+import { goHomeAfterAuth } from './LoginScreen';
 import { useSession } from './session';
 import { authStyles as styles } from './styles';
 import { hasErrors, validateRegister, type RegisterValues } from './validation';
@@ -19,6 +21,8 @@ export function RegisterScreen() {
   const [submitting, setSubmitting] = useState(false);
   // Synchronous lock: state updates are async, so two quick presses could both pass a state check.
   const inFlight = useRef(false);
+  const emailRef = useRef<TextInputHandle>(null);
+  const passwordRef = useRef<TextInputHandle>(null);
 
   async function onSubmit() {
     if (inFlight.current) return;
@@ -37,8 +41,8 @@ export function RegisterScreen() {
         password: values.password,
         displayName: values.displayName.trim(),
       });
-      // On success keep the lock and the busy state until router.replace unmounts this screen.
-      router.replace('/');
+      // On success keep the lock and the busy state until navigation unmounts this screen.
+      goHomeAfterAuth();
     } catch (error) {
       setErrors(describeAuthError(error, 'register', isOnline));
       setSubmitting(false);
@@ -46,8 +50,14 @@ export function RegisterScreen() {
     }
   }
 
+  function goToLogin() {
+    // Register is pushed on top of login: going back avoids a [login, login] stack.
+    if (router.canGoBack()) router.back();
+    else router.replace('/login');
+  }
+
   return (
-    <View style={styles.screen}>
+    <KeyboardScreen contentStyle={styles.screen}>
       <Text style={styles.title}>{t('auth.register.title')}</Text>
       <AuthTextField
         testID="register-displayName"
@@ -55,26 +65,38 @@ export function RegisterScreen() {
         value={values.displayName}
         onChangeText={(displayName) => setValues((current) => ({ ...current, displayName }))}
         autoComplete="name"
+        returnKeyType="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => emailRef.current?.focus()}
         error={errors.fields.displayName}
       />
       <AuthTextField
+        ref={emailRef}
         testID="register-email"
         label={t('auth.fields.email')}
         value={values.email}
         onChangeText={(email) => setValues((current) => ({ ...current, email }))}
         autoCapitalize="none"
         autoComplete="email"
+        autoCorrect={false}
         keyboardType="email-address"
+        returnKeyType="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => passwordRef.current?.focus()}
         error={errors.fields.email}
       />
       <AuthTextField
+        ref={passwordRef}
         testID="register-password"
         label={t('auth.fields.password')}
         value={values.password}
         onChangeText={(password) => setValues((current) => ({ ...current, password }))}
         autoCapitalize="none"
         autoComplete="new-password"
+        autoCorrect={false}
         secureTextEntry
+        returnKeyType="go"
+        onSubmitEditing={() => void onSubmit()}
         error={errors.fields.password}
       />
       {errors.form ? (
@@ -97,14 +119,14 @@ export function RegisterScreen() {
         style={[styles.button, submitting && styles.buttonDisabled]}
       >
         {submitting ? (
-          <ActivityIndicator color={colors.onPrimary} />
+          <ActivityIndicator color={palette.onacc} />
         ) : (
           <Text style={styles.buttonText}>{t('auth.register.submit')}</Text>
         )}
       </Pressable>
-      <Pressable testID="register-go-login" accessibilityRole="link" onPress={() => router.replace('/login')}>
+      <Pressable testID="register-go-login" accessibilityRole="link" disabled={submitting} onPress={goToLogin}>
         <Text style={styles.link}>{t('auth.register.goToLogin')}</Text>
       </Pressable>
-    </View>
+    </KeyboardScreen>
   );
 }

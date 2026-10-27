@@ -1,14 +1,21 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { colors } from '../../lib/theme';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { KeyboardScreen } from '../../components/KeyboardScreen';
+import { palette } from '../../theme';
 import { useIsOnline } from '../../lib/useIsOnline';
-import { AuthTextField } from './AuthTextField';
+import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
 import { useSession } from './session';
 import { authStyles as styles } from './styles';
 import { hasErrors, validateLogin, type LoginValues } from './validation';
+
+/** Leaves the auth screens for good: drop them from the stack so Android Back cannot return here. */
+export function goHomeAfterAuth() {
+  if (router.canDismiss()) router.dismissAll();
+  router.replace('/');
+}
 
 export function LoginScreen() {
   const { t } = useTranslation();
@@ -19,6 +26,7 @@ export function LoginScreen() {
   const [submitting, setSubmitting] = useState(false);
   // Synchronous lock: state updates are async, so two quick presses could both pass a state check.
   const inFlight = useRef(false);
+  const passwordRef = useRef<TextInputHandle>(null);
 
   async function onSubmit() {
     if (inFlight.current) return;
@@ -33,8 +41,8 @@ export function LoginScreen() {
     setSubmitting(true);
     try {
       await signIn({ email: values.email.trim(), password: values.password });
-      // On success keep the lock and the busy state until router.replace unmounts this screen.
-      router.replace('/');
+      // On success keep the lock and the busy state until navigation unmounts this screen.
+      goHomeAfterAuth();
     } catch (error) {
       setErrors(describeAuthError(error, 'login', isOnline));
       setSubmitting(false);
@@ -43,7 +51,7 @@ export function LoginScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <KeyboardScreen contentStyle={styles.screen}>
       <Text style={styles.title}>{t('auth.login.title')}</Text>
       {expired ? (
         <Text
@@ -62,17 +70,25 @@ export function LoginScreen() {
         onChangeText={(email) => setValues((current) => ({ ...current, email }))}
         autoCapitalize="none"
         autoComplete="email"
+        autoCorrect={false}
         keyboardType="email-address"
+        returnKeyType="next"
+        submitBehavior="submit"
+        onSubmitEditing={() => passwordRef.current?.focus()}
         error={errors.fields.email}
       />
       <AuthTextField
+        ref={passwordRef}
         testID="login-password"
         label={t('auth.fields.password')}
         value={values.password}
         onChangeText={(password) => setValues((current) => ({ ...current, password }))}
         autoCapitalize="none"
         autoComplete="password"
+        autoCorrect={false}
         secureTextEntry
+        returnKeyType="go"
+        onSubmitEditing={() => void onSubmit()}
         error={errors.fields.password}
       />
       {errors.form ? (
@@ -95,14 +111,19 @@ export function LoginScreen() {
         style={[styles.button, submitting && styles.buttonDisabled]}
       >
         {submitting ? (
-          <ActivityIndicator color={colors.onPrimary} />
+          <ActivityIndicator color={palette.onacc} />
         ) : (
           <Text style={styles.buttonText}>{t('auth.login.submit')}</Text>
         )}
       </Pressable>
-      <Pressable testID="login-go-register" accessibilityRole="link" onPress={() => router.push('/register')}>
+      <Pressable
+        testID="login-go-register"
+        accessibilityRole="link"
+        disabled={submitting}
+        onPress={() => router.push('/register')}
+      >
         <Text style={styles.link}>{t('auth.login.goToRegister')}</Text>
       </Pressable>
-    </View>
+    </KeyboardScreen>
   );
 }
