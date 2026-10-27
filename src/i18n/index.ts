@@ -9,6 +9,7 @@ import viNav from './locales/vi/nav.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
 import viQuickAdd from './locales/vi/quickAdd.json';
+import viReminders from './locales/vi/reminders.json';
 import viReorder from './locales/vi/reorder.json';
 import viSchedule from './locales/vi/schedule.json';
 import viSelection from './locales/vi/selection.json';
@@ -30,6 +31,7 @@ export const viTranslation = {
   ...viProjectScreen,
   ...viProjects,
   ...viQuickAdd,
+  ...viReminders,
   ...viReorder,
   ...viSchedule,
   ...viSelection,

@@ -1,0 +1,47 @@
+{
+  "reminders": {
+    "channelName": "Nhắc việc",
+    "notification": {
+      "dueSoonBody": "Sắp đến hạn",
+      "reminderBody": "Nhắc việc",
+      "snoozedBody": "Đã hoãn 15 phút",
+      "snoozeAction": "Hoãn",
+      "completeAction": "Hoàn thành"
+    },
+    "chip": {
+      "label": "Nhắc nhở",
+      "more": "{{label}} +{{count}}"
+    },
+    "editor": {
+      "title": "Nhắc nhở",
+      "empty": "Chưa có nhắc nhở nào",
+      "addAbsolute": "Thời điểm cụ thể",
+      "relativeTitle": "Nhắc trước hạn",
+      "relativeNeedsTime": "Task cần có giờ mới đặt được nhắc trước hạn",
+      "pastTime": "Thời điểm nhắc phải ở tương lai",
+      "remove": "Xoá nhắc nhở {{label}}",
+      "close": "Đóng"
+    },
+    "offset": {
+      "atTime": "Đúng giờ hạn",
+      "minutes": "{{count}} phút trước",
+      "hours": "{{count}} giờ trước",
+      "days": "{{count}} ngày trước"
+    },
+    "quickAdd": {
+      "partialFailure": "Đã thêm task nhưng không thêm được {{count}} nhắc nhở"
+    },
+    "settings": {
+      "title": "Nhắc nhở",
+      "enabled": "Bật nhắc việc",
+      "autoTitle": "Nhắc tự động",
+      "autoHint": "Áp dụng cho task có giờ. Task chỉ có ngày không được nhắc tự động.",
+      "autoOff": "Tắt",
+      "permissionMissing": "Taskly chưa được phép gửi thông báo nên sẽ không nhắc việc.",
+      "allowNotifications": "Cho phép thông báo",
+      "openSystemSettings": "Mở cài đặt hệ thống",
+      "exactAlarmHint": "Android 14 trở lên: hãy bật “Báo thức & lời nhắc” cho Taskly để nhắc đúng giờ. Nếu không bật, nhắc có thể trễ vài phút.",
+      "exactAlarmOpen": "Mở cài đặt báo thức"
+    }
+  }
+}

@@ -56,6 +56,7 @@
       "projectActiveTasks": "Dự án đã có tối đa {{max}} công việc đang mở",
       "projectSections": "Dự án đã có tối đa {{max}} section đang dùng",
       "projectSectionsTotal": "Dự án đã có tối đa {{max}} section (kể cả section đã lưu trữ)",
+      "reminders": "Đã đạt tối đa {{max}} nhắc nhở",
       "other": "Đã đạt giới hạn tối đa ({{max}})"
     }
   }

@@ -50,6 +50,8 @@ function limitMessage(limit: string | undefined, max: number | undefined): strin
       return i18n.t('errors.limit.projectSections', { max: n });
     case 'PROJECT_SECTIONS_TOTAL':
       return i18n.t('errors.limit.projectSectionsTotal', { max: n });
+    case 'REMINDERS':
+      return i18n.t('errors.limit.reminders', { max: n });
     default:
       return i18n.t('errors.limit.other', { max: n });
   }
