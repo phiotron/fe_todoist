@@ -38,6 +38,15 @@ export class NetworkError extends Error {
   }
 }
 
+/** Thrown before sending a write while the device is offline: writes are never queued (spec 5.6). */
+export class OfflineError extends NetworkError {
+  constructor() {
+    super();
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.name = 'OfflineError';
+  }
+}
+
 function isFieldError(value: unknown): value is FieldError {
   return (
     typeof value === 'object' &&

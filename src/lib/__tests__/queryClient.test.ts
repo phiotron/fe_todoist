@@ -1,5 +1,6 @@
-﻿import { ApiError } from '../../api/errors';
-import { PERSIST_MAX_AGE_MS, queryClient, shouldRetry } from '../queryClient';
+﻿import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { ApiError, NetworkError, OfflineError } from '../../api/errors';
+import { PERSIST_MAX_AGE_MS, assertOnline, persistOptions, queryClient, shouldRetry } from '../queryClient';
 
 describe('shouldRetry', () => {
   it('never retries 4xx API errors', () => {
@@ -17,5 +18,44 @@ describe('shouldRetry', () => {
 describe('queryClient', () => {
   it('keeps cached data at least as long as the persisted cache lives', () => {
     expect(queryClient.getDefaultOptions().queries?.gcTime).toBeGreaterThanOrEqual(PERSIST_MAX_AGE_MS);
+  });
+});
+
+describe('offline writes (spec 5.6)', () => {
+  afterEach(() => {
+    onlineManager.setOnline(true);
+  });
+
+  it('runs mutations immediately and never retries them', () => {
+    expect(queryClient.getDefaultOptions().mutations).toMatchObject({ networkMode: 'always', retry: false });
+  });
+
+  it('never persists mutations to disk', () => {
+    expect(persistOptions.dehydrateOptions.shouldDehydrateMutation()).toBe(false);
+    expect(persistOptions.maxAge).toBe(PERSIST_MAX_AGE_MS);
+  });
+
+  it('assertOnline throws OfflineError (a NetworkError) only while offline', () => {
+    expect(() => assertOnline()).not.toThrow();
+    onlineManager.setOnline(false);
+    expect(() => assertOnline()).toThrow(OfflineError);
+    expect(new OfflineError()).toBeInstanceOf(NetworkError);
+  });
+
+  it('a write fired offline fails at once and is not sent again when the network returns', async () => {
+    const client = new QueryClient({ defaultOptions: queryClient.getDefaultOptions() });
+    const send = jest.fn(async () => {
+      assertOnline();
+      return 'sent';
+    });
+    onlineManager.setOnline(false);
+
+    const mutation = client.getMutationCache().build(client, { mutationFn: send });
+    await expect(mutation.execute(undefined)).rejects.toBeInstanceOf(OfflineError);
+
+    onlineManager.setOnline(true);
+    await new Promise((done) => setImmediate(done));
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(mutation.state.status).toBe('error');
   });
 });

@@ -2,7 +2,7 @@
 import NetInfo from '@react-native-community/netinfo';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { QueryClient, onlineManager } from '@tanstack/react-query';
-import { ApiError } from '../api/errors';
+import { ApiError, OfflineError } from '../api/errors';
 import { isOnlineState } from './useIsOnline';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -22,6 +22,9 @@ export const queryClient = new QueryClient({
       staleTime: 30_000,
       retry: shouldRetry,
     },
+    // Writes are never queued (spec 5.6): 'always' runs the mutation now — assertOnline rejects it while
+    // offline — instead of pausing it until the network returns; retry:false never resends a failed write.
+    mutations: { networkMode: 'always', retry: false },
   },
 });
 
@@ -29,6 +32,18 @@ export const queryPersister = createAsyncStoragePersister({
   storage: AsyncStorage,
   key: 'taskly.queryCache',
 });
+
+export const persistOptions = {
+  persister: queryPersister,
+  maxAge: PERSIST_MAX_AGE_MS,
+  // Only query data goes to disk: a mutation must never be restored and replayed on the next start.
+  dehydrateOptions: { shouldDehydrateMutation: () => false },
+};
+
+/** Call first in every write; throws OfflineError while the device is offline. */
+export function assertOnline(): void {
+  if (!onlineManager.isOnline()) throw new OfflineError();
+}
 
 // Let TanStack Query pause/resume queries with the device connectivity.
 onlineManager.setEventListener((setOnline) =>
