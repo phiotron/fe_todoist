@@ -1,3 +1,36 @@
 {
-  "dates": {}
+  "dates": {
+    "today": "Hôm nay",
+    "tomorrow": "Ngày mai",
+    "yesterday": "Hôm qua",
+    "weekday": {
+      "mon": "Thứ Hai",
+      "tue": "Thứ Ba",
+      "wed": "Thứ Tư",
+      "thu": "Thứ Năm",
+      "fri": "Thứ Sáu",
+      "sat": "Thứ Bảy",
+      "sun": "Chủ nhật"
+    },
+    "weekdayShort": {
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7",
+      "sun": "CN"
+    },
+    "monthTitle": "Tháng {{month}}, {{year}}",
+    "duration": {
+      "minutes": "{{n}} phút",
+      "hours": "{{n}} giờ",
+      "hoursMinutes": "{{h}} giờ {{m}} phút"
+    },
+    "deadline": {
+      "daysLeft": "Còn {{n}} ngày",
+      "today": "Hạn chót hôm nay",
+      "overdue": "Trễ hạn chót {{n}} ngày"
+    }
+  }
 }
