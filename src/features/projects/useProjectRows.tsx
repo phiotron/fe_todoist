@@ -24,6 +24,7 @@ import {
   useUnarchiveSection,
 } from '../sections/useSections';
 import { nodeRow, sectionRow, type TaskListRow } from '../tasks/taskRows';
+import { useSectionTransferMenu } from '../templates/useSectionTransferMenu';
 import { useReorderTask } from '../tasks/useTaskActions';
 import { useTaskList } from '../tasks/useTaskList';
 import { groupProjectTasks } from './projectGroups';
@@ -68,6 +69,15 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
   const reorderSection = useReorderSection();
   const reorderTask = useReorderTask();
   const close = () => setDialog({ kind: 'none' });
+  // M11: Reorder · Move · Duplicate in the section menu
+  const transfer = useSectionTransferMenu({
+    projectId,
+    sectionCount: sections.length,
+    onReorder: () => {
+      reorderSection.reset();
+      setDialog({ kind: 'reorderSections' });
+    },
+  });
 
   function toggle(sectionId: string) {
     setCollapsed((current) => {
@@ -197,6 +207,7 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
 
   const dialogs: ReactNode = (
     <>
+      {transfer.dialogs}
       <SectionFormDialog
         visible={dialog.kind === 'form'}
         projectId={projectId}
@@ -230,6 +241,7 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
                     setDialog({ kind: 'reorderTasks', sectionId: menuSection.id });
                   },
                 },
+                ...transfer.itemsFor(menuSection),
                 { key: 'archive', label: t('projectScreen.section.archive'), icon: 'archive', requiresOnline: true, onPress: () => { archive.reset(); setDialog({ kind: 'archive', section: menuSection }); } },
                 { key: 'delete', label: t('projectScreen.section.delete'), icon: 'trash-2', destructive: true, requiresOnline: true, onPress: () => { remove.reset(); setDialog({ kind: 'delete', section: menuSection }); } },
               ]

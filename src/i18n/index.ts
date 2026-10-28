@@ -23,6 +23,7 @@ import enSelection from './locales/en/selection.json';
 import enSettings from './locales/en/settings.json';
 import enTaskDetail from './locales/en/taskDetail.json';
 import enTaskList from './locales/en/taskList.json';
+import enTemplates from './locales/en/templates.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
 import viCore from './locales/vi.json';
@@ -47,6 +48,7 @@ import viSelection from './locales/vi/selection.json';
 import viSettings from './locales/vi/settings.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
 import viTaskList from './locales/vi/taskList.json';
+import viTemplates from './locales/vi/templates.json';
 import viTwoFactor from './locales/vi/twoFactor.json';
 import viViews from './locales/vi/views.json';
 
@@ -78,6 +80,7 @@ export const viTranslation = {
   ...viSettings,
   ...viTaskDetail,
   ...viTaskList,
+  ...viTemplates,
   ...viTwoFactor,
   ...viViews,
 };
@@ -106,6 +109,7 @@ export const enTranslation = {
   ...enSettings,
   ...enTaskDetail,
   ...enTaskList,
+  ...enTemplates,
   ...enTwoFactor,
   ...enViews,
 };

@@ -22,6 +22,8 @@ export const BROWSE_SHORTCUTS: readonly BrowseShortcut[] = [
   { key: 'today', title: () => i18n.t('views.today.title'), icon: 'calendar', kind: 'tab', href: '/today' },
   { key: 'filters-labels', title: () => i18n.t('filtersLabels.title'), icon: 'filter', kind: 'push', href: '/filters-labels', chevron: true },
   { key: 'completed', title: () => i18n.t('views.completed.title'), icon: 'check-circle', kind: 'push', href: '/completed', chevron: true },
+  // M11: Browse templates (Todoist has the same entry in Browse)
+  { key: 'templates', title: () => i18n.t('templates.browseRow'), icon: 'layers', kind: 'push', href: '/templates', chevron: true },
 ];
 
 /** Blocks rendered under My Projects: Labels (M2), Settings (M3); M8 adds team projects. */

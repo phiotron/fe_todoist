@@ -25,6 +25,7 @@ import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
+import { useProjectTemplateMenu } from '../templates/useProjectTemplateMenu';
 import { TaskListView } from '../tasks/TaskListView';
 import { nodeRow } from '../tasks/taskRows';
 import { projectDisplayName } from './appearance';
@@ -74,6 +75,7 @@ function ProjectBody({
   const [displayOpen, setDisplayOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
+  const templateMenu = useProjectTemplateMenu(project, readOnly); // M11: Duplicate · Save as template · Apply a template
 
   const showCompleted = display.options.showCompleted === true;
 
@@ -132,6 +134,7 @@ function ProjectBody({
           setReorderOpen(true);
         },
       });
+      items.push(...templateMenu.items);
       // Archive asks nothing: it hides the project (with its sub-projects) and can be undone from Browse.
       items.push({ key: 'archive', label: t('projectScreen.menuArchive'), icon: 'archive', requiresOnline: true, onPress: () => archive.mutate(project.id, { onSuccess: onLeave }) });
     }
@@ -176,6 +179,7 @@ function ProjectBody({
       <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
       {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} testID="project-fab" /> : null}
       {body.dialogs}
+      {templateMenu.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
       <DisplaySheet visible={displayOpen} viewKey={projectViewKey(project.id)} onClose={() => setDisplayOpen(false)} />
       <ConfirmDialog

@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+﻿import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeProject } from '../../../test/m1Fixtures';
@@ -43,6 +43,7 @@ describe('Browse (M2 parts of M-Browse)', () => {
       'browse-shortcut-today',
       'browse-shortcut-filters-labels',
       'browse-shortcut-completed',
+      'browse-shortcut-templates', // M11
     ]);
   });
 
