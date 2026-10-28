@@ -16,6 +16,7 @@
     "unreadDot": "Chưa đọc",
     "settings": {
       "title": "Thông báo",
+      "rowLabel": "Thông báo trong ứng dụng",
       "hint": "Chọn loại thông báo bạn muốn nhận trong hộp thông báo.",
       "projectTitle": "Thông báo dự án",
       "workspaceTitle": "Thông báo workspace",

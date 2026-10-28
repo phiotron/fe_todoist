@@ -1,0 +1,42 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Urgent reminders: full-screen alarm over the lock screen, ringing until Stop (Android 14+: the user also allows
+       "full-screen notifications" for the app; the Reminders settings page shows how). -->
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+  <application>
+    <receiver
+      android:name=".UrgentAlarmReceiver"
+      android:exported="false" />
+
+    <receiver
+      android:name=".BootReceiver"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+      </intent-filter>
+    </receiver>
+
+    <service
+      android:name=".UrgentAlarmService"
+      android:exported="false"
+      android:foregroundServiceType="mediaPlayback" />
+
+    <!-- Quick Settings tile "Add task": opens taskly://quick-add. -->
+    <service
+      android:name=".AddTaskTileService"
+      android:exported="true"
+      android:icon="@drawable/ic_tile_add"
+      android:label="@string/tile_add_task"
+      android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter>
+        <action android:name="android.service.quicksettings.action.QS_TILE" />
+      </intent-filter>
+    </service>
+  </application>
+</manifest>

@@ -16,6 +16,7 @@
     "unreadDot": "Unread",
     "settings": {
       "title": "Notifications",
+      "rowLabel": "In-app notifications",
       "hint": "Choose which notifications you want in your notification inbox.",
       "projectTitle": "Project notifications",
       "workspaceTitle": "Workspace notifications",

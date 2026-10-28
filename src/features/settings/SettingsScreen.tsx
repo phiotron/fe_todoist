@@ -68,7 +68,7 @@ export function SettingsScreen() {
       <SettingsLinkRow
         testID="settings-row-notification-events"
         icon="inbox"
-        label={t('notifications.settings.title')}
+        label={t('notifications.settings.rowLabel')}
         href="/settings/notification-events"
       />
       <SettingsLinkRow

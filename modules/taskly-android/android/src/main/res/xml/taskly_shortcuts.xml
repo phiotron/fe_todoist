@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App shortcuts (long-press the launcher icon). Each one opens a deep link of the app. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <shortcut
+      android:shortcutId="add_task"
+      android:enabled="true"
+      android:shortcutShortLabel="@string/shortcut_add_task"
+      android:shortcutLongLabel="@string/shortcut_add_task">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:targetPackage="com.taskly.app"
+        android:targetClass="com.taskly.app.MainActivity"
+        android:data="taskly://quick-add" />
+  </shortcut>
+  <shortcut
+      android:shortcutId="today"
+      android:enabled="true"
+      android:shortcutShortLabel="@string/shortcut_today"
+      android:shortcutLongLabel="@string/shortcut_today">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:targetPackage="com.taskly.app"
+        android:targetClass="com.taskly.app.MainActivity"
+        android:data="taskly://today" />
+  </shortcut>
+  <shortcut
+      android:shortcutId="upcoming"
+      android:enabled="true"
+      android:shortcutShortLabel="@string/shortcut_upcoming"
+      android:shortcutLongLabel="@string/shortcut_upcoming">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:targetPackage="com.taskly.app"
+        android:targetClass="com.taskly.app.MainActivity"
+        android:data="taskly://upcoming" />
+  </shortcut>
+  <shortcut
+      android:shortcutId="search"
+      android:enabled="true"
+      android:shortcutShortLabel="@string/shortcut_search"
+      android:shortcutLongLabel="@string/shortcut_search">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:targetPackage="com.taskly.app"
+        android:targetClass="com.taskly.app.MainActivity"
+        android:data="taskly://search" />
+  </shortcut>
+</shortcuts>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="tile_add_task">Thêm việc</string>
+  <string name="alarm_channel_name">Nhắc khẩn cấp</string>
+  <string name="alarm_stop">Dừng</string>
+  <string name="shortcut_add_task">Thêm việc</string>
+  <string name="shortcut_today">Hôm nay</string>
+  <string name="shortcut_upcoming">Sắp tới</string>
+  <string name="shortcut_search">Tìm kiếm</string>
+</resources>

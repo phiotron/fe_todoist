@@ -20,8 +20,8 @@ web-build/
 expo-env.d.ts
 
 # Thư mục native sinh tự động (CNG) và file build
-android/
-ios/
+/android/
+/ios/
 *.apk
 *.aab
 *.ipa
