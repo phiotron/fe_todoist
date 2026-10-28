@@ -7,6 +7,7 @@ import { NotFoundView } from '../../components/NotFoundView';
 import { SubHeader } from '../../components/SubHeader';
 import { gutter, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { canComment } from '../projects/projectCapabilities';
 import { isProjectReadOnly } from '../projects/projectReadOnly';
 import { useProject } from '../projects/useProjects';
 import { CommentThread } from './CommentThread';
@@ -23,7 +24,7 @@ export function ProjectCommentsScreen({ projectId }: { projectId: string }) {
     <View testID="project-comments-screen" style={styles.fill}>
       <SubHeader title={t('comments.projectTitle')} onBack={() => router.back()} testID="project-comments-header" />
       <KeyboardScreen contentStyle={styles.content}>
-        <CommentThread target={{ kind: 'project', id: projectId }} readOnly={isProjectReadOnly(project.data)} />
+        <CommentThread target={{ kind: 'project', id: projectId }} readOnly={isProjectReadOnly(project.data) || !canComment(project.data)} />
       </KeyboardScreen>
     </View>
   );

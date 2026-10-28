@@ -2,6 +2,10 @@
   "team": {
     "title": "Team",
     "loadFailed": "Could not load the team",
+    "adminOnly": {
+      "notice": "Only team admins can make changes",
+      "error": "Only team admins can make changes here. You can only complete tasks."
+    },
     "tabs": {
       "active": "Active",
       "joined": "Joined",

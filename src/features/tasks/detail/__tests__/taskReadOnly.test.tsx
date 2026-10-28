@@ -12,12 +12,17 @@ describe('taskAccess / isTaskReadOnly (pure)', () => {
   const task = makeTask({ projectId: 'p1', sectionId: 's1' });
 
   it('an open task in an active project and section is editable', () => {
-    expect(taskAccess(task, makeProject({ id: 'p1' }), makeSection({ id: 's1' }))).toEqual({ completed: false, archived: false, readOnly: false });
+    expect(taskAccess(task, makeProject({ id: 'p1' }), makeSection({ id: 's1' }))).toEqual({ completed: false, archived: false, teamLimited: false, readOnly: false });
     expect(isTaskReadOnly(task, undefined, undefined)).toBe(false);
   });
 
   it('a completed task is read-only but not archived (it can be reopened)', () => {
-    expect(taskAccess({ ...task, completedAt: '2026-10-22T00:00:00Z' }, makeProject(), undefined)).toEqual({ completed: true, archived: false, readOnly: true });
+    expect(taskAccess({ ...task, completedAt: '2026-10-22T00:00:00Z' }, makeProject(), undefined)).toEqual({ completed: true, archived: false, teamLimited: false, readOnly: true });
+  });
+
+  it('PERM: a task of a team project where I only complete tasks is read-only and teamLimited, not archived', () => {
+    const capabilities = { canEditTasks: false, canCompleteTasks: true, canManageSections: false, canComment: false };
+    expect(taskAccess(task, { ...makeProject(), capabilities }, undefined)).toEqual({ completed: false, archived: false, teamLimited: true, readOnly: true });
   });
 
   it('an archived project or an archived section makes it read-only AND archived (writes answer 409)', () => {

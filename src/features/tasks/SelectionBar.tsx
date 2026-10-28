@@ -59,6 +59,9 @@ export function SelectionBar() {
     { key: 'move', icon: 'arrow-right-circle', color: palette.ink2, onPress: () => setSheet('move') },
     { key: 'delete', icon: 'trash-2', color: palette.warn, onPress: () => setSheet('delete') },
   ];
+  // PERM: a task of a team project where I only complete tasks is selected → Complete is the only action
+  const completeOnly = selection.completeOnly;
+  const shown = completeOnly ? actions.filter((action) => action.key === 'complete') : actions;
   const labels: Record<BarAction['key'], string> = {
     complete: t('selection.complete'),
     schedule: t('selection.schedule'),
@@ -101,9 +104,15 @@ export function SelectionBar() {
       <View style={[styles.bottomBar, { paddingBottom: 8 + insets.bottom }]}>
         <ErrorText message={message} testID="selection-error" />
         <View style={styles.actions}>
-          {actions.slice(0, 3).map(renderAction)}
-          <SelectionLabelsAction taskIds={taskIds} onDone={done} />
-          {actions.slice(3).map(renderAction)}
+          {completeOnly ? (
+            shown.map(renderAction)
+          ) : (
+            <>
+              {actions.slice(0, 3).map(renderAction)}
+              <SelectionLabelsAction taskIds={taskIds} onDone={done} />
+              {actions.slice(3).map(renderAction)}
+            </>
+          )}
         </View>
       </View>
       <ScheduleSheet

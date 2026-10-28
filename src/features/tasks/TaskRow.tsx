@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Task } from '../../api/models';
 import type { IconName } from '../../components/IconButton';
+import { useProjectCapabilities } from '../projects/projectCapabilities';
 import { openTaskReminders } from '../reminders/openTaskReminders';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
@@ -75,11 +76,17 @@ export function TaskRow({
   const swipe = useSwipeSettings();
   const { requestDelete, dialog } = useDeleteTaskSwipe();
   const swipeRef = useRef<SwipeableMethods>(null);
+  // PERM: task of a team project where I am a Member / Guest → tick only (no other swipe; selection offers only Complete)
+  const capabilities = useProjectCapabilities(task.projectId);
+  const completeOnly = capabilities.canCompleteTasks && !capabilities.canEditTasks;
+  const selectOptions = completeOnly ? { completeOnly: true } : undefined;
   const completed = task.completedAt !== null;
   const selecting = selection?.active === true;
   const selected = selection?.ids.has(task.id) === true;
   // Completed tasks (Completed tasks block) and read-only rows cannot be selected: batch SCHEDULE / MOVE would answer 409 task-completed.
   const selectable = selection && !readOnly && !completed ? selection : null;
+  const swipeRight = completeOnly && swipe.right !== 'COMPLETE' ? 'NONE' : swipe.right;
+  const swipeLeft = completeOnly && swipe.left !== 'COMPLETE' ? 'NONE' : swipe.left;
 
   const uncompletable = isUncompletable(task.content);
 
@@ -99,8 +106,12 @@ export function TaskRow({
       testID={`task-row-${task.id}`}
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      onPress={() => (selecting ? selectable?.toggle(task.id) : router.push(`/task/${task.id}`))}
-      onLongPress={selectable ? () => (selecting ? selectable.toggle(task.id) : selectable.start(task.id)) : undefined}
+      onPress={() => (selecting ? selectable?.toggle(task.id, selectOptions) : router.push(`/task/${task.id}`))}
+      onLongPress={
+        selectable
+          ? () => (selecting ? selectable.toggle(task.id, selectOptions) : selectable.start(task.id, selectOptions))
+          : undefined
+      }
       style={[styles.row, { paddingLeft: gutter + (depth - 1) * INDENT }, selected && styles.selected]}
     >
       {uncompletable ? (
@@ -129,7 +140,7 @@ export function TaskRow({
     </Pressable>
   );
 
-  if (readOnly || completed || selecting || !online) return row;
+  if (readOnly || completed || selecting || !online || (completeOnly && swipeRight === 'NONE' && swipeLeft === 'NONE')) return row;
   const renderPanel = (action: SwipeAction) => {
     const look = swipeLookFor(palette)[action];
     if (!look) return null;
@@ -146,11 +157,11 @@ export function TaskRow({
       friction={2}
       leftThreshold={80}
       rightThreshold={80}
-      renderLeftActions={swipe.right === 'NONE' ? undefined : () => renderPanel(swipe.right)}
-      renderRightActions={swipe.left === 'NONE' ? undefined : () => renderPanel(swipe.left)}
+      renderLeftActions={swipeRight === 'NONE' ? undefined : () => renderPanel(swipeRight)}
+      renderRightActions={swipeLeft === 'NONE' ? undefined : () => renderPanel(swipeLeft)}
       onSwipeableOpen={(direction: string) => {
         swipeRef.current?.close();
-        run(swipeSide(direction) === 'right' ? swipe.right : swipe.left);
+        run(swipeSide(direction) === 'right' ? swipeRight : swipeLeft);
       }}
     >
       {row}

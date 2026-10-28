@@ -2,6 +2,10 @@
   "team": {
     "title": "Nhóm",
     "loadFailed": "Không tải được nhóm",
+    "adminOnly": {
+      "notice": "Chỉ quản trị viên nhóm mới chỉnh sửa được",
+      "error": "Chỉ quản trị viên nhóm mới chỉnh sửa được. Bạn chỉ có thể đánh dấu hoàn thành công việc."
+    },
     "tabs": {
       "active": "Đang hoạt động",
       "joined": "Đã tham gia",

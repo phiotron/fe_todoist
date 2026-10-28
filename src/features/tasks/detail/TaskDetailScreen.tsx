@@ -183,14 +183,15 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   const allowed: Record<string, boolean> = {
     'add-subtask': !access.readOnly,
     duplicate: !access.readOnly,
-    'complete-forever': task.isRecurring && !completed && !access.readOnly,
-    'complete-reset': task.isRecurring && !completed && !access.readOnly && task.subtaskCount > 0,
+    // completing (even "forever" / with reset) is allowed to a team Member / Guest (PERM): only archived / completed lock it
+    'complete-forever': task.isRecurring && !completed && !access.archived,
+    'complete-reset': task.isRecurring && !completed && !access.archived && task.subtaskCount > 0,
     'copy-link': true,
     'toggle-completed': true,
     'reorder-subtasks': !access.readOnly,
-    email: !access.archived,
+    email: !access.archived && !access.teamLimited,
     'view-activity': true,
-    delete: !access.archived,
+    delete: !access.archived && !access.teamLimited,
   };
   const visibleItems = items.filter((item) => allowed[item.key]);
 
@@ -200,7 +201,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
     <View style={styles.fill}>
       <SubHeader
         onBack={() => router.back()}
-        center={<Breadcrumb task={task} onPress={move.start} />}
+        center={<Breadcrumb task={task} onPress={access.teamLimited ? undefined : move.start} />}
         right={<IconButton icon="more-horizontal" label={t('taskDetail.menu')} onPress={() => setMenuOpen(true)} testID="task-menu-open" />}
         testID="task-header"
       />
@@ -208,6 +209,11 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
         {access.archived ? (
           <Text testID="task-archived-notice" style={[type.meta, styles.archivedNotice]}>
             {t('taskDetail.archivedNotice')}
+          </Text>
+        ) : null}
+        {access.teamLimited && !access.archived ? (
+          <Text testID="task-team-limited-notice" style={[type.meta, styles.archivedNotice]}>
+            {t('team.adminOnly.notice')}
           </Text>
         ) : null}
         {editor.conflict ? (
@@ -273,9 +279,11 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
           reorderOpen={reorderOpen}
           onReorderClose={() => setReorderOpen(false)}
           readOnly={access.readOnly}
+          canTick={!access.completed && !access.archived}
         />
-        {/* M8b: a completed task can still be commented; only an archived project / section hides the composer. */}
-        <CommentThread target={{ kind: 'task', id: taskId }} readOnly={access.archived} showTitle />
+        {/* M8b: a completed task can still be commented; an archived place hides the composer, and (PERM) so does a
+            team project where I only complete tasks. */}
+        <CommentThread target={{ kind: 'task', id: taskId }} readOnly={access.archived || access.teamLimited} showTitle />
       </KeyboardScreen>
       {move.picker}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={visibleItems} testID="task-menu" />
