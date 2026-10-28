@@ -27,10 +27,12 @@ interface SubtaskSectionProps {
   onReorderClose?: () => void;
   /** Completed or archived parent: no add row, circles locked (spec 12.3 table rows 4–6). */
   readOnly?: boolean;
+  /** PERM: circles usable although read only (Member / Guest of a team project may complete). Default: !readOnly. */
+  canTick?: boolean;
 }
 
 /** M-TaskDetail "Sub-task 1/3": direct children with their circles, "Thêm sub-task", and the sort dialog. */
-export function SubtaskSection({ task, depth, hideCompleted, reorderOpen = false, onReorderClose, readOnly = false }: SubtaskSectionProps) {
+export function SubtaskSection({ task, depth, hideCompleted, reorderOpen = false, onReorderClose, readOnly = false, canTick = !readOnly }: SubtaskSectionProps) {
   const styles = useThemedStyles(createSubtaskSectionStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
@@ -56,7 +58,7 @@ export function SubtaskSection({ task, depth, hideCompleted, reorderOpen = false
               testID={`subtask-toggle-${child.id}`}
               priority={child.priority}
               checked={completed}
-              disabled={readOnly || pendingId === child.id}
+              disabled={!canTick || pendingId === child.id}
               label={completed ? t('taskDetail.subtasks.reopen', { name: child.content }) : t('taskDetail.subtasks.complete', { name: child.content })}
               onPress={() => toggle(child)}
             />

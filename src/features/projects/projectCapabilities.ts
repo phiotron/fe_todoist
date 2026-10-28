@@ -1,4 +1,6 @@
-import type { ProjectCapabilities, ProjectCapabilityFields } from '../../api/projects';
+import { useQuery } from '@tanstack/react-query';
+import { projectsApi, type ProjectCapabilities, type ProjectCapabilityFields } from '../../api/projects';
+import { queryKeys } from '../../api/queryKeys';
 
 /**
  * PERM — one rule for every screen (and for the other branches, e.g. drag & drop): in a TEAM project only Admins edit;
@@ -36,4 +38,18 @@ export function canComment(project: Capable): boolean {
 export function isCompleteOnly(project: Capable): boolean {
   const capabilities = capabilitiesOf(project);
   return capabilities.canCompleteTasks && !capabilities.canEditTasks;
+}
+
+/**
+ * Capabilities of a task's project for list rows (Today / Upcoming / project lists): read PASSIVELY from the cached
+ * active-projects list (no request of its own — Browse, the drawer, Quick Add and the project screen load it). Not
+ * cached yet → everything allowed; the server still refuses with 403 team-admin-only.
+ */
+export function useProjectCapabilities(projectId: string | undefined): ProjectCapabilities {
+  const { data } = useQuery({
+    queryKey: queryKeys.projects.list(false),
+    queryFn: () => projectsApi.list(false),
+    enabled: false,
+  });
+  return capabilitiesOf(projectId ? data?.find((project) => project.id === projectId) : undefined);
 }

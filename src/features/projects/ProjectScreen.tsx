@@ -45,6 +45,7 @@ import { nodeRow } from '../tasks/taskRows';
 import { projectDisplayName } from './appearance';
 import { CompletedTasksBlock } from './CompletedTasksBlock';
 import { MAX_PROJECT_DEPTH, deleteImpact, projectDepth, projectTreeRows } from './projectTree';
+import { isCompleteOnly } from './projectCapabilities';
 import { isProjectReadOnly } from './projectReadOnly';
 import { useProjectRows } from './useProjectRows';
 import {
@@ -81,7 +82,11 @@ function ProjectBody({
   const archived = isProjectReadOnly(project);
   const sharing = sharingOf(project); // M8a: a team project I have not joined is a read-only preview until Join
   const readOnly = archived || sharing.preview;
-  const body = useProjectRows({ projectId: project.id, readOnly, display });
+  // PERM (28/10, differs from Todoist): joined Member / Guest of a team project → only complete tasks. `readOnly` still
+  // drives the circles of the list; `editLocked` hides every other write (add, sections, menu edits, drag, FAB).
+  const teamLimited = !readOnly && isCompleteOnly(project);
+  const editLocked = readOnly || teamLimited;
+  const body = useProjectRows({ projectId: project.id, readOnly: editLocked, display });
   const { all } = useProjects();
   const favorite = useSetProjectFavorite();
   const archive = useArchiveProject();
@@ -100,7 +105,7 @@ function ProjectBody({
   const [displayOpen, setDisplayOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
-  const templateMenu = useProjectTemplateMenu(project, readOnly); // M11: Duplicate � Save as template � Apply a template
+  const templateMenu = useProjectTemplateMenu(project, editLocked); // M11: Duplicate � Save as template � Apply a template
   const [emailOpen, setEmailOpen] = useState(false);
 
   const showCompleted = display.options.showCompleted === true;
@@ -109,8 +114,8 @@ function ProjectBody({
   const groupBy = display.options.groupBy;
   const groupContext = useGroupContext(groupBy);
   const boardColumns = useMemo(
-    () => projectBoardColumns(body.tasks, body.sections, project.id, groupBy, groupContext, readOnly),
-    [body.tasks, body.sections, project.id, groupBy, groupContext, readOnly],
+    () => projectBoardColumns(body.tasks, body.sections, project.id, groupBy, groupContext, editLocked),
+    [body.tasks, body.sections, project.id, groupBy, groupContext, editLocked],
   );
   const calendarScope = useMemo(() => projectScope(project.id), [project.id]);
 
@@ -118,7 +123,7 @@ function ProjectBody({
   const counts = deleteImpact(project);
   const children = useMemo(() => projectTreeRows(all).filter((row) => row.project.parentId === project.id), [all, project.id]);
   const noSectionRoots = body.groups.find((group) => group.section === null)?.rootTasks.length ?? 0;
-  const canAddSubproject = !project.isInbox && !readOnly && !sharing.isTeamProject && projectDepth(all, project.id) < MAX_PROJECT_DEPTH;
+  const canAddSubproject = !project.isInbox && !editLocked && !sharing.isTeamProject && projectDepth(all, project.id) < MAX_PROJECT_DEPTH;
 
   const rows = useMemo(
     () =>
@@ -129,7 +134,7 @@ function ProjectBody({
   );
 
   const items: ActionMenuItem[] = [];
-  if (!project.isInbox && !readOnly) {
+  if (!project.isInbox && !editLocked) {
     items.push({ key: 'edit', label: t('projectScreen.menuEdit'), icon: 'edit-2', requiresOnline: true, onPress: () => router.push({ pathname: '/project-form', params: { projectId: project.id } }) });
     items.push({
       key: 'add-subproject',
@@ -160,7 +165,7 @@ function ProjectBody({
   if (sharing.canJoin) {
     items.push({ key: 'join', label: t('sharing.menu.join'), icon: 'log-in', requiresOnline: true, onPress: () => joinProject.mutate(project.id) });
   }
-  if (!readOnly) {
+  if (!editLocked) {
     items.push({ key: 'add-section', label: t('projectScreen.menuAddSection'), icon: 'plus-square', requiresOnline: true, onPress: body.actions.addSection });
   }
   if (!project.isInbox) {
@@ -172,7 +177,7 @@ function ProjectBody({
       onPress: () => favorite.mutate({ projectId: project.id, favorite: !project.isFavorite }),
     });
   }
-  if (!readOnly) {
+  if (!editLocked) {
     // M13a: Todoist "Email tasks to this project" / "Email tasks to Inbox".
     items.push({
       key: 'email',
@@ -192,7 +197,11 @@ function ProjectBody({
   items.push({ key: 'display', label: t('projectScreen.menuDisplay'), icon: 'sliders', onPress: () => setDisplayOpen(true) });
   // M8b: comments of the project (also of an archived one: reading is allowed, the composer hides itself).
   items.push({ key: 'comments', label: t('comments.projectMenu'), icon: 'message-circle', onPress: () => router.push(`/project-comments/${project.id}`) });
-  if (!readOnly) {
+  if (teamLimited) {
+    // PERM: multi-select still works, with Complete as its only action
+    items.push({ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start(undefined, { completeOnly: true }) });
+  }
+  if (!editLocked) {
     items.push({ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() });
     items.push({ key: 'reorder-tasks', label: t('projectScreen.menuReorderTasks'), icon: 'move', requiresOnline: true, disabled: !body.manualOrder || noSectionRoots < 2, onPress: () => body.actions.reorderTasks(null) });
     items.push({ key: 'reorder-sections', label: t('projectScreen.menuReorderSections'), icon: 'move', requiresOnline: true, disabled: body.sections.length < 2, onPress: body.actions.reorderSections });
@@ -253,6 +262,11 @@ function ProjectBody({
           />
         </View>
       ) : null}
+      {teamLimited ? (
+        <View style={styles.banner} testID="project-team-limited-notice">
+          <Text style={[type.bodySmall, styles.bannerText]}>{t('team.adminOnly.notice')}</Text>
+        </View>
+      ) : null}
       {project.description ? <Text style={styles.description}>{project.description}</Text> : null}
       <View style={styles.pad}>
         <ErrorText message={actionError ? describeError(actionError).message : undefined} testID="project-error" />
@@ -273,15 +287,15 @@ function ProjectBody({
         <BoardView
           columns={boardColumns}
           query={body.query}
-          readOnly={readOnly}
+          readOnly={editLocked}
           testID="project-board"
         />
       ) : layout === 'CALENDAR' ? (
-        <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} readOnly={readOnly} testID="project-calendar" />
+        <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} readOnly={editLocked} testID="project-calendar" />
       ) : (
         <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
       )}
-      {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} placement={addButtonPlacement} testID="project-fab" /> : null}
+      {!tab && !editLocked && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} placement={addButtonPlacement} testID="project-fab" /> : null}
       {body.dialogs}
       {templateMenu.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
