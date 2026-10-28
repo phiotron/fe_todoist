@@ -50,6 +50,45 @@ describe('authApi', () => {
     expect(request.headers.Authorization).toBeUndefined();
   });
 
+  it('google posts the ID token without a bearer token, even when one is stored', async () => {
+    await tokenStore.setTokens({ accessToken: 'old', refreshToken: 'old-ref' });
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValueOnce(jsonResponse(201, authResponse()));
+
+    await expect(authApi.google({ idToken: 'gid-1' })).resolves.toEqual(authResponse());
+
+    const request = requestAt(fetchMock, 0);
+    expect(request.url).toMatch(/\/api\/v1\/auth\/google$/);
+    expect(request.method).toBe('POST');
+    expect(request.body).toEqual({ idToken: 'gid-1' });
+    expect(request.headers.Authorization).toBeUndefined();
+  });
+
+  it('google 409 link-required rejects with the linkToken and never refreshes', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValueOnce(problem(409, 'Conflict', { code: 'link-required', linkToken: 'lt-1' }));
+
+    await expect(authApi.google({ idToken: 'gid-1' })).rejects.toMatchObject({
+      status: 409,
+      code: 'link-required',
+      properties: expect.objectContaining({ linkToken: 'lt-1' }),
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('google 401 two-factor-required rejects with the twoFactorToken and never refreshes', async () => {
+    await tokenStore.setTokens({ accessToken: 'old', refreshToken: 'old-ref' });
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValueOnce(problem(401, 'Unauthorized', { code: 'two-factor-required', twoFactorToken: 'tf-1' }));
+
+    await expect(authApi.google({ idToken: 'gid-1' })).rejects.toMatchObject({
+      status: 401,
+      code: 'two-factor-required',
+      properties: expect.objectContaining({ twoFactorToken: 'tf-1' }),
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('me sends the stored access token', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
@@ -114,6 +153,7 @@ describe('authApi', () => {
   it.each([
     ['login', () => authApi.login({ email: 'an@example.com', password: 'fixture-pass-1' })],
     ['register', () => authApi.register({ email: 'an@example.com', password: 'fixture-pass-1', displayName: 'An' })],
+    ['google', () => authApi.google({ idToken: 'gid-1' })],
   ])('%s 401 is a plain ApiError: no refresh, no session expiry, tokens untouched', async (_name, call) => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
