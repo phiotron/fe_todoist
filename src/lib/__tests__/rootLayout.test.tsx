@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react-native';
 import RootLayout from '../../app/_layout';
+import { expoReminderPlatform } from '../../features/reminders/notifications';
+import { getReminderPlatform } from '../../features/reminders/platform';
 
 jest.mock('expo-router', () => ({
   Stack: () => require('react').createElement(require('react-native').Text, null, 'stack'),
@@ -37,5 +39,11 @@ describe('RootLayout font loading', () => {
     jest.spyOn(Figtree, 'useFonts').mockReturnValue([false, new Error('font')]);
     await render(<RootLayout />);
     expect(await screen.findByText('stack')).toBeOnTheScreen();
+  });
+});
+
+describe('RootLayout startup', () => {
+  it('installs the expo-notifications reminder platform when the app module loads', () => {
+    expect(getReminderPlatform()).toBe(expoReminderPlatform);
   });
 });

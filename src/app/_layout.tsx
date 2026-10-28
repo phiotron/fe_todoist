@@ -12,10 +12,14 @@ import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SessionProvider } from '../features/auth/session';
+import { installReminderPlatform } from '../features/reminders/notifications';
 import { SettingsProvider } from '../features/settings/SettingsProvider';
 import { SettingsThemeProvider } from '../features/settings/SettingsThemeProvider';
 import { persistOptions, queryClient } from '../lib/queryClient';
 import { useTheme } from '../theme';
+
+// Startup, once, before any screen renders: reminders talk to the OS only through the ReminderPlatform port.
+installReminderPlatform();
 
 /**
  * Status bar icons and every header / tab / sheet background of the navigators follow the active theme (the navigation
