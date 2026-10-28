@@ -3,6 +3,7 @@ import viCommon from '../../../i18n/locales/vi/common.json';
 import vi from '../../../i18n/locales/vi.json';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeTask, page } from '../../../test/m1Fixtures';
+import { makeSharedProject, makeWorkspace } from '../../../test/m8aFixtures';
 import { renderSignedIn } from '../../../test/screen';
 import { viewOptionsRoutes } from '../../../test/viewOptionsServer';
 import { InboxScreen } from '../InboxScreen';
@@ -29,6 +30,28 @@ describe('InboxScreen', () => {
     expect(await screen.findByText('Việc trong Inbox')).toBeOnTheScreen();
     const request = fetchMock.mock.calls.map(([url]) => String(url)).find((url) => url.includes('/api/v1/tasks'));
     expect(request).toContain('projectId=p-inbox');
+  });
+
+  it('shows the undated team work below the personal Inbox (user request)', async () => {
+    const teamProject = makeSharedProject({ id: 'p-team', name: 'Thiết kế', workspaceId: 'w-team', access: 'TEAM' });
+    await renderSignedIn(<InboxScreen />, {
+      'GET /api/v1/projects': () => jsonResponse(200, [inboxProject, teamProject]),
+      'GET /api/v1/projects/p-inbox': () => jsonResponse(200, inboxProject),
+      'GET /api/v1/projects/p-inbox/sections': () => jsonResponse(200, []),
+      'GET /api/v1/workspaces': () => jsonResponse(200, [makeWorkspace({ id: 'w-team', name: 'Nhóm Alpha' })]),
+      'GET /api/v1/tasks': (request) =>
+        jsonResponse(
+          200,
+          request.query.get('view') === 'inbox_team'
+            ? page([makeTask({ id: 'g1', projectId: 'p-team', projectName: 'Thiết kế', content: 'Việc nhóm A' })])
+            : page([makeTask({ id: 'i1', content: 'Việc trong Inbox' })]),
+        ),
+      ...viewOptionsRoutes(['project:p-inbox']),
+    });
+
+    expect(await screen.findByText('Việc trong Inbox')).toBeOnTheScreen();
+    expect(await screen.findByText('Việc nhóm A')).toBeOnTheScreen();
+    expect(screen.getByTestId('inbox-team-group-w-team')).toHaveTextContent(/Nhóm Alpha/);
   });
 
   it('shows an error with a retry (not a blank screen) when the projects list answers without an Inbox', async () => {
