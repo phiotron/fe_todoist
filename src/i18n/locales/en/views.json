@@ -47,6 +47,23 @@
       "title": "Browse"
     },
     "selectTasks": "Select tasks",
-    "addTask": "Add task"
+    "addTask": "Add task",
+    "origin": {
+      "team": "Team project",
+      "shared": "Shared project"
+    },
+    "inboxTeam": {
+      "title": "Team work",
+      "count": "{{n}} tasks without a date",
+      "expand": "Expand Team work",
+      "collapse": "Collapse Team work",
+      "expandGroup": "Expand {{name}}",
+      "collapseGroup": "Collapse {{name}}",
+      "shared": "Shared projects",
+      "team": "Team",
+      "seeAll": "See all ({{n}})",
+      "openProject": "Open project {{name}}",
+      "loadMore": "Load more team work"
+    }
   }
 }

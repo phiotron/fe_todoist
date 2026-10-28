@@ -45,6 +45,23 @@
     },
     "browse": { "title": "Duyệt" },
     "selectTasks": "Chọn công việc",
-    "addTask": "Thêm công việc"
+    "addTask": "Thêm công việc",
+    "origin": {
+      "team": "Dự án nhóm",
+      "shared": "Dự án được chia sẻ"
+    },
+    "inboxTeam": {
+      "title": "Việc nhóm",
+      "count": "{{n}} việc chưa có ngày",
+      "expand": "Mở Việc nhóm",
+      "collapse": "Thu gọn Việc nhóm",
+      "expandGroup": "Mở {{name}}",
+      "collapseGroup": "Thu gọn {{name}}",
+      "shared": "Dự án được chia sẻ",
+      "team": "Nhóm",
+      "seeAll": "Xem tất cả ({{n}})",
+      "openProject": "Mở dự án {{name}}",
+      "loadMore": "Tải thêm việc nhóm"
+    }
   }
 }

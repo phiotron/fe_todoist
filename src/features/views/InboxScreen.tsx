@@ -5,6 +5,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { StateView } from '../../components/StateView';
 import { useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { InboxTeamSection } from '../inbox/InboxTeamSection';
 import { ProjectScreen } from '../projects/ProjectScreen';
 import { useProjects } from '../projects/useProjects';
 
@@ -34,7 +35,8 @@ export function InboxScreen() {
       </View>
     );
   }
-  return <ProjectScreen projectId={inbox.id} tab />;
+  // Below the personal Inbox: undated work of joined team / shared projects (user request, not Todoist).
+  return <View style={styles.fill}><ProjectScreen projectId={inbox.id} tab /><InboxTeamSection /></View>;
 }
 
 function createInboxScreenStyles(palette: Palette) {

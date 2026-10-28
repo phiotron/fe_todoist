@@ -11,6 +11,7 @@ import type { Palette } from '../../theme/palette';
 import { TaskLabels } from '../labels/TaskLabels';
 import { progressLabel } from '../subtasks/tree';
 import { dueTone } from './dueTone';
+import { useProjectOrigin } from './projectOrigin';
 
 interface TaskMetaProps {
   task: Task;
@@ -89,14 +90,37 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
         </Text>
       </View>
     ) : null,
-    showProject ? (
-      <Text key="project" style={styles.text} numberOfLines={1}>
-        {task.projectName}
-      </Text>
-    ) : null,
+    showProject ? <TaskProjectLabel key="project" task={task} /> : null,
   ].filter(Boolean);
   if (items.length === 0) return null;
   return <View style={styles.meta}>{items}</View>;
+}
+
+/**
+ * Project of the task on aggregated views; a team project adds " · team" and a shared mark. Its own component so the
+ * cache lookup (react-query) only runs where the project is shown.
+ */
+function TaskProjectLabel({ task }: { task: Task }) {
+  const styles = useThemedStyles(createTaskMetaStyles);
+  const { palette } = useTheme();
+  const { t } = useTranslation();
+  const origin = useProjectOrigin(task.projectId);
+  return (
+    <View style={styles.item}>
+      {origin.kind === 'personal' ? null : (
+        <Feather
+          name="users"
+          size={size.iconSmall - 2}
+          color={palette.mute}
+          testID={`task-origin-${task.id}`}
+          accessibilityLabel={origin.kind === 'team' ? t('views.origin.team') : t('views.origin.shared')}
+        />
+      )}
+      <Text style={styles.text} numberOfLines={1} testID={`task-project-${task.id}`}>
+        {origin.kind === 'team' && origin.teamName ? `${task.projectName} · ${origin.teamName}` : task.projectName}
+      </Text>
+    </View>
+  );
 }
 
 function createTaskMetaStyles(palette: Palette) {
