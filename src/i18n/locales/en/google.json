@@ -1,0 +1,34 @@
+{
+  "google": {
+    "continue": "Continue with Google",
+    "or": "or",
+    "linkRequired": "This email already has a Taskly account. Sign in with your password to link Google; if you forgot it, choose \"Forgot your password?\" below.",
+    "cancelLink": "Don't link",
+    "linkedTitle": "Google linked",
+    "linkedMessage": "Next time you can sign in with Google.",
+    "linkFailedTitle": "Google was not linked",
+    "errors": {
+      "notConfigured": "Google sign-in is not configured in this build",
+      "playServices": "Google Play Services is missing or needs an update",
+      "inProgress": "Google sign-in is already in progress",
+      "failed": "Google sign-in failed, please try again",
+      "emailNotVerified": "Your Google email is not verified",
+      "linkConflict": "Could not link: this Google account belongs to another Taskly account, or your account is already linked to a different Google account",
+      "linkRejected": "Could not link Google: the request expired or does not match this account. Please try again."
+    },
+    "settings": {
+      "title": "Google account",
+      "linked": "Linked with Google",
+      "notLinked": "Not linked",
+      "link": "Link Google",
+      "unlink": "Unlink",
+      "linkSuccess": "Google linked",
+      "unlinkSuccess": "Google unlinked",
+      "needPassword": "Your account has no password yet. Set one with \"Forgot your password?\" on the sign-in screen before unlinking Google."
+    },
+    "account": {
+      "deleteNeedsPassword": "This account signs in with Google and has no password, so it cannot be deleted yet. Sign out, choose \"Forgot your password?\" on the sign-in screen to set a password (the code is sent to your email), then come back here to delete the account.",
+      "passwordNeedsReset": "This account signs in with Google and has no password. To set one, sign out and choose \"Forgot your password?\" on the sign-in screen."
+    }
+  }
+}

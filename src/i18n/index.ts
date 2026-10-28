@@ -8,6 +8,7 @@ import enDates from './locales/en/dates.json';
 import enDisplay from './locales/en/display.json';
 import enFilters from './locales/en/filters.json';
 import enFiltersLabels from './locales/en/filtersLabels.json';
+import enGoogle from './locales/en/google.json';
 import enLabels from './locales/en/labels.json';
 import enNav from './locales/en/nav.json';
 import enPasswordReset from './locales/en/passwordReset.json';
@@ -31,6 +32,7 @@ import viDates from './locales/vi/dates.json';
 import viDisplay from './locales/vi/display.json';
 import viFilters from './locales/vi/filters.json';
 import viFiltersLabels from './locales/vi/filtersLabels.json';
+import viGoogle from './locales/vi/google.json';
 import viLabels from './locales/vi/labels.json';
 import viNav from './locales/vi/nav.json';
 import viPasswordReset from './locales/vi/passwordReset.json';
@@ -61,6 +63,7 @@ export const viTranslation = {
   ...viDisplay,
   ...viFilters,
   ...viFiltersLabels,
+  ...viGoogle,
   ...viLabels,
   ...viNav,
   ...viPasswordReset,
@@ -88,6 +91,7 @@ export const enTranslation = {
   ...enDisplay,
   ...enFilters,
   ...enFiltersLabels,
+  ...enGoogle,
   ...enLabels,
   ...enNav,
   ...enPasswordReset,

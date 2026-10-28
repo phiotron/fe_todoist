@@ -1,0 +1,34 @@
+{
+  "google": {
+    "continue": "Tiếp tục với Google",
+    "or": "hoặc",
+    "linkRequired": "Email này đã có tài khoản Taskly. Hãy đăng nhập bằng mật khẩu để liên kết Google; nếu quên mật khẩu, chọn \"Quên mật khẩu?\" bên dưới.",
+    "cancelLink": "Không liên kết nữa",
+    "linkedTitle": "Đã liên kết Google",
+    "linkedMessage": "Từ lần sau bạn có thể đăng nhập bằng Google.",
+    "linkFailedTitle": "Chưa liên kết được Google",
+    "errors": {
+      "notConfigured": "Bản app này chưa được cấu hình đăng nhập Google",
+      "playServices": "Máy chưa có hoặc cần cập nhật Google Play Services",
+      "inProgress": "Đang đăng nhập Google, vui lòng chờ",
+      "failed": "Đăng nhập Google không thành công, vui lòng thử lại",
+      "emailNotVerified": "Email Google chưa được xác minh",
+      "linkConflict": "Không liên kết được: tài khoản Google này đã gắn với một tài khoản Taskly khác, hoặc tài khoản của bạn đã liên kết một tài khoản Google khác",
+      "linkRejected": "Không liên kết được Google: yêu cầu đã hết hạn hoặc không khớp tài khoản này. Vui lòng thử lại."
+    },
+    "settings": {
+      "title": "Liên kết Google",
+      "linked": "Đã liên kết với Google",
+      "notLinked": "Chưa liên kết",
+      "link": "Liên kết Google",
+      "unlink": "Bỏ liên kết",
+      "linkSuccess": "Đã liên kết Google",
+      "unlinkSuccess": "Đã bỏ liên kết Google",
+      "needPassword": "Tài khoản chưa có mật khẩu. Hãy đặt mật khẩu bằng \"Quên mật khẩu?\" ở màn đăng nhập trước khi bỏ liên kết Google."
+    },
+    "account": {
+      "deleteNeedsPassword": "Tài khoản này đăng nhập bằng Google và chưa có mật khẩu nên chưa xoá được. Hãy đăng xuất, chọn \"Quên mật khẩu?\" ở màn đăng nhập để đặt mật khẩu (mã gửi tới email của bạn), rồi quay lại đây xoá tài khoản.",
+      "passwordNeedsReset": "Tài khoản này đăng nhập bằng Google và chưa có mật khẩu. Muốn đặt mật khẩu, hãy đăng xuất rồi chọn \"Quên mật khẩu?\" ở màn đăng nhập."
+    }
+  }
+}
