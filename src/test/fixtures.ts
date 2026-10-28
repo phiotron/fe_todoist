@@ -7,6 +7,9 @@ export const testUser: UserResponse = {
   displayName: 'An',
   locale: 'vi',
   timeZone: 'Asia/Ho_Chi_Minh',
+  twoFactorEnabled: false,
+  hasPassword: true,
+  linkedProviders: [],
 };
 
 export function authResponse(accessToken = 'acc-1', refreshToken = 'ref-1'): AuthResponse {
