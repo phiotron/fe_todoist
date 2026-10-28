@@ -9,7 +9,8 @@ App di động Taskly, quản lý công việc kiểu Todoist. Backend nằm ở
 
 ## Cần có
 - Node ≥ 22.13 (script `gen:api` dùng `--env-file-if-exists` và `import.meta.dirname`)
-- Android Studio (Android SDK + JDK đi kèm) + một AVD (emulator) đang bật
+- Android Studio (Android SDK + JDK đi kèm) + một AVD (emulator) đang bật, dùng system image **Google APIs** hoặc
+  **Google Play** (cần Google Play Services để đăng nhập Google)
 - `adb` nằm ở `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe` (thêm thư mục này vào `PATH`, hoặc gọi bằng
   đường dẫn đầy đủ). `npx expo run:android` cần biến `ANDROID_HOME` trỏ tới `%LOCALAPPDATA%\Android\Sdk`.
 - Backend đang chạy ở cổng 8080 (xem README của repo `backend`)
@@ -18,7 +19,7 @@ App di động Taskly, quản lý công việc kiểu Todoist. Backend nằm ở
 Thư mục `android/` do `npx expo run:android` sinh ra (CNG) và không commit.
 
 ### Lần đầu (build + cài APK)
-1. Chép `.env.example` thành `.env`.
+1. Chép `.env.example` thành `.env`, điền `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (xem mục "Đăng nhập Google (cần Web client ID)").
 2. Cài thư viện: `npm install`
 3. Chuyển cổng backend vào emulator: `adb reverse tcp:8080 tcp:8080`
 4. Build và cài app lên emulator: `npx expo run:android` (lần đầu Gradle có thể mất 10–20 phút).
@@ -37,6 +38,21 @@ nếu không kết nối kẹt ở `SYN_SENT`. Taskly không xin quyền này; t
 `adb reverse tcp:8080 tcp:8080` chuyển cổng 8080 của emulator về máy tính. Lệnh này mất tác dụng khi emulator tắt, nên
 **chạy lại mỗi lần bật emulator** (kiểm bằng `adb reverse --list`). Metro (cổng 8081) thường được Expo CLI tự
 `adb reverse`; nếu app không tải được bundle thì chạy thêm `adb reverse tcp:8081 tcp:8081`.
+
+## Đăng nhập Google (cần Web client ID)
+Thư viện `@react-native-google-signin/google-signin` (v16) có mã native: sau khi cài / nâng nó phải build lại bằng
+`npx expo run:android` (APK cũ mở JS mới sẽ báo thiếu module native). Không dùng plugin config của thư viện trong
+`app.json` (không Firebase, chỉ Android): module tự liên kết (autolinking). Adapter nằm ở
+`src/lib/googleSignInAdapter.ts`, được gắn một lần lúc khởi động ở `src/app/_layout.tsx`.
+
+**Việc của người dùng** (tự đăng nhập Google Cloud Console; Claude không làm thay):
+1. **OAuth consent screen** (External, chế độ Testing, thêm tài khoản Google dùng để thử vào Test users).
+2. **Web client ID** (loại "Web application") → điền vào `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` trong `.env` của repo này **và** vào
+   danh sách client ID Google của backend (tên biến ở `backend/.env.example`). Để trống thì nút Google báo "chưa cấu hình".
+3. **Android client ID** (loại "Android"): package `com.taskly.app` + SHA-1 của debug keystore. Lấy SHA-1:
+   `cd android; .gradlew signingReport` → dòng `SHA1:` dưới `Variant: debug`. Không dùng ở code, chỉ để Google chấp
+   nhận chữ ký APK (thiếu → lỗi `DEVELOPER_ERROR`). Chạy `npx expo prebuild --clean` xong thì kiểm lại SHA-1.
+4. Thêm một tài khoản Google vào emulator (Settings → Passwords & accounts), rồi chạy lại Metro: `npx expo start --dev-client -c`.
 
 ## Lệnh
 | Việc | Lệnh |
