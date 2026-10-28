@@ -48,7 +48,7 @@ export class FakeReminderPlatform implements ReminderPlatform {
     return this.permission;
   }
 
-  needsExactAlarmGrant(): boolean {
+  async needsExactAlarmGrant(): Promise<boolean> {
     return this.exactAlarmNeeded;
   }
 

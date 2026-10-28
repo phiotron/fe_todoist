@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
 import RootLayout from '../../app/_layout';
 import { getGoogleSignInPlatform, unavailableGoogleSignInPlatform } from '../googleSignIn';
+import { expoReminderPlatform } from '../../features/reminders/notifications';
+import { getReminderPlatform } from '../../features/reminders/platform';
 
 jest.mock('expo-router', () => ({
   Stack: () => require('react').createElement(require('react-native').Text, null, 'stack'),
@@ -44,5 +46,9 @@ describe('RootLayout font loading', () => {
 describe('RootLayout startup', () => {
   it('installs the native Google Sign-In adapter once, when the layout module loads', () => {
     expect(getGoogleSignInPlatform()).not.toBe(unavailableGoogleSignInPlatform);
+  });
+
+  it('installs the expo-notifications reminder platform when the app module loads', () => {
+    expect(getReminderPlatform()).toBe(expoReminderPlatform);
   });
 });

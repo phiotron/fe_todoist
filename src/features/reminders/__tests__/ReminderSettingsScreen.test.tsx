@@ -149,11 +149,23 @@ describe('ReminderSettingsScreen', () => {
     platform.exactAlarmNeeded = true;
     await setup();
 
-    expect(screen.getByText(texts.exactAlarmHint)).toBeOnTheScreen();
+    expect(await screen.findByText(texts.exactAlarmHint)).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('reminder-exact-alarm-open'));
 
     expect(screen.getByText(texts.exactAlarmOpen)).toBeOnTheScreen();
     expect(platform.exactAlarmOpened).toBe(1);
+  });
+
+  it('hides the exact-alarm hint once the user has allowed it on the system page', async () => {
+    platform.exactAlarmNeeded = true;
+    jest.spyOn(platform, 'openExactAlarmSettings').mockImplementation(async () => {
+      platform.exactAlarmNeeded = false; // the user switched it on and came back
+    });
+    await setup();
+
+    await fireEvent.press(await screen.findByTestId('reminder-exact-alarm-open'));
+
+    await waitFor(() => expect(screen.queryByTestId('reminder-exact-alarm')).toBeNull());
   });
 
   it('shows no exact-alarm hint on platforms that do not need it', async () => {

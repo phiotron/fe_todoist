@@ -153,13 +153,15 @@ Không có — **không cần build lại** development build sau khi kéo nhán
   **50** lần nhắc gần nhất trên máy, id lịch = `auto:<taskId>` hoặc id nhắc.
 - Phần dùng thông báo của hệ điều hành đi qua **một cổng** `src/features/reminders/platform.ts` (`ReminderPlatform`: kênh,
   nút Hoãn / Hoàn thành, quyền, đặt / huỷ lịch, bấm thông báo). Mặc định là bản "không có" (không bao giờ có quyền) để
-  logic chạy và test được khi chưa cài `expo-notifications`. Bản cài thật (adapter `expo-notifications`) gắn lúc khởi động
-  bằng `setReminderPlatform(...)`; thêm `expo-notifications` là thay đổi native nên phải build lại development build
-  (`npx expo run:android`).
+  logic chạy và test được không cần module native. Bản thật (`src/features/reminders/notifications.ts`, dùng
+  `expo-notifications`) được `installReminderPlatform()` gắn **một lần** ở `src/app/_layout.tsx` lúc khởi động (kèm hiện
+  banner khi app đang mở). Jest dùng mock `expo-notifications` trong `jest.setup.ts` + helper `src/test/notifications.ts`.
+  `expo-notifications` là thay đổi native (plugin + quyền `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM` trong `app.json`)
+  nên phải build lại development build (`npx expo run:android`).
 - **Nhắc tự động** cho task **có giờ** (Cài đặt → Nhắc nhở → Nhắc tự động, mặc định 30 phút trước, tắt được). Task chỉ có
   ngày không tự nhắc.
 - **Nhắc riêng**: chip "Nhắc nhở" trong chi tiết task và Quick Add — thời điểm cụ thể, hoặc trước hạn (chỉ task có giờ).
   Task đã xong hoặc thuộc dự án / section lưu trữ: chỉ xem. Vuốt "Reminders" mở thẳng bảng nhắc của task.
 - Đồng bộ lịch khi mở app, khi quay lại app, sau mỗi thao tác ghi thành công trên máy này, khi đổi cài đặt nhắc.
 - Đăng xuất / hết phiên / đăng nhập tài khoản khác → huỷ mọi lịch nhắc.
-- Giờ nhắc theo **múi giờ tài khoản** (không phải múi giờ máy). Android 14+ cần bật "Báo thức & lời nhắc" để nhắc đúng giờ.
+- Giờ nhắc theo **múi giờ tài khoản** (không phải múi giờ máy). Android 14+ cần bật "Báo thức & lời nhắc" để nhắc đúng giờ (Cài đặt → Nhắc nhở hiện hướng dẫn cho tới khi hệ thống cho phép).

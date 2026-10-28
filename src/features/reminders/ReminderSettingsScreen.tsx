@@ -9,9 +9,9 @@ import { Toggle } from '../../components/Toggle';
 import { AUTO_REMINDER_MINUTES, DEFAULT_AUTO_REMINDER_MINUTES } from '../../lib/reminders';
 import { gutter, radius, type, useTheme } from '../../theme';
 import type { Palette } from '../../theme/palette';
-import { getReminderPlatform } from './platform';
 import { offsetLabel } from './reminderLabel';
 import { requestReminderSync } from './syncSignal';
+import { useExactAlarmGrant } from './useExactAlarmGrant';
 import { useReminderPermission } from './useReminderPermission';
 
 /** Off first, then the 10 values of spec 12.1.1; `null` = automatic reminders off. */
@@ -33,7 +33,7 @@ export interface ReminderSettingsScreenProps {
    */
   onSave: (patch: ReminderSettingsValues) => Promise<unknown> | void;
   onBack: () => void;
-  /** Android 14+: show how to allow exact alarms (decision 13). Defaults to what the platform says. */
+  /** Show how to allow exact alarms (decision 13). Defaults to what the platform says (re-read when the app returns). */
   showExactAlarmHint?: boolean;
 }
 
@@ -45,12 +45,14 @@ export function ReminderSettingsScreen({
   settings,
   onSave,
   onBack,
-  showExactAlarmHint = getReminderPlatform().needsExactAlarmGrant(),
+  showExactAlarmHint,
 }: ReminderSettingsScreenProps) {
   const { t } = useTranslation();
   const { palette } = useTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const permission = useReminderPermission();
+  const exactAlarm = useExactAlarmGrant();
+  const exactAlarmHint = showExactAlarmHint ?? exactAlarm.needed;
 
   if (!settings) return null;
 
@@ -128,7 +130,7 @@ export function ReminderSettingsScreen({
           ))}
         </View>
 
-        {enabled && showExactAlarmHint ? (
+        {enabled && exactAlarmHint ? (
           <View testID="reminder-exact-alarm" style={styles.exact}>
             <Text style={styles.hint}>{t('reminders.settings.exactAlarmHint')}</Text>
             <AppButton
@@ -136,7 +138,7 @@ export function ReminderSettingsScreen({
               variant="outline"
               size="sm"
               label={t('reminders.settings.exactAlarmOpen')}
-              onPress={() => void getReminderPlatform().openExactAlarmSettings()}
+              onPress={() => void exactAlarm.openSettings()}
             />
           </View>
         ) : null}

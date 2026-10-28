@@ -17,7 +17,11 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,7 +33,8 @@
       "expo-localization",
       "./plugins/withAndroidBuildFixes",
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      "expo-notifications"
     ],
     "scheme": "taskly"
   }
