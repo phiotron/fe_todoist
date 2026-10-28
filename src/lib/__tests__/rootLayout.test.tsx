@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 import RootLayout from '../../app/_layout';
+import { getGoogleSignInPlatform, unavailableGoogleSignInPlatform } from '../googleSignIn';
 
 jest.mock('expo-router', () => ({
   Stack: () => require('react').createElement(require('react-native').Text, null, 'stack'),
@@ -37,5 +38,11 @@ describe('RootLayout font loading', () => {
     jest.spyOn(Figtree, 'useFonts').mockReturnValue([false, new Error('font')]);
     await render(<RootLayout />);
     expect(await screen.findByText('stack')).toBeOnTheScreen();
+  });
+});
+
+describe('RootLayout startup', () => {
+  it('installs the native Google Sign-In adapter once, when the layout module loads', () => {
+    expect(getGoogleSignInPlatform()).not.toBe(unavailableGoogleSignInPlatform);
   });
 });

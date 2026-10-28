@@ -6,17 +6,16 @@ export type GoogleSignInResult =
   | { type: 'error'; reason: GoogleSignInFailure };
 
 /**
- * Everything the app needs from the native Google Sign-In. The app talks only to this port; the adapter backed by
- * `@react-native-google-signin/google-signin` is NOT installed yet (the library needs a native build and a Google
- * Cloud OAuth client). When it is, write one adapter and install it once at startup with setGoogleSignInPlatform():
+ * Everything the app needs from the native Google Sign-In. The app talks only to this port. The real adapter
+ * (src/lib/googleSignInAdapter.ts, backed by `@react-native-google-signin/google-signin` v16) is installed once at
+ * startup in src/app/_layout.tsx via setGoogleSignInPlatform():
  *
  *   configure({ webClientId: GOOGLE_WEB_CLIENT_ID }) -> hasPlayServices() -> signIn() -> signOut() (best effort, so the
- *   next press shows the account picker again) -> `{ type: 'success', idToken, email }`; `cancelled` for a closed picker
- *   (SIGN_IN_CANCELLED); `error` with `playServices` / `inProgress` / `failed` for the other status codes;
- *   `notConfigured` when GOOGLE_WEB_CLIENT_ID (src/lib/config.ts) is null.
+ *   next press shows the account picker again) -> `{ type: 'success', idToken, email }`; `cancelled` for a closed picker;
+ *   `error` with `playServices` / `inProgress` / `failed` for the other status codes; `notConfigured` when
+ *   GOOGLE_WEB_CLIENT_ID (src/lib/config.ts) is null.
  *
- * Until then the "unavailable" platform below is used, so every screen runs and is testable with a fake
- * (src/test/fakeGoogleSignInPlatform.ts).
+ * Tests use the fake (src/test/fakeGoogleSignInPlatform.ts) and never load the native module.
  */
 export interface GoogleSignInPlatform {
   /** Opens the Google account picker and returns an ID token for the backend. May throw: getGoogleIdToken() catches. */
