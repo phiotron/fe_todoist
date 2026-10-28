@@ -72,7 +72,17 @@ describe('describeError', () => {
     expect(describeError(api(422, { code: 'limit-reached', limit: 'PROJECT_SECTIONS_TOTAL', max: 100 })).message).toBe(
       vi.errors.limit.projectSectionsTotal.replace('{{max}}', '100'),
     );
-    expect(describeError(api(422, { code: 'limit-reached', limit: 'REMINDERS', max: 500 })).message).toBe(
+    // M2 (LABELS, FILTERS) and M4 (REMINDERS) have their own sentences; only a kind no milestone knows yet falls back to `other`.
+    expect(describeError(api(422, { code: 'limit-reached', limit: 'LABELS', max: 500 })).message).toBe(
+      vi.errors.limit.labels.replace('{{max}}', '500'),
+    );
+    expect(describeError(api(422, { code: 'limit-reached', limit: 'FILTERS', max: 150 })).message).toBe(
+      vi.errors.limit.filters.replace('{{max}}', '150'),
+    );
+    expect(describeError(api(422, { code: 'limit-reached', limit: 'REMINDERS', max: 700 })).message).toBe(
+      vi.errors.limit.reminders.replace('{{max}}', '700'),
+    );
+    expect(describeError(api(422, { code: 'limit-reached', limit: 'SOME_FUTURE_KIND', max: 500 })).message).toBe(
       vi.errors.limit.other.replace('{{max}}', '500'),
     );
     expect(describeError(api(422)).message).toBe(vi.errors.targetUnavailable);

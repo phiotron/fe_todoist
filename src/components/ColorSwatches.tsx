@@ -28,7 +28,7 @@ export function ColorSwatches({ value, onChange, testID = 'color-swatches' }: Co
             onPress={() => onChange(color)}
             style={[styles.swatch, { backgroundColor: projectColorHex(color) }, selected && { borderColor: palette.ink }]}
           >
-            {selected ? <Feather name="check" size={16} color="#FFFFFF" /> : null}
+            {selected ? <Feather name="check" size={16} color={palette.knob} /> : null}
           </Pressable>
         );
       })}
