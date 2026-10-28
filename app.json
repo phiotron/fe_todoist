@@ -29,7 +29,8 @@
       "expo-localization",
       "./plugins/withAndroidBuildFixes",
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      "@react-native-google-signin/google-signin"
     ],
     "scheme": "taskly"
   }
