@@ -1,0 +1,64 @@
+{
+  "templates": {
+    "title": "Template",
+    "browseRow": "Duyệt template",
+    "limitReached": "Bạn đã có tối đa {{max}} template — hãy xoá bớt template cũ",
+    "mine": "Template của tôi",
+    "mineEmpty": "Chưa có template nào. Mở menu ⋯ của một dự án và chọn Lưu thành template.",
+    "category": {
+      "FEATURED": "Nổi bật",
+      "PRODUCTIVITY_METHODS": "Phương pháp làm việc",
+      "POPULAR": "Phổ biến"
+    },
+    "counts": "{{sections}} section · {{tasks}} công việc",
+    "preview": {
+      "noSection": "Không thuộc section",
+      "use": "Dùng template",
+      "delete": "Xoá template",
+      "deleteTitle": "Xoá template \"{{name}}\"?",
+      "deleteMessage": "Template sẽ bị xoá vĩnh viễn. Các dự án đã tạo từ template không bị ảnh hưởng.",
+      "deleted": "Đã xoá template"
+    },
+    "apply": {
+      "title": "Tạo dự án từ template",
+      "name": "Tên dự án",
+      "submit": "Tạo dự án",
+      "created": "Đã tạo dự án \"{{name}}\"",
+      "applied": "Đã thêm template vào dự án",
+      "pickTitle": "Chọn template để áp dụng",
+      "nameRequired": "Vui lòng nhập tên dự án",
+      "nameTooLong": "Tên dự án tối đa 120 ký tự"
+    },
+    "save": {
+      "title": "Lưu thành template",
+      "name": "Tên template",
+      "submit": "Lưu",
+      "saved": "Đã lưu template \"{{name}}\"",
+      "hint": "Template giữ section và công việc đang mở (không giữ ngày, nhắc, nhãn).",
+      "nameRequired": "Vui lòng nhập tên template",
+      "nameTooLong": "Tên template tối đa 120 ký tự"
+    },
+    "menu": {
+      "duplicate": "Nhân bản",
+      "saveAsTemplate": "Lưu thành template",
+      "applyTemplate": "Áp dụng template",
+      "move": "Chuyển tới dự án khác",
+      "reorder": "Sắp xếp section"
+    },
+    "duplicated": {
+      "project": "Đã tạo bản sao \"{{name}}\"",
+      "section": "Đã nhân bản section \"{{name}}\""
+    },
+    "moveSection": {
+      "title": "Chuyển section tới",
+      "moved": "Đã chuyển section sang \"{{name}}\""
+    },
+    "backups": {
+      "title": "Sao lưu",
+      "intro": "Taskly tự sao lưu dữ liệu mỗi ngày lúc nửa đêm (theo múi giờ tài khoản) khi có thay đổi và giữ 21 bản gần nhất. Ứng dụng di động chỉ xem danh sách, không khôi phục.",
+      "empty": "Chưa có bản sao lưu nào",
+      "when": "{{date}}, {{time}}",
+      "counts": "{{projects}} dự án · {{tasks}} công việc"
+    }
+  }
+}

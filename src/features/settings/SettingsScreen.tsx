@@ -66,6 +66,7 @@ export function SettingsScreen() {
       <SettingsLinkRow testID="settings-row-navigation" icon="layout" label={t('settings.pages.navigation')} href="/settings/navigation" />
       <SettingsLinkRow testID="settings-row-navigation-menu" icon="menu" label={t('navMenu.title')} href="/settings/navigation-menu" />
       <SettingsLinkRow testID="settings-row-quick-add" icon="plus-circle" label={t('quickAdd.settings.row')} href="/settings/quick-add" />
+      <SettingsLinkRow testID="settings-row-backups" icon="archive" label={t('templates.backups.title')} href="/settings/backups" />
       <ResetDefaultsSection />
       <SignOutSection />
     </SettingsPage>

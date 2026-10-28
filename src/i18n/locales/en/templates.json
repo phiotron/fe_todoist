@@ -1,0 +1,64 @@
+{
+  "templates": {
+    "title": "Templates",
+    "browseRow": "Browse templates",
+    "limitReached": "You already have the maximum of {{max}} templates — delete some old ones first",
+    "mine": "My templates",
+    "mineEmpty": "No templates yet. Open a project's ⋯ menu and choose Save as template.",
+    "category": {
+      "FEATURED": "Featured",
+      "PRODUCTIVITY_METHODS": "Productivity methods",
+      "POPULAR": "Popular"
+    },
+    "counts": "{{sections}} sections · {{tasks}} tasks",
+    "preview": {
+      "noSection": "Not in a section",
+      "use": "Use template",
+      "delete": "Delete template",
+      "deleteTitle": "Delete template \"{{name}}\"?",
+      "deleteMessage": "The template will be permanently deleted. Projects already created from it are not affected.",
+      "deleted": "Template deleted"
+    },
+    "apply": {
+      "title": "New project from template",
+      "name": "Project name",
+      "submit": "Create project",
+      "created": "Created project \"{{name}}\"",
+      "applied": "Template added to the project",
+      "pickTitle": "Choose a template to apply",
+      "nameRequired": "Please enter a project name",
+      "nameTooLong": "Project name must be at most 120 characters"
+    },
+    "save": {
+      "title": "Save as template",
+      "name": "Template name",
+      "submit": "Save",
+      "saved": "Saved template \"{{name}}\"",
+      "hint": "The template keeps the sections and open tasks (not dates, reminders or labels).",
+      "nameRequired": "Please enter a template name",
+      "nameTooLong": "Template name must be at most 120 characters"
+    },
+    "menu": {
+      "duplicate": "Duplicate",
+      "saveAsTemplate": "Save as template",
+      "applyTemplate": "Apply a template",
+      "move": "Move to another project",
+      "reorder": "Reorder sections"
+    },
+    "duplicated": {
+      "project": "Created copy \"{{name}}\"",
+      "section": "Duplicated section \"{{name}}\""
+    },
+    "moveSection": {
+      "title": "Move section to",
+      "moved": "Section moved to \"{{name}}\""
+    },
+    "backups": {
+      "title": "Backups",
+      "intro": "Taskly backs up your data every day at midnight (account time zone) when something changed and keeps the latest 21. The mobile app only lists them; restoring is not available here.",
+      "empty": "No backups yet",
+      "when": "{{date}}, {{time}}",
+      "counts": "{{projects}} projects · {{tasks}} tasks"
+    }
+  }
+}

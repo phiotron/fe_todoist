@@ -54,6 +54,8 @@ export const DATA_ROOTS: ReadonlySet<string> = new Set([
   'filters',
   'search',
   'viewOptions',
+  // M11: Save as template / delete template (keys in api/templates.ts)
+  'templates',
 ]);
 
 export interface InvalidateOptions {

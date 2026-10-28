@@ -43,6 +43,8 @@ export default function SignedInLayout() {
             <Stack.Screen name="filter/[id]" />
             <Stack.Screen name="projects/archived" />
             <Stack.Screen name="completed" />
+            <Stack.Screen name="templates/index" />
+            <Stack.Screen name="templates/[id]" />
             <Stack.Screen name="task/[id]" />
             <Stack.Screen name="quick-add" options={{ presentation: 'transparentModal', animation: 'fade' }} />
             <Stack.Screen name="project-form" options={{ presentation: 'modal' }} />
