@@ -6,29 +6,31 @@ import { describeSettingsSaveError } from './settingsErrors';
 import { FIXED_TAB_LABEL_KEYS } from './tabLabels';
 import { TargetPicker } from './TargetPicker';
 import { PickerRow, SettingsSection } from './ui';
+import { useHomeView } from '../navMenu/useHomeView';
 import { usePinTargets } from './usePinTargets';
-import { useSettings } from './useSettings';
 
 const PICK = 'PICK';
 type FixedPage = 'INBOX' | 'TODAY' | 'UPCOMING';
 
 export function StartPageSection() {
   const { t } = useTranslation();
-  const { settings, update } = useSettings();
+  // M3x: with "Sync home view" off the start page is this device's own (useHomeView), not the account one.
+  const homeView = useHomeView();
+  const current = homeView.startPage;
   const targets = usePinTargets();
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string>();
 
-  const pin = parsePin(settings.startPage);
-  const fixed: FixedPage | null = pin ? null : (settings.startPage as FixedPage);
+  const pin = parsePin(current);
+  const fixed: FixedPage | null = pin ? null : (current as FixedPage);
   const valueLabel = pin
     ? (targets.nameOf(pin) ?? t('settings.startPage.unknown'))
-    : t(FIXED_TAB_LABEL_KEYS[settings.startPage as FixedPage]);
+    : t(FIXED_TAB_LABEL_KEYS[current as FixedPage]);
 
   async function save(startPage: string) {
     setError(undefined);
     try {
-      await update({ startPage });
+      await homeView.setStartPage(startPage);
     } catch (saveError) {
       setError(describeSettingsSaveError(saveError));
     }
@@ -39,13 +41,13 @@ export function StartPageSection() {
       setPicking(true);
       return;
     }
-    if (value !== settings.startPage) void save(value);
+    if (value !== current) void save(value);
   }
 
   function onPick(target: PinTarget) {
     setPicking(false);
     const next = pinKey(target);
-    if (next !== settings.startPage) void save(next);
+    if (next !== current) void save(next);
   }
 
   return (

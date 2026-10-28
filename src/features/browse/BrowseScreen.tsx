@@ -10,9 +10,12 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { gutter, size, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
+import { browseShortcuts } from '../navMenu/browseShortcuts';
+import { useNavigationSettings } from '../navMenu/useNavigationSettings';
+import { useNavTabs } from '../navigation/navTabs';
 import { useProjects } from '../projects/useProjects';
 import { AccountDialog } from './AccountDialog';
-import { BROWSE_EXTRA_BLOCKS, BROWSE_SHORTCUTS } from './browseBlocks';
+import { BROWSE_EXTRA_BLOCKS } from './browseBlocks';
 import { FavoritesBlock } from './FavoritesBlock';
 import { MyProjectsBlock } from './MyProjectsBlock';
 
@@ -23,6 +26,9 @@ export function BrowseScreen() {
   const me = useMe();
   const { query, inbox } = useProjects();
   const [accountOpen, setAccountOpen] = useState(false);
+  // M3x Navigation menu: shortcuts follow the menu, minus the tab bar; "Show task count" gates the Inbox count.
+  const { navMenuItems, navMenuShowTaskCount } = useNavigationSettings();
+  const navTabs = useNavTabs();
   const showState = (query.isPending || query.isError) && !query.data;
 
   return (
@@ -49,7 +55,7 @@ export function BrowseScreen() {
         }
       />
       <ScrollView contentContainerStyle={styles.content}>
-        {BROWSE_SHORTCUTS.map((shortcut) => (
+        {browseShortcuts(navMenuItems, navTabs).map((shortcut) => (
           <View key={shortcut.key} style={styles.shortcut}>
             <ListRow
               testID={`browse-shortcut-${shortcut.key}`}
@@ -58,7 +64,11 @@ export function BrowseScreen() {
               iconBox
               bold
               chevron={shortcut.chevron}
-              right={shortcut.count === 'inbox' && inbox && inbox.activeTaskCount > 0 ? String(inbox.activeTaskCount) : undefined}
+              right={
+                navMenuShowTaskCount && shortcut.count === 'inbox' && inbox && inbox.activeTaskCount > 0
+                  ? String(inbox.activeTaskCount)
+                  : undefined
+              }
               onPress={() => (shortcut.kind === 'tab' ? router.navigate(shortcut.href) : router.push(shortcut.href))}
             />
           </View>

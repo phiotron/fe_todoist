@@ -11,6 +11,7 @@ import enFiltersLabels from './locales/en/filtersLabels.json';
 import enGoogle from './locales/en/google.json';
 import enLabels from './locales/en/labels.json';
 import enNav from './locales/en/nav.json';
+import enNavMenu from './locales/en/navMenu.json';
 import enPasswordReset from './locales/en/passwordReset.json';
 import enProjectScreen from './locales/en/projectScreen.json';
 import enProjects from './locales/en/projects.json';
@@ -35,6 +36,7 @@ import viFiltersLabels from './locales/vi/filtersLabels.json';
 import viGoogle from './locales/vi/google.json';
 import viLabels from './locales/vi/labels.json';
 import viNav from './locales/vi/nav.json';
+import viNavMenu from './locales/vi/navMenu.json';
 import viPasswordReset from './locales/vi/passwordReset.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
@@ -66,6 +68,7 @@ export const viTranslation = {
   ...viGoogle,
   ...viLabels,
   ...viNav,
+  ...viNavMenu,
   ...viPasswordReset,
   ...viProjectScreen,
   ...viProjects,
@@ -94,6 +97,7 @@ export const enTranslation = {
   ...enGoogle,
   ...enLabels,
   ...enNav,
+  ...enNavMenu,
   ...enPasswordReset,
   ...enProjectScreen,
   ...enProjects,

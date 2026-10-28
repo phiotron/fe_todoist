@@ -22,6 +22,7 @@ import type { Palette } from '../../theme/palette';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { projectViewKey } from '../display/displayRules';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
+import { useAddButtonPlacement } from '../navMenu/useNavigationSettings';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
@@ -62,6 +63,7 @@ function ProjectBody({
   const styles = useThemedStyles(createProjectScreenStyles);
   const { t } = useTranslation();
   const selection = useTaskSelection();
+  const addButtonPlacement = useAddButtonPlacement();
   const readOnly = isProjectReadOnly(project);
   const body = useProjectRows({ projectId: project.id, readOnly, display });
   const { all } = useProjects();
@@ -174,7 +176,7 @@ function ProjectBody({
       />
       {header}
       <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
-      {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} testID="project-fab" /> : null}
+      {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} placement={addButtonPlacement} testID="project-fab" /> : null}
       {body.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
       <DisplaySheet visible={displayOpen} viewKey={projectViewKey(project.id)} onClose={() => setDisplayOpen(false)} />

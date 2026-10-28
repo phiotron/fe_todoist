@@ -1,0 +1,32 @@
+{
+  "navMenu": {
+    "title": "Navigation menu",
+    "intro": "Items shown on the Browse screen. Items already on the tab bar are not shown there again.",
+    "showTaskCount": "Show task count",
+    "showTaskCountHint": "Show the number of tasks next to the menu items on the Browse screen.",
+    "itemsTitle": "Menu items",
+    "items": {
+      "INBOX": "Inbox",
+      "TODAY": "Today",
+      "UPCOMING": "Upcoming",
+      "FILTERS_LABELS": "Filters & Labels",
+      "REPORTING": "Reporting",
+      "BROWSE_TEMPLATES": "Browse templates"
+    },
+    "onTabBar": "On the tab bar, so not shown in the menu",
+    "comingLater": "Coming in a later version",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "toggle": "Show {{name}} in the menu",
+    "addButton": {
+      "title": "Add button position",
+      "LEFT": "Left",
+      "CENTER": "Center",
+      "RIGHT": "Right"
+    },
+    "syncHomeView": {
+      "title": "Sync home view",
+      "hint": "On: use the same start page on all your devices. Off: change the start page on this device only."
+    }
+  }
+}
