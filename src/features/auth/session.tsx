@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { authApi, type AuthResponse, type LoginRequest, type RegisterRequest } from '../../api/auth';
 import { addSessionExpiredListener, apiFetch } from '../../api/client';
 import { ApiError } from '../../api/errors';
+import { identitiesApi } from '../../api/identities';
 import { twoFactorApi } from '../../api/twoFactor';
 import { queryPersister } from '../../lib/queryClient';
 import { tokenStore } from '../../lib/tokenStore';
@@ -14,10 +15,23 @@ import {
   twoFactorTokenOf,
 } from '../two-factor/twoFactorToken';
 import { cancelAllReminders } from '../reminders/platform';
+import { linkTokenOf } from './googleErrors';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'signedIn';
 
 export type SignInOutcome = 'signedIn' | 'twoFactorRequired';
+
+/** A 409 link-required answer waiting for the user to prove the password (and the 2FA code). Lives in memory only. */
+export interface PendingGoogleLink {
+  linkToken: string;
+  /** Google email, used to prefill the login form. */
+  email: string | null;
+}
+
+/** 'twoFactorRequired': the M3 two-factor step now holds the token; navigate to /two-factor. */
+export type GoogleSignInOutcome = 'signedIn' | 'linkRequired' | 'twoFactorRequired';
+
+export type GoogleLinkOutcome = { type: 'none' } | { type: 'linked' } | { type: 'failed'; error: unknown };
 
 export interface SessionContextValue {
   status: SessionStatus;
@@ -38,6 +52,16 @@ export interface SessionContextValue {
   cancelTwoFactor(): void;
   /** Signs this device out without calling the server (account deleted, logged out of every device). */
   endLocalSession(): Promise<void>;
+  /** Set after POST auth/google answered 409 link-required; cleared on use, cancel and sign-out. */
+  pendingGoogleLink: PendingGoogleLink | null;
+  /**
+   * Throws the API error for every failure except 409 link-required ('linkRequired') and
+   * 401 two-factor-required ('twoFactorRequired').
+   */
+  signInWithGoogle(input: { idToken: string; email: string | null }): Promise<GoogleSignInOutcome>;
+  cancelGoogleLink(): void;
+  /** Call once the user is fully signed in (password, plus the 2FA code when asked). Never throws. */
+  completeGoogleLink(): Promise<GoogleLinkOutcome>;
 }
 
 export const meQueryKey = ['me'] as const;
@@ -69,6 +93,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<SessionStatus>('loading');
   const [expired, setExpired] = useState(false);
+  const [pendingGoogleLink, setPendingGoogleLinkState] = useState<PendingGoogleLink | null>(null);
+  // Mirrored in a ref: completeGoogleLink runs right after signIn / verifyTwoFactor, before the caller re-renders.
+  const pendingLinkRef = useRef<PendingGoogleLink | null>(null);
+  const setPendingGoogleLink = useCallback((next: PendingGoogleLink | null) => {
+    pendingLinkRef.current = next;
+    setPendingGoogleLinkState(next);
+  }, []);
   // Bumped whenever the session changes hands, so a check that was started for an old session is ignored.
   const generation = useRef(0);
   // The pending "look at /me again" timer; it belongs to the session of its generation.
@@ -216,9 +247,58 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const signUp = useCallback(
-    async (input: RegisterRequest) => applyAuth(await authApi.register(input)),
-    [applyAuth],
+    async (input: RegisterRequest) => {
+      const response = await authApi.register(input);
+      // A link waiting since "link-required" belongs to another account's email: a new account must not inherit it.
+      setPendingGoogleLink(null);
+      await applyAuth(response);
+    },
+    [applyAuth, setPendingGoogleLink],
   );
+
+  const signInWithGoogle = useCallback(
+    async ({ idToken, email }: { idToken: string; email: string | null }): Promise<GoogleSignInOutcome> => {
+      let response: AuthResponse;
+      try {
+        response = await authApi.google({ idToken });
+      } catch (error) {
+        const linkToken = linkTokenOf(error);
+        if (linkToken !== null) {
+          // Never linked automatically: the user must sign in with the existing password first (spec 12.1).
+          setPendingGoogleLink({ linkToken, email });
+          return 'linkRequired';
+        }
+        const twoFactorToken = twoFactorTokenOf(error);
+        if (twoFactorToken !== null) {
+          // A linked Google account with 2FA on: same second step as a password sign-in (M3).
+          setPendingGoogleLink(null);
+          beginTwoFactor(twoFactorToken);
+          return 'twoFactorRequired';
+        }
+        throw error;
+      }
+      setPendingGoogleLink(null);
+      await applyAuth(response);
+      return 'signedIn';
+    },
+    [applyAuth, beginTwoFactor, setPendingGoogleLink],
+  );
+
+  const cancelGoogleLink = useCallback(() => setPendingGoogleLink(null), [setPendingGoogleLink]);
+
+  const completeGoogleLink = useCallback(async (): Promise<GoogleLinkOutcome> => {
+    const pending = pendingLinkRef.current;
+    if (!pending) return { type: 'none' };
+    // A link token is single-use: drop it whatever the server answers.
+    setPendingGoogleLink(null);
+    try {
+      await identitiesApi.linkGoogle({ linkToken: pending.linkToken });
+    } catch (error) {
+      return { type: 'failed', error };
+    }
+    await queryClient.invalidateQueries({ queryKey: meQueryKey });
+    return { type: 'linked' };
+  }, [queryClient, setPendingGoogleLink]);
 
   const verifyTwoFactor = useCallback(
     async (code: string) => {
@@ -255,6 +335,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const endLocalSession = useCallback(async () => {
     clearTwoFactor();
+    setPendingGoogleLink(null);
     try {
       nextGeneration();
       // Close the epoch before clearing: a refresh still on the wire must not write its tokens back afterwards.
@@ -266,7 +347,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setExpired(false);
       setStatus('signedOut');
     }
-  }, [clearTwoFactor, queryClient, nextGeneration]);
+  }, [clearTwoFactor, setPendingGoogleLink, queryClient, nextGeneration]);
 
   const signOut = useCallback(async () => {
     try {
@@ -289,8 +370,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       verifyTwoFactor,
       cancelTwoFactor: clearTwoFactor,
       endLocalSession,
+      pendingGoogleLink,
+      signInWithGoogle,
+      cancelGoogleLink,
+      completeGoogleLink,
     }),
-    [status, expired, signIn, signUp, signOut, pendingTwoFactor, verifyTwoFactor, clearTwoFactor, endLocalSession],
+    [
+      status,
+      expired,
+      signIn,
+      signUp,
+      signOut,
+      pendingTwoFactor,
+      verifyTwoFactor,
+      clearTwoFactor,
+      endLocalSession,
+      pendingGoogleLink,
+      signInWithGoogle,
+      cancelGoogleLink,
+      completeGoogleLink,
+    ],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

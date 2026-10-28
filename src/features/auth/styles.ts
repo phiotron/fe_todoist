@@ -12,6 +12,11 @@ export function createAuthStyles(palette: Palette) {
     notice: { ...type.meta, color: palette.warn, marginBottom: 16 },
     formError: { ...type.meta, color: palette.warn, marginBottom: 12 },
     successText: { ...type.body, color: palette.mute, marginBottom: 20 },
+    // M5 Google: a plain information line (link-required notice) and the "or" divider after the M-Auth frame.
+    info: { ...type.body, color: palette.ink, marginBottom: 8 },
+    orRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 18 },
+    orLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: palette.line },
+    orText: { ...type.meta, color: palette.mute },
     mailIcon: {
       width: size.avatarXL,
       height: size.avatarXL,

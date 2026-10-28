@@ -1,4 +1,4 @@
-import type { AuthResponse, UserResponse } from '../api/auth';
+import type { AuthResponse, MeResponse, UserResponse } from '../api/auth';
 import type { SettingsResponse } from '../api/settings';
 
 export const testUser: UserResponse = {
@@ -33,3 +33,8 @@ export const testSettings: SettingsResponse = {
   swipeRight: 'COMPLETE',
   navTabs: ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'],
 };
+
+/** GET me as returned from M5 on; override hasPassword / linkedProviders per test. */
+export function testMe(overrides: Partial<MeResponse> = {}): MeResponse {
+  return { ...testUser, hasPassword: true, linkedProviders: [], ...overrides };
+}

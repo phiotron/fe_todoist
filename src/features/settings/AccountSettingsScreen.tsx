@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { DeleteAccountSection } from './DeleteAccountSection';
+import { GoogleLinkSection } from './GoogleLinkSection';
 import { LogoutAllSection } from './LogoutAllSection';
 import { PasswordSection } from './PasswordSection';
 import { ProfileSection } from './ProfileSection';
@@ -10,7 +11,7 @@ import { useTwoFactorStatus } from '../two-factor/useTwoFactorStatus';
 
 /**
  * Settings › Account (spec 9.5). Sections are listed directly in the JSX, in display order:
- * M5 adds <GoogleLinkSection /> right after <PasswordSection />.
+ * <GoogleLinkSection /> (M5) comes right after <PasswordSection />.
  */
 export function AccountSettingsScreen() {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export function AccountSettingsScreen() {
     <SettingsPage testID="account-settings-screen" title={t('settings.pages.account')}>
       <ProfileSection />
       <PasswordSection />
+      <GoogleLinkSection />
       <SettingsSection testID="settings-section-twoFactor">
         <SettingsLinkRow
           testID="settings-row-two-factor"

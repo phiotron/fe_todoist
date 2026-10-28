@@ -8,7 +8,8 @@ import { useIsOnline } from '../../lib/useIsOnline';
 import { AuthLogo } from './AuthLogo';
 import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
-import { goHomeAfterAuth } from './LoginScreen';
+import { GoogleSignInButton, OrDivider } from './GoogleSignInButton';
+import { goHomeAfterAuth, goToTwoFactor } from './LoginScreen';
 import { useSession } from './session';
 import { useAuthStyles } from './styles';
 import { hasErrors, validateRegister, type RegisterValues } from './validation';
@@ -24,6 +25,7 @@ export function RegisterScreen() {
   const [submitting, setSubmitting] = useState(false);
   // Synchronous lock: state updates are async, so two quick presses could both pass a state check.
   const inFlight = useRef(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const emailRef = useRef<TextInputHandle>(null);
   const passwordRef = useRef<TextInputHandle>(null);
 
@@ -63,6 +65,16 @@ export function RegisterScreen() {
     <KeyboardScreen contentStyle={styles.screen}>
       <AuthLogo />
       <Text style={styles.title}>{t('auth.register.title')}</Text>
+      {/* The design also draws Apple / Microsoft here; only Google exists in M5 (Apple is M13). */}
+      <GoogleSignInButton
+        testID="register-google"
+        disabled={submitting}
+        onBusyChange={setGoogleBusy}
+        onSignedIn={goHomeAfterAuth}
+        onLinkRequired={goToLogin}
+        onTwoFactorRequired={goToTwoFactor}
+      />
+      <OrDivider />
       <AuthTextField
         testID="register-displayName"
         label={t('auth.fields.displayName')}
@@ -117,8 +129,8 @@ export function RegisterScreen() {
         testID="register-submit"
         accessibilityRole="button"
         accessibilityLabel={t('auth.register.submit')}
-        accessibilityState={{ busy: submitting, disabled: submitting }}
-        disabled={submitting}
+        accessibilityState={{ busy: submitting, disabled: submitting || googleBusy }}
+        disabled={submitting || googleBusy}
         onPress={onSubmit}
         style={[styles.button, submitting && styles.buttonDisabled]}
       >

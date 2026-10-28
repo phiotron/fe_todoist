@@ -9,8 +9,9 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { TextField } from '../../components/TextField';
 import i18n from '../../i18n';
 import { useTheme } from '../../theme';
-import { useSession } from '../auth/session';
+import { useMe, useSession } from '../auth/session';
 import { useTwoFactorStatus } from '../two-factor/useTwoFactorStatus';
+import { googleLinkState } from './googleLinkState';
 import { SettingsSection, useSettingsStyles } from './ui';
 
 /** Message of a failed DELETE me: wrong password / code (400), no password yet (409 password-required), the rest shared. */
@@ -30,6 +31,9 @@ export function DeleteAccountSection() {
   const { endLocalSession } = useSession();
   const twoFactor = useTwoFactorStatus();
   const needsCode = twoFactor.data?.enabled === true;
+  const me = useMe();
+  // Spec 12.1: DELETE me needs the password; a Google-only account must set one first (409 password-required).
+  const hasPassword = me.data ? googleLinkState(me.data).hasPassword : true;
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -81,12 +85,18 @@ export function DeleteAccountSection() {
   return (
     <SettingsSection testID="settings-section-deleteAccount" title={t('settings.deleteAccount.title')}>
       <Text style={styles.hint}>{t('settings.deleteAccount.description')}</Text>
+      {hasPassword ? null : (
+        <Text testID="delete-account-need-password" style={styles.hint}>
+          {t('google.account.deleteNeedsPassword')}
+        </Text>
+      )}
       <AppButton
         testID="delete-account-open"
         variant="outline"
         color={palette.warn}
         full
         label={t('settings.deleteAccount.button')}
+        disabled={!hasPassword}
         requiresOnline
         onPress={openDialog}
       />

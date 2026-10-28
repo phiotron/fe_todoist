@@ -11,6 +11,7 @@ import { AuthTextField } from '../auth/AuthTextField';
 import { goHomeAfterAuth } from '../auth/LoginScreen';
 import { useSession } from '../auth/session';
 import { useAuthStyles } from '../auth/styles';
+import { useFinishGoogleLink } from '../auth/useFinishGoogleLink';
 import { TwoFactorExpiredError, TwoFactorMissingError, isChallengeSpent, isCodeRejected } from './twoFactorToken';
 
 type Mode = 'app' | 'recovery';
@@ -28,14 +29,17 @@ export function TwoFactorScreen() {
   // `expired` ends the form: 5 minutes passed, nothing is waiting, or (with `rejected`) the server answered 401
   // two-factor-token-invalid — the token is gone. The ended view is the same; `rejected` only picks its sentence.
   // A wrong code (401 two-factor-code-invalid), 400, 429 and 5xx do NOT end it. Keep the name `expired`:
-  // plan M5 Task 13 patches the `if (!pendingTwoFactor || expired)` line below.
+  // M5 patches the `if (!submitting && (!pendingTwoFactor || expired))` line below.
   const [expired, setExpired] = useState(false);
   const [rejected, setRejected] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   // Synchronous lock: state updates are async, so two quick presses could both pass a state check.
   const inFlight = useRef(false);
+  const finishGoogleLink = useFinishGoogleLink();
 
-  if (!pendingTwoFactor || expired) {
+  // `submitting` stays true from the press until this screen is unmounted: once the code is accepted the session stops
+  // waiting for one (pendingTwoFactor turns false) while a pending Google link may still be sent: no "expired" flash.
+  if (!submitting && (!pendingTwoFactor || expired)) {
     return (
       <KeyboardScreen contentStyle={styles.screen}>
         <AuthLogo />
@@ -83,6 +87,8 @@ export function TwoFactorScreen() {
     setSubmitting(true);
     try {
       await verifyTwoFactor(value);
+      // A Google link waiting since "link-required" is sent only now: password AND code are proven (spec 12.1). Never throws.
+      await finishGoogleLink();
       // On success keep the lock and the busy state until navigation unmounts this screen.
       goHomeAfterAuth();
     } catch (caught) {
