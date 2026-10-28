@@ -1,0 +1,88 @@
+{
+  "recurrence": {
+    "title": "Lặp lại",
+    "row": "Lặp lại",
+    "none": "Không lặp",
+    "clear": "Bỏ lặp lại",
+    "needsDate": "Chọn ngày trước khi đặt lặp lại",
+    "recurringIcon": "Việc lặp lại",
+    "preset": {
+      "daily": "Mỗi ngày",
+      "weekly": "Mỗi tuần vào {{day}}",
+      "weekdays": "Mỗi ngày làm việc (T2–T6)",
+      "monthly": "Mỗi tháng vào ngày {{day}}",
+      "yearly": "Mỗi năm vào {{date}}",
+      "custom": "Tùy chỉnh…"
+    },
+    "custom": {
+      "title": "Lặp tùy chỉnh",
+      "back": "Quay lại",
+      "basedOn": "Tính theo",
+      "scheduled": "Ngày đã lên lịch",
+      "completed": "Ngày hoàn thành",
+      "every": "Mỗi",
+      "everyInput": "Số lần lặp",
+      "unit": {
+        "days": "Ngày",
+        "weeks": "Tuần",
+        "weekdays": "Ngày làm việc",
+        "months": "Tháng",
+        "years": "Năm"
+      },
+      "ends": "Kết thúc",
+      "never": "Không bao giờ",
+      "onDate": "Vào ngày",
+      "endDate": "Ngày kết thúc: {{date}}",
+      "endBeforeDue": "Ngày kết thúc không được trước ngày đến hạn",
+      "invalidEvery": "Nhập một số từ 1 đến 999",
+      "next": "Lần tiếp theo: {{date}}",
+      "noNext": "Không còn lần lặp nào sau ngày kết thúc",
+      "done": "Xong"
+    },
+    "describe": {
+      "daily": "Mỗi ngày",
+      "everyNDays": "Mỗi {{n}} ngày",
+      "weekdays": "Mỗi ngày làm việc",
+      "weekdaysEveryNWeeks": "Mỗi ngày làm việc, cách {{n}} tuần",
+      "weekly": "Mỗi tuần",
+      "weeklyOn": "Mỗi tuần vào {{days}}",
+      "everyNWeeks": "Mỗi {{n}} tuần",
+      "everyNWeeksOn": "Mỗi {{n}} tuần vào {{days}}",
+      "monthly": "Mỗi tháng",
+      "monthlyDay": "Mỗi tháng vào ngày {{days}}",
+      "monthlyLastDay": "Mỗi tháng vào ngày cuối",
+      "monthlyNth": "Mỗi tháng vào {{day}} {{nth}}",
+      "lastWorkday": "Ngày làm việc cuối cùng của tháng",
+      "everyNMonths": "Mỗi {{n}} tháng",
+      "everyNMonthsDay": "Mỗi {{n}} tháng vào ngày {{days}}",
+      "everyNMonthsLastDay": "Mỗi {{n}} tháng vào ngày cuối",
+      "yearly": "Mỗi năm",
+      "yearlyOn": "Mỗi năm vào {{date}}",
+      "everyNYears": "Mỗi {{n}} năm",
+      "everyNYearsOn": "Mỗi {{n}} năm vào {{date}}",
+      "yearlyNth": "Mỗi năm vào {{day}} {{nth}} của tháng {{month}}",
+      "custom": "Lặp tùy chỉnh",
+      "until": "đến {{date}}",
+      "fromCompletion": "tính từ ngày hoàn thành",
+      "nth": {
+        "1": "thứ nhất",
+        "2": "thứ hai",
+        "3": "thứ ba",
+        "4": "thứ tư",
+        "last": "cuối cùng"
+      }
+    },
+    "completedNext": "Đã hoàn thành · lần tới {{date}}",
+    "menu": {
+      "forever": "Hoàn thành vĩnh viễn",
+      "reset": "Hoàn thành và đặt lại việc con"
+    },
+    "completedForever": "Đã hoàn thành vĩnh viễn",
+    "settings": {
+      "resetSubtasks": {
+        "title": "Đặt lại việc con",
+        "hint": "Khi hoàn thành việc lặp lại, mở lại các việc con đã xong (tối đa 30 việc con trực tiếp)"
+      }
+    }
+  }
+}

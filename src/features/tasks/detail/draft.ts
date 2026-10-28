@@ -12,6 +12,9 @@ export interface TaskDraft {
   deadlineDate: string | null;
   /** M2: the whole label set (PATCH replaces it, spec 12.3). */
   labelIds: string[];
+  /** M6c: canonical RRULE or null; saved together with `recurrenceFromCompletion` (every!). */
+  recurrenceRule: string | null;
+  recurrenceFromCompletion: boolean;
 }
 
 export function draftFromTask(task: Task): TaskDraft {
@@ -24,6 +27,8 @@ export function draftFromTask(task: Task): TaskDraft {
     durationMinutes: task.durationMinutes,
     deadlineDate: task.deadlineDate,
     labelIds: [...(task.labelIds ?? [])],
+    recurrenceRule: task.recurrenceRule ?? null,
+    recurrenceFromCompletion: task.recurrenceFromCompletion ?? false,
   };
 }
 
@@ -48,6 +53,13 @@ export function draftChanges(base: Task, draft: TaskDraft): Omit<UpdateTaskReque
   }
   if (draft.deadlineDate !== base.deadlineDate) changes.deadlineDate = draft.deadlineDate;
   if (!sameLabelIds(draft.labelIds, base.labelIds ?? [])) changes.labelIds = [...draft.labelIds];
+  // M6c: the rule and "every!" travel together (a rule needs the due sent in the same body when the due changed too).
+  const baseRule = base.recurrenceRule ?? null;
+  const baseFromCompletion = base.recurrenceFromCompletion ?? false;
+  if (draft.recurrenceRule !== baseRule || (draft.recurrenceRule !== null && draft.recurrenceFromCompletion !== baseFromCompletion)) {
+    changes.recurrenceRule = draft.recurrenceRule;
+    if (draft.recurrenceRule !== null) changes.recurrenceFromCompletion = draft.recurrenceFromCompletion;
+  }
   return changes;
 }
 

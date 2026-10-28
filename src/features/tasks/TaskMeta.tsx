@@ -45,6 +45,11 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
         <Text style={[type.meta, { color: tone }]}>{formatDueLabel(due)}</Text>
       </View>
     ) : null,
+    task.isRecurring && !completedTime ? (
+      <View key="recurring" style={styles.item} testID={`task-recurring-${task.id}`} accessibilityLabel={t('recurrence.recurringIcon')}>
+        <Feather name="repeat" size={size.iconSmall - 2} color={palette.mute} />
+      </View>
+    ) : null,
     deadline ? (
       <View key="deadline" style={styles.item} testID={`task-deadline-${task.id}`}>
         <Feather name="target" size={size.iconSmall - 2} color={deadline.daysLeft < 0 ? palette.warn : palette.mute} />

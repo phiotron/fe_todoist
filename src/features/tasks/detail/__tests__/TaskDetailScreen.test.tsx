@@ -99,6 +99,65 @@ describe('TaskDetailScreen', () => {
     await waitFor(() => expect(patches(fetchMock)[1]).toEqual({ version: 4, description: 'Mô tả mới' }));
   });
 
+  describe('M6c repeating task', () => {
+    beforeEach(() => {
+      server = { ...server, dueDate: '2026-10-28', dueDatetime: null, recurrenceRule: 'FREQ=WEEKLY;BYDAY=WE', isRecurring: true };
+    });
+
+    it('shows the rule and the menu offers Complete forever and Complete & reset sub-tasks', async () => {
+      await open();
+      expect(screen.getByTestId('task-repeat-text')).toHaveTextContent('Mỗi tuần vào Thứ Tư');
+      await fireEvent.press(screen.getByTestId('task-menu-open'));
+      expect(screen.getByTestId('task-menu-complete-forever')).toBeOnTheScreen();
+      expect(screen.getByTestId('task-menu-complete-reset')).toBeOnTheScreen(); // the task has sub-tasks
+    });
+
+    it('Complete forever sends {forever: true} and offers Undo', async () => {
+      const { fetchMock } = await open({
+        'POST /api/v1/tasks/t1/close': () => jsonResponse(200, taskChange({ ...server, completedAt: '2026-10-23T03:00:00Z', version: 4 })),
+      });
+      await menu('complete-forever');
+      await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/tasks/t1/close')).toHaveLength(1));
+      expect(requestsTo(fetchMock, 'POST', '/api/v1/tasks/t1/close')[0].body).toEqual({ forever: true });
+      expect(await screen.findByTestId('snackbar-action')).toBeOnTheScreen();
+    });
+
+    it('Complete & reset sub-tasks sends {resetSubtasks: true}', async () => {
+      const { fetchMock } = await open({
+        'POST /api/v1/tasks/t1/close': () => jsonResponse(200, taskChange({ ...server, dueDate: '2026-11-04', version: 4 })),
+      });
+      await menu('complete-reset');
+      await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/tasks/t1/close')).toHaveLength(1));
+      expect(requestsTo(fetchMock, 'POST', '/api/v1/tasks/t1/close')[0].body).toEqual({ resetSubtasks: true });
+    });
+
+    it('without sub-tasks only Complete forever is offered', async () => {
+      server = { ...server, subtaskCount: 0, completedSubtaskCount: 0 };
+      await open();
+      await fireEvent.press(screen.getByTestId('task-menu-open'));
+      expect(screen.getByTestId('task-menu-complete-forever')).toBeOnTheScreen();
+      expect(screen.queryByTestId('task-menu-complete-reset')).toBeNull();
+    });
+
+    it('saving the rule from the date sheet sends the rule with the due', async () => {
+      server = { ...server, recurrenceRule: null, isRecurring: false };
+      const { fetchMock } = await open({ 'PATCH /api/v1/tasks/t1': applyPatch });
+      await fireEvent.press(screen.getByTestId('task-date'));
+      await fireEvent.press(await screen.findByTestId('task-date-sheet-repeat'));
+      await fireEvent.press(await screen.findByTestId('task-date-sheet-repeat-sheet-preset-daily'));
+      await fireEvent.press(screen.getByTestId('task-date-sheet-done'));
+      await waitFor(() => expect(patches(fetchMock)).toHaveLength(1));
+      expect(patches(fetchMock)[0]).toMatchObject({ version: 3, recurrenceRule: 'FREQ=DAILY' });
+    });
+  });
+
+  it('a plain task has neither repeat entry in the menu', async () => {
+    await open();
+    await fireEvent.press(screen.getByTestId('task-menu-open'));
+    expect(screen.queryByTestId('task-menu-complete-forever')).toBeNull();
+    expect(screen.queryByTestId('task-menu-complete-reset')).toBeNull();
+  });
+
   it('a chip saves at once: priority P1', async () => {
     const { fetchMock } = await open({ 'PATCH /api/v1/tasks/t1': applyPatch });
 

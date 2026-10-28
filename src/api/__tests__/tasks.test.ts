@@ -112,6 +112,43 @@ describe('tasksApi', () => {
     expect(calls[4].body).toEqual({ projectId: 'p-inbox', sectionId: null });
   });
 
+  it('M6c: close sends no body by default, {forever} / {resetSubtasks} when asked; the answer of a repeating task has no completedAt', async () => {
+    const fetchMock = mockFetch();
+    const repeating = makeTask({ id: 't1', dueDate: '2026-10-29', recurrenceRule: 'FREQ=DAILY', isRecurring: true, version: 1 });
+    fetchMock.mockResolvedValue(jsonResponse(200, taskChange(repeating, [{ id: 'k1', version: 2, completedAt: null }])));
+
+    await expect(tasksApi.close('t1')).resolves.toMatchObject({ task: { completedAt: null, isRecurring: true } });
+    await tasksApi.close('t1', { forever: true });
+    await tasksApi.close('t1', { resetSubtasks: true });
+
+    expect([0, 1, 2].map((i) => pathOf(requestAt(fetchMock, i).url))).toEqual(['/tasks/t1/close', '/tasks/t1/close', '/tasks/t1/close']);
+    expect(requestAt(fetchMock, 0).body).toBeUndefined();
+    expect(requestAt(fetchMock, 1).body).toEqual({ forever: true });
+    expect(requestAt(fetchMock, 2).body).toEqual({ resetSubtasks: true });
+  });
+
+  it('M6c: create / PATCH carry the repeat fields; absent = keep, null = stop repeating', async () => {
+    const fetchMock = mockFetch();
+    fetchMock.mockResolvedValue(jsonResponse(200, makeTask({ id: 't1' })));
+
+    await tasksApi.create(
+      { content: 'A', dueDate: '2026-10-28', recurrenceRule: 'FREQ=WEEKLY;BYDAY=WE', recurrenceFromCompletion: true, dueString: 'every! week' },
+      'k-1',
+    );
+    await tasksApi.update('t1', { version: 1, recurrenceRule: null });
+    await tasksApi.update('t1', { version: 2, priority: 1 });
+
+    expect(requestAt(fetchMock, 0).body).toEqual({
+      content: 'A',
+      dueDate: '2026-10-28',
+      recurrenceRule: 'FREQ=WEEKLY;BYDAY=WE',
+      recurrenceFromCompletion: true,
+      dueString: 'every! week',
+    });
+    expect(requestAt(fetchMock, 1).body).toEqual({ version: 1, recurrenceRule: null });
+    expect('recurrenceRule' in (requestAt(fetchMock, 2).body as object)).toBe(false);
+  });
+
   it('move / create: afterId absent = last, null = first (spec 3.1); no client id is sent by M1', async () => {
     const fetchMock = mockFetch();
     fetchMock.mockResolvedValue(jsonResponse(200, makeTask({ id: 't1' })));

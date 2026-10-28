@@ -1,5 +1,6 @@
-import { useTranslation } from 'react-i18next';
+﻿import { useTranslation } from 'react-i18next';
 import { SyncHomeViewSection } from '../navMenu/SyncHomeViewSection';
+import { ResetSubtasksSection } from '../recurrence/ResetSubtasksSection';
 import { LanguageSection } from './LanguageSection';
 import { SettingsPage } from './SettingsPage';
 import { SmartDateSection } from './SmartDateSection';
@@ -7,7 +8,7 @@ import { StartPageSection } from './StartPageSection';
 import { SwipeSection } from './SwipeSection';
 import { TimeZoneSection } from './TimeZoneSection';
 
-/** Settings › General (spec 9.5): language, time zone, start page, smart date recognition, swipe actions. */
+/** Settings â€º General (spec 9.5): language, time zone, start page, smart date recognition, swipe actions. */
 export function GeneralSettingsScreen() {
   const { t } = useTranslation();
   return (
@@ -17,6 +18,7 @@ export function GeneralSettingsScreen() {
       <StartPageSection />
       <SyncHomeViewSection />
       <SmartDateSection />
+      <ResetSubtasksSection />
       <SwipeSection />
     </SettingsPage>
   );

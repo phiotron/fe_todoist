@@ -1,0 +1,88 @@
+{
+  "recurrence": {
+    "title": "Repeat",
+    "row": "Repeat",
+    "none": "Does not repeat",
+    "clear": "Clear repeat",
+    "needsDate": "Pick a date before setting a repeat",
+    "recurringIcon": "Repeating task",
+    "preset": {
+      "daily": "Every day",
+      "weekly": "Every week on {{day}}",
+      "weekdays": "Every weekday (Mon–Fri)",
+      "monthly": "Every month on day {{day}}",
+      "yearly": "Every year on {{date}}",
+      "custom": "Custom…"
+    },
+    "custom": {
+      "title": "Custom repeat",
+      "back": "Back",
+      "basedOn": "Based on",
+      "scheduled": "Scheduled date",
+      "completed": "Completed date",
+      "every": "Every",
+      "everyInput": "Repeat interval",
+      "unit": {
+        "days": "Days",
+        "weeks": "Weeks",
+        "weekdays": "Weekdays",
+        "months": "Months",
+        "years": "Years"
+      },
+      "ends": "Ends",
+      "never": "Never",
+      "onDate": "On date",
+      "endDate": "End date: {{date}}",
+      "endBeforeDue": "The end date cannot be before the due date",
+      "invalidEvery": "Enter a number from 1 to 999",
+      "next": "Next: {{date}}",
+      "noNext": "There is no occurrence left before the end date",
+      "done": "Done"
+    },
+    "describe": {
+      "daily": "Every day",
+      "everyNDays": "Every {{n}} days",
+      "weekdays": "Every weekday",
+      "weekdaysEveryNWeeks": "Every weekday, every {{n}} weeks",
+      "weekly": "Every week",
+      "weeklyOn": "Every week on {{days}}",
+      "everyNWeeks": "Every {{n}} weeks",
+      "everyNWeeksOn": "Every {{n}} weeks on {{days}}",
+      "monthly": "Every month",
+      "monthlyDay": "Every month on day {{days}}",
+      "monthlyLastDay": "Every month on the last day",
+      "monthlyNth": "Every month on the {{nth}} {{day}}",
+      "lastWorkday": "Last workday of the month",
+      "everyNMonths": "Every {{n}} months",
+      "everyNMonthsDay": "Every {{n}} months on day {{days}}",
+      "everyNMonthsLastDay": "Every {{n}} months on the last day",
+      "yearly": "Every year",
+      "yearlyOn": "Every year on {{date}}",
+      "everyNYears": "Every {{n}} years",
+      "everyNYearsOn": "Every {{n}} years on {{date}}",
+      "yearlyNth": "Every year on the {{nth}} {{day}} of month {{month}}",
+      "custom": "Custom repeat",
+      "until": "until {{date}}",
+      "fromCompletion": "counted from the completed date",
+      "nth": {
+        "1": "1st",
+        "2": "2nd",
+        "3": "3rd",
+        "4": "4th",
+        "last": "last"
+      }
+    },
+    "completedNext": "Completed · next on {{date}}",
+    "menu": {
+      "forever": "Complete forever",
+      "reset": "Complete and reset sub-tasks"
+    },
+    "completedForever": "Completed forever",
+    "settings": {
+      "resetSubtasks": {
+        "title": "Reset sub-tasks",
+        "hint": "When a repeating task is completed, reopen its completed sub-tasks (up to 30 direct sub-tasks)"
+      }
+    }
+  }
+}

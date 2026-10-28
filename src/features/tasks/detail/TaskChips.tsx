@@ -7,6 +7,9 @@ import { Chip } from '../../../components/Chip';
 import { dateKeyInZone, describeDeadline, describeDue } from '../../../lib/dates';
 import { useDisplayPrefs } from '../../../lib/dates/displayFormat';
 import { formatDateKey, formatDueLabel } from '../../../lib/dates/format';
+import { describeRecurrence } from '../../../lib/recurrence/describe';
+import { fromRRule, toRRule } from '../../../lib/recurrence/rrule';
+import type { RecurrenceSpec } from '../../../lib/recurrence/types';
 import { size, type, useTheme, useThemedStyles } from '../../../theme';
 import type { Palette } from '../../../theme/palette';
 import { TaskReminderChip } from '../../reminders/TaskReminderChip';
@@ -33,6 +36,27 @@ interface TaskChipsProps {
 
 type Sheet = 'none' | 'date' | 'deadline' | 'priority';
 
+/** The repeat fields to save with the due: only when the sheet's rule differs from the draft's (else the due alone changes). */
+function repeatPatch(draft: TaskDraft, rule: RecurrenceSpec | null | undefined): Partial<TaskDraft> {
+  if (rule === undefined) return {};
+  const recurrenceRule = rule ? toRRule(rule) : null;
+  const recurrenceFromCompletion = rule?.fromCompletion ?? false;
+  const changed =
+    recurrenceRule !== draft.recurrenceRule ||
+    (recurrenceRule !== null && recurrenceFromCompletion !== draft.recurrenceFromCompletion);
+  return changed ? { recurrenceRule, recurrenceFromCompletion } : {};
+}
+
+/** null = does not repeat; undefined = a rule outside the subset the app understands (never edited here). */
+function repeatOf(draft: TaskDraft): RecurrenceSpec | null | undefined {
+  if (!draft.recurrenceRule) return null;
+  try {
+    return { ...fromRRule(draft.recurrenceRule), fromCompletion: draft.recurrenceFromCompletion };
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * M-TaskDetail rows after the description (spec 9.2 order): the **date row**, then the chips Deadline, Priority and
  * "Chuyển tới". M2 adds Labels, M4 Reminders, M12 Location, M8 Assignee to the chip row.
@@ -49,6 +73,9 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
   const tone = dueTone({ ...due, completedAt: task.completedAt }, now, timeZone, palette);
   const deadline = describeDeadline(draft.deadlineDate, now, timeZone);
   const deadlinePassed = deadline !== null && deadline.daysLeft < 0;
+  // M6c: the rule as the sheet edits it. undefined = a rule this app cannot read: the Repeat row stays hidden so saving
+  // the date never rewrites a rule the user did not touch.
+  const repeatSpec = repeatOf(draft);
 
   return (
     <View>
@@ -67,6 +94,14 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
         </Text>
         <Feather name="chevron-right" size={size.iconSmall} color={palette.mute} />
       </Pressable>
+      {repeatSpec ? (
+        <View style={styles.repeatRow} testID="task-repeat">
+          <Feather name="repeat" size={size.iconSmall} color={palette.acc} />
+          <Text style={[type.meta, styles.repeatText]} testID="task-repeat-text">
+            {describeRecurrence(repeatSpec)}
+          </Text>
+        </View>
+      ) : null}
       <View style={styles.chips}>
         <Chip
           large
@@ -100,7 +135,15 @@ export function TaskChips({ task, draft, now, timeZone, onCommit, onMove, readOn
       <ScheduleSheet
         visible={sheet === 'date'}
         value={due}
-        onSelect={(value) => onCommit({ dueDate: value.dueDate, dueDatetime: value.dueDatetime, durationMinutes: value.durationMinutes })}
+        repeat={repeatSpec}
+        onSelect={(value, rule) =>
+          onCommit({
+            dueDate: value.dueDate,
+            dueDatetime: value.dueDatetime,
+            durationMinutes: value.durationMinutes,
+            ...repeatPatch(draft, rule),
+          })
+        }
         onClose={() => setSheet('none')}
         testID="task-date-sheet"
       />
@@ -131,6 +174,8 @@ function createTaskChipsStyles(palette: Palette) {
       borderColor: palette.line,
     },
     dateText: { flex: 1 },
+    repeatRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
+    repeatText: { flex: 1, color: palette.ink2 },
     chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12, marginBottom: 4 },
   });
 }

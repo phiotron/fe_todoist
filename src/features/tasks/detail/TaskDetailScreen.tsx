@@ -111,6 +111,22 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
           }, onActionError),
     },
     {
+      // M6c: ends the cycle (the task is really completed); Undo reopens it like any completion.
+      key: 'complete-forever',
+      label: t('recurrence.menu.forever'),
+      icon: 'check-circle',
+      requiresOnline: true,
+      onPress: () => complete(taskId, { onError: onActionError, forever: true }),
+    },
+    {
+      // M6c: next due AND the completed direct sub-tasks reopened (≤ 30), whatever the "Reset sub-tasks" setting says.
+      key: 'complete-reset',
+      label: t('recurrence.menu.reset'),
+      icon: 'rotate-ccw',
+      requiresOnline: true,
+      onPress: () => complete(taskId, { onError: onActionError, resetSubtasks: true }),
+    },
+    {
       key: 'toggle-completed',
       label: hideCompleted ? t('taskDetail.menuShowCompleted') : t('taskDetail.menuHideCompleted'),
       icon: hideCompleted ? 'eye' : 'eye-off',
@@ -141,6 +157,8 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   const allowed: Record<string, boolean> = {
     'add-subtask': !access.readOnly,
     duplicate: !access.readOnly,
+    'complete-forever': task.isRecurring && !completed && !access.readOnly,
+    'complete-reset': task.isRecurring && !completed && !access.readOnly && task.subtaskCount > 0,
     'toggle-completed': true,
     'reorder-subtasks': !access.readOnly,
     delete: !access.archived,
