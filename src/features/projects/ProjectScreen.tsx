@@ -26,6 +26,7 @@ import { CalendarView } from '../calendar/CalendarView';
 import { calendarFilters, projectScope } from '../calendar/useCalendarTasks';
 import { layoutOf, projectViewKey } from '../display/displayRules';
 import { useGroupContext } from '../display/useGroupContext';
+import { EmailAddressDialog } from '../email/EmailAddressDialog';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { useAddButtonPlacement } from '../navMenu/useNavigationSettings';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
@@ -83,6 +84,7 @@ function ProjectBody({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
   const templateMenu = useProjectTemplateMenu(project, readOnly); // M11: Duplicate · Save as template · Apply a template
+  const [emailOpen, setEmailOpen] = useState(false);
 
   const showCompleted = display.options.showCompleted === true;
   // M7: List / Board / Calendar of this project (saved with the Display).
@@ -131,6 +133,16 @@ function ProjectBody({
       icon: 'heart',
       requiresOnline: true,
       onPress: () => favorite.mutate({ projectId: project.id, favorite: !project.isFavorite }),
+    });
+  }
+  if (!readOnly) {
+    // M13a: Todoist "Email tasks to this project" / "Email tasks to Inbox".
+    items.push({
+      key: 'email',
+      label: project.isInbox ? t('email.menuInbox') : t('email.menuProject'),
+      icon: 'mail',
+      requiresOnline: true,
+      onPress: () => setEmailOpen(true),
     });
   }
   items.push({ key: 'display', label: t('projectScreen.menuDisplay'), icon: 'sliders', onPress: () => setDisplayOpen(true) });
@@ -208,6 +220,7 @@ function ProjectBody({
       {body.dialogs}
       {templateMenu.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
+      <EmailAddressDialog visible={emailOpen} target={{ kind: 'project', id: project.id }} onClose={() => setEmailOpen(false)} testID="project-email" />
       <DisplaySheet visible={displayOpen} viewKey={projectViewKey(project.id)} onClose={() => setDisplayOpen(false)} />
       <ConfirmDialog
         visible={deleteOpen}
