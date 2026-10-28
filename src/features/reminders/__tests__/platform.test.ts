@@ -18,7 +18,7 @@ describe('reminder platform port', () => {
     });
     await expect(getReminderPlatform().scheduler.listScheduled()).resolves.toEqual([]);
     expect(getReminderPlatform().takeLastTap()).toBeNull();
-    expect(getReminderPlatform().needsExactAlarmGrant()).toBe(false);
+    await expect(getReminderPlatform().needsExactAlarmGrant()).resolves.toBe(false);
   });
 
   it('installs a platform and restores the unavailable one with null', () => {

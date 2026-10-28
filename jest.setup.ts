@@ -110,3 +110,41 @@ jest.mock('@react-native-community/datetimepicker', () => ({
   default: () => null,
   DateTimePickerAndroid: { open: jest.fn(), dismiss: jest.fn() },
 }));
+
+// --- M4 expo-notifications --------------------------------------------------------------------------
+// In-memory fake of the parts the app uses. Tests reset it with resetNotificationsMock() (src/test/notifications.ts).
+jest.mock('expo-notifications', () => {
+  const scheduled = new Map<string, { identifier: string; content: Record<string, unknown>; trigger: unknown }>();
+  const granted = { status: 'granted', granted: true, canAskAgain: true, expires: 'never' };
+  return {
+    __esModule: true,
+    SchedulableTriggerInputTypes: { DATE: 'date', TIME_INTERVAL: 'timeInterval' },
+    AndroidImportance: { DEFAULT: 5, HIGH: 6, MAX: 7 },
+    DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
+    setNotificationHandler: jest.fn(),
+    setNotificationChannelAsync: jest.fn(async () => null),
+    setNotificationCategoryAsync: jest.fn(async () => null),
+    getPermissionsAsync: jest.fn(async () => granted),
+    requestPermissionsAsync: jest.fn(async () => granted),
+    getExactAlarmPermissionsAsync: jest.fn(async () => granted),
+    requestExactAlarmPermissionsAsync: jest.fn(async () => granted),
+    scheduleNotificationAsync: jest.fn(
+      async (request: { identifier?: string; content: Record<string, unknown>; trigger: unknown }) => {
+        const identifier = request.identifier ?? `notification-${scheduled.size + 1}`;
+        scheduled.set(identifier, { identifier, content: request.content, trigger: request.trigger });
+        return identifier;
+      },
+    ),
+    cancelScheduledNotificationAsync: jest.fn(async (identifier: string) => {
+      scheduled.delete(identifier);
+    }),
+    cancelAllScheduledNotificationsAsync: jest.fn(async () => {
+      scheduled.clear();
+    }),
+    getAllScheduledNotificationsAsync: jest.fn(async () => [...scheduled.values()]),
+    dismissNotificationAsync: jest.fn(async () => undefined),
+    getLastNotificationResponse: jest.fn(() => null),
+    clearLastNotificationResponse: jest.fn(),
+    addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  };
+});

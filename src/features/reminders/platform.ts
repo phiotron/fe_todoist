@@ -34,9 +34,9 @@ export interface ReminderPlatform {
   getPermission(): Promise<ReminderPermission>;
   /** Shows the system prompt (POST_NOTIFICATIONS on Android 13+). */
   requestPermission(): Promise<ReminderPermission>;
-  /** Android 14+ leaves exact alarms off until the user allows them (spec 5.8, 17, 18.1 I12). */
-  needsExactAlarmGrant(): boolean;
-  /** The system "Alarms & reminders" page; the app settings page when that fails. Never throws. */
+  /** Android: exact alarms are not allowed (yet), so reminders may come a few minutes late (spec 5.8, 17, 18.1 I12). */
+  needsExactAlarmGrant(): Promise<boolean>;
+  /** The system "Alarms & reminders" page (resolves when the user comes back); the app settings page when that fails. Never throws. */
   openExactAlarmSettings(): Promise<void>;
   /** The response that opened the app (cold start), consumed once. */
   takeLastTap(): ReminderTap | null;
@@ -63,7 +63,7 @@ export const unavailableReminderPlatform: ReminderPlatform = {
   configurePresentation: () => undefined,
   getPermission: async () => ({ status: 'denied', granted: false, canAskAgain: false }),
   requestPermission: async () => ({ status: 'denied', granted: false, canAskAgain: false }),
-  needsExactAlarmGrant: () => false,
+  needsExactAlarmGrant: async () => false,
   openExactAlarmSettings: async () => undefined,
   takeLastTap: () => null,
   addTapListener: () => () => undefined,
