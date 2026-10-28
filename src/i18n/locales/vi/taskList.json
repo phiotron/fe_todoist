@@ -6,7 +6,7 @@
     "completedMany": "Đã hoàn thành {{n}} công việc",
     "loadMore": "Tải thêm",
     "addTask": "Thêm công việc",
-    "progress": "{{done}} trên {{total}} sub-task đã xong",
+    "progress": "{{done}} trên {{total}} công việc con đã xong",
     "swipeComplete": "Hoàn thành",
     "swipeSchedule": "Dời lịch",
     "validation": {

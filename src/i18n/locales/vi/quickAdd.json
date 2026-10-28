@@ -1,7 +1,7 @@
 {
   "quickAdd": {
     "placeholder": "Tên công việc",
-    "subtaskPlaceholder": "Tên sub-task",
+    "subtaskPlaceholder": "Tên công việc con",
     "description": "Mô tả",
     "date": "Ngày",
     "priority": "Ưu tiên",
@@ -11,7 +11,7 @@
     "closeSheet": "Đóng",
     "more": "Thêm",
     "moreTitle": "Thao tác khác",
-    "editChips": "Sửa các chip",
+    "editChips": "Sửa các nút thao tác",
     "deadline": "Hạn chót",
     "removeDeadline": "Bỏ hạn chót",
     "repeat": "Lặp: {{rule}}",
@@ -90,7 +90,7 @@
     "settings": {
       "title": "Thêm nhanh",
       "row": "Thêm nhanh",
-      "shown": "Chip đang hiện",
+      "shown": "Nút thao tác đang hiện",
       "reorder": "Đổi thứ tự",
       "alwaysShown": "Luôn hiện",
       "notYet": "Có ở bản cập nhật sau",

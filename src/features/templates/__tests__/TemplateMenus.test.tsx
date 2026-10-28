@@ -93,7 +93,7 @@ describe('project menu — M11', () => {
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/templates')).toHaveLength(1));
     expect(requestsTo(fetchMock, 'POST', '/api/v1/templates')[0].body).toEqual({ projectId: 'p1', name: 'Mẫu nhà' });
     await waitFor(() => expect(screen.queryByTestId('save-template')).toBeNull());
-    expect(await screen.findByText('Đã lưu template "Mẫu nhà"')).toBeOnTheScreen();
+    expect(await screen.findByText('Đã lưu mẫu "Mẫu nhà"')).toBeOnTheScreen();
   });
 
   it('Save as template: the 101st template is refused with the limit message and the dialog stays', async () => {
@@ -103,7 +103,7 @@ describe('project menu — M11', () => {
     await projectMenu('save-template');
     await fireEvent.press(screen.getByTestId('save-template-submit'));
 
-    expect(await screen.findByText('Bạn đã có tối đa 100 template — hãy xoá bớt template cũ')).toBeOnTheScreen();
+    expect(await screen.findByText('Bạn đã có tối đa 100 mẫu — hãy xoá bớt mẫu cũ')).toBeOnTheScreen();
     expect(screen.getByTestId('save-template')).toBeOnTheScreen();
   });
 
@@ -118,7 +118,7 @@ describe('project menu — M11', () => {
 
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/templates/library/study-plan/apply')).toHaveLength(1));
     expect(requestsTo(fetchMock, 'POST', '/api/v1/templates/library/study-plan/apply')[0].body).toEqual({ projectId: 'p1' });
-    expect(await screen.findByText('Đã thêm template vào dự án')).toBeOnTheScreen();
+    expect(await screen.findByText('Đã thêm mẫu vào dự án')).toBeOnTheScreen();
   });
 
   it('the Inbox has none of the three entries', async () => {
@@ -152,7 +152,7 @@ describe('section menu — M11', () => {
 
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/projects/p1/sections/s1/duplicate')).toHaveLength(1));
     expect(requestsTo(fetchMock, 'POST', '/api/v1/projects/p1/sections/s1/duplicate')[0].headers['Idempotency-Key']).toMatch(/^[0-9a-f-]{36}$/);
-    expect(await screen.findByText('Đã nhân bản section "Bếp"')).toBeOnTheScreen();
+    expect(await screen.findByText('Đã nhân bản mục "Bếp"')).toBeOnTheScreen();
   });
 
   it('Move lists the other projects (not this one) and posts the destination', async () => {
@@ -167,7 +167,7 @@ describe('section menu — M11', () => {
 
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/projects/p1/sections/s1/move')).toHaveLength(1));
     expect(requestsTo(fetchMock, 'POST', '/api/v1/projects/p1/sections/s1/move')[0].body).toEqual({ projectId: 'p2' });
-    expect(await screen.findByText('Đã chuyển section sang "Công ty"')).toBeOnTheScreen();
+    expect(await screen.findByText('Đã chuyển mục sang "Công ty"')).toBeOnTheScreen();
   });
 
   it('Move: an archived destination shows the error and the sheet stays', async () => {

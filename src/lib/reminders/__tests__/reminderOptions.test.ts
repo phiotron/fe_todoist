@@ -34,10 +34,10 @@ describe('formatWallClock', () => {
   it.each<[string, Parameters<typeof formatWallClock>, string]>([
     ['DMY 24 h', [morning, 'DMY', 'H24'], '04/10/2026 09:05'],
     ['MDY 24 h', [morning, 'MDY', 'H24'], '10/04/2026 09:05'],
-    ['DMY 12 h morning', [morning, 'DMY', 'H12'], '04/10/2026 9:05 AM'],
-    ['12 h midnight', [{ ...morning, hour: 0, minute: 0 }, 'DMY', 'H12'], '04/10/2026 12:00 AM'],
-    ['12 h noon', [{ ...morning, hour: 12, minute: 30 }, 'DMY', 'H12'], '04/10/2026 12:30 PM'],
-    ['12 h evening', [{ ...morning, hour: 23, minute: 45 }, 'MDY', 'H12'], '10/04/2026 11:45 PM'],
+    ['DMY 12 h morning', [morning, 'DMY', 'H12'], '04/10/2026 9:05 SA'],
+    ['12 h midnight', [{ ...morning, hour: 0, minute: 0 }, 'DMY', 'H12'], '04/10/2026 12:00 SA'],
+    ['12 h noon', [{ ...morning, hour: 12, minute: 30 }, 'DMY', 'H12'], '04/10/2026 12:30 CH'],
+    ['12 h evening', [{ ...morning, hour: 23, minute: 45 }, 'MDY', 'H12'], '10/04/2026 11:45 CH'],
   ])('%s', (_name, args, expected) => {
     expect(formatWallClock(...args)).toBe(expected);
   });

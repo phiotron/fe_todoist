@@ -34,7 +34,7 @@ describe('project colours', () => {
     expect(projectColorHex('not-a-colour')).toBe(PROJECT_PALETTE.charcoal);
     expect(asProjectColor('red')).toBe('red');
     expect(asProjectColor(undefined)).toBe('charcoal');
-    expect(projectDisplayName(inboxProject)).toBe('Inbox');
+    expect(projectDisplayName(inboxProject)).toBe('Hộp thư đến');
     expect(projectDisplayName(work)).toBe('Công ty');
   });
 });

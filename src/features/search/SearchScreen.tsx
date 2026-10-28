@@ -18,7 +18,8 @@ import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import { usePagedList } from '../../lib/usePagedList';
 import { fonts, type, useTheme } from '../../theme';
 import { useMe } from '../auth/session';
-import { projectColorHex } from '../projects/appearance';
+import { projectColorHex, projectDisplayName } from '../projects/appearance';
+import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { taskRows } from '../tasks/taskRows';
 import { TaskListView } from '../tasks/TaskListView';
 import { SEARCH_DEBOUNCE_MS, SEARCH_MAX_LENGTH, checkSearchTerm } from './searchTerm';
@@ -196,6 +197,7 @@ function SearchResults({ term, completed, onOpen }: { term: string; completed: b
 
 function SearchObjectsBlock({ objects, onOpen }: { objects: SearchObjects | undefined; onOpen: () => void }) {
   const { t } = useTranslation();
+  const projectLabel = useProjectNameLabel();
   const { palette } = useTheme();
   const open = (href: string) => {
     onOpen();
@@ -210,7 +212,7 @@ function SearchObjectsBlock({ objects, onOpen }: { objects: SearchObjects | unde
             <ListRow
               key={project.id}
               testID={`search-project-${project.id}`}
-              title={project.name}
+              title={projectDisplayName(project)}
               icon="hash"
               iconColor={projectColorHex(project.color)}
               onPress={() => open(`/project/${project.id}`)}
@@ -228,7 +230,7 @@ function SearchObjectsBlock({ objects, onOpen }: { objects: SearchObjects | unde
               title={section.name}
               icon="layers"
               iconColor={palette.ink2}
-              right={section.projectName}
+              right={projectLabel(section.projectId, section.projectName)}
               onPress={() => open(`/project/${section.projectId}`)}
             />
           ))}
@@ -274,7 +276,7 @@ function SearchObjectsBlock({ objects, onOpen }: { objects: SearchObjects | unde
               title={comment.content}
               icon="message-circle"
               iconColor={palette.ink2}
-              right={comment.taskContent ?? comment.projectName}
+              right={comment.taskContent ?? projectLabel(comment.projectId, comment.projectName)}
               onPress={() => open(comment.taskId ? `/task/${comment.taskId}` : `/project-comments/${comment.projectId}`)}
             />
           ))}

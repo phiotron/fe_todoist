@@ -3,6 +3,8 @@
     "today": "Hôm nay",
     "tomorrow": "Ngày mai",
     "yesterday": "Hôm qua",
+    "am": "SA",
+    "pm": "CH",
     "weekday": {
       "mon": "Thứ Hai",
       "tue": "Thứ Ba",

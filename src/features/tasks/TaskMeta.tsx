@@ -9,6 +9,7 @@ import { parseInstant } from '../../lib/dates/instant';
 import { size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { TaskLabels } from '../labels/TaskLabels';
+import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { progressLabel } from '../subtasks/tree';
 import { dueTone } from './dueTone';
 
@@ -28,6 +29,7 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
   useDisplayPrefs();
   const { palette } = useTheme();
   const { t } = useTranslation();
+  const projectLabel = useProjectNameLabel();
   const due = describeDue(task, now, timeZone);
   const deadline = describeDeadline(task.deadlineDate, now, timeZone);
   const progress = progressLabel(task);
@@ -91,7 +93,7 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
     ) : null,
     showProject ? (
       <Text key="project" style={styles.text} numberOfLines={1}>
-        {task.projectName}
+        {projectLabel(task.projectId, task.projectName)}
       </Text>
     ) : null,
   ].filter(Boolean);

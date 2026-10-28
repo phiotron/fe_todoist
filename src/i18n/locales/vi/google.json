@@ -8,7 +8,7 @@
     "linkedMessage": "Từ lần sau bạn có thể đăng nhập bằng Google.",
     "linkFailedTitle": "Chưa liên kết được Google",
     "errors": {
-      "notConfigured": "Bản app này chưa được cấu hình đăng nhập Google",
+      "notConfigured": "Bản ứng dụng này chưa được cấu hình đăng nhập Google",
       "playServices": "Máy chưa có hoặc cần cập nhật Google Play Services",
       "inProgress": "Đang đăng nhập Google, vui lòng chờ",
       "failed": "Đăng nhập Google không thành công, vui lòng thử lại",

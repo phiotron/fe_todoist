@@ -41,11 +41,11 @@ describe('AppTabBar', () => {
     await render(<AppTabBar {...props} />);
 
     expect(screen.getAllByRole('tab')).toHaveLength(4);
-    expect(screen.getByText('Inbox')).toBeOnTheScreen();
+    expect(screen.getByText('Hộp thư đến')).toBeOnTheScreen();
     expect(screen.getByText('Sắp tới')).toBeOnTheScreen();
     expect(screen.getByTestId('tab-today')).toBeSelected();
     expect(StyleSheet.flatten(screen.getByText('Hôm nay').props.style)).toMatchObject({ color: palette.acc, fontSize: 11 });
-    expect(StyleSheet.flatten(screen.getByText('Inbox').props.style)).toMatchObject({ color: palette.mute });
+    expect(StyleSheet.flatten(screen.getByText('Hộp thư đến').props.style)).toMatchObject({ color: palette.mute });
   });
 
   it('pressing another tab announces the press and navigates; pressing the current tab does not navigate', async () => {

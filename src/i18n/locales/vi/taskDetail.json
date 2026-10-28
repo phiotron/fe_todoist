@@ -11,17 +11,17 @@
     "complete": "Hoàn thành công việc",
     "reopen": "Mở lại công việc",
     "menu": "Tuỳ chọn công việc",
-    "menuAddSubtask": "Thêm sub-task",
+    "menuAddSubtask": "Thêm công việc con",
     "menuDuplicate": "Sao chép",
-    "menuHideCompleted": "Ẩn sub-task đã xong",
-    "menuShowCompleted": "Hiện sub-task đã xong",
-    "menuReorderSubtasks": "Sắp xếp sub-task",
+    "menuHideCompleted": "Ẩn công việc con đã xong",
+    "menuShowCompleted": "Hiện công việc con đã xong",
+    "menuReorderSubtasks": "Sắp xếp công việc con",
     "menuDelete": "Xoá công việc",
     "duplicated": "Đã sao chép công việc",
-    "archivedNotice": "Công việc này nằm trong dự án hoặc section đã lưu trữ — chỉ xem được",
+    "archivedNotice": "Công việc này nằm trong dự án hoặc mục đã lưu trữ — chỉ xem được",
     "deleteTitle": "Xoá công việc?",
     "deleteMessage": "\"{{name}}\" sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
-    "deleteMessageWithSubtasks": "\"{{name}}\" cùng {{n}} sub-task sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
+    "deleteMessageWithSubtasks": "\"{{name}}\" cùng {{n}} công việc con sẽ bị xoá vĩnh viễn. Không hoàn tác được.",
     "date": {
       "add": "Thêm ngày",
       "row": "Ngày đến hạn"
@@ -40,12 +40,12 @@
       "title": "Chuyển tới"
     },
     "subtasks": {
-      "title": "Sub-task",
-      "add": "Thêm sub-task",
+      "title": "Công việc con",
+      "add": "Thêm công việc con",
       "complete": "Hoàn thành {{name}}",
       "reopen": "Mở lại {{name}}",
-      "maxDepth": "Đã tới cấp 4 — không thêm sub-task được nữa",
-      "reorderTitle": "Sắp xếp sub-task"
+      "maxDepth": "Đã tới cấp 4 — không thêm công việc con được nữa",
+      "reorderTitle": "Sắp xếp công việc con"
     }
   }
 }

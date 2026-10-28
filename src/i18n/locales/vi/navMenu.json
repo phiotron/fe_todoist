@@ -1,23 +1,23 @@
 {
   "navMenu": {
-    "title": "Menu điều hướng",
-    "intro": "Các mục hiện ở màn Duyệt. Mục đã có trên thanh tab không hiện lại ở đó.",
-    "showTaskCount": "Hiện số task",
-    "showTaskCountHint": "Hiện số task cạnh các mục menu ở màn Duyệt.",
-    "itemsTitle": "Mục menu",
+    "title": "Trình đơn điều hướng",
+    "intro": "Các mục hiện ở màn Duyệt. Mục đã có trên thanh điều hướng không hiện lại ở đó.",
+    "showTaskCount": "Hiện số công việc",
+    "showTaskCountHint": "Hiện số công việc cạnh các mục trình đơn ở màn Duyệt.",
+    "itemsTitle": "Mục trong trình đơn",
     "items": {
-      "INBOX": "Inbox",
+      "INBOX": "Hộp thư đến",
       "TODAY": "Hôm nay",
       "UPCOMING": "Sắp tới",
       "FILTERS_LABELS": "Bộ lọc & Nhãn",
       "REPORTING": "Báo cáo",
       "BROWSE_TEMPLATES": "Duyệt mẫu"
     },
-    "onTabBar": "Đang ở thanh tab nên không hiện trong menu",
+    "onTabBar": "Đang ở thanh điều hướng nên không hiện trong trình đơn",
     "comingLater": "Có ở bản sau",
     "moveUp": "Đưa {{name}} lên",
     "moveDown": "Đưa {{name}} xuống",
-    "toggle": "Hiện {{name}} trong menu",
+    "toggle": "Hiện {{name}} trong trình đơn",
     "addButton": {
       "title": "Vị trí nút +",
       "LEFT": "Trái",

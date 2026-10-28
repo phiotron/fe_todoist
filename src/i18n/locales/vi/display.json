@@ -7,11 +7,11 @@
     "groupTitle": "Nhóm theo",
     "priorityTitle": "Lọc theo ưu tiên",
     "dueTitle": "Lọc theo ngày",
-    "labelTitle": "Lọc theo label",
+    "labelTitle": "Lọc theo nhãn",
     "all": "Tất cả",
     "priorityN": "P{{n}}",
-    "completed": "Completed tasks",
-    "futureOccurrences": "Future occurrences",
+    "completed": "Công việc đã hoàn thành",
+    "futureOccurrences": "Các lần lặp sắp tới",
     "layoutTitle": "Bố cục",
     "layout": { "list": "Danh sách", "board": "Bảng", "calendar": "Lịch" },
     "completedToday": "Đã hoàn thành hôm nay",
@@ -20,7 +20,7 @@
     "sort": {
       "manual": "Thủ công",
       "date": "Ngày",
-      "deadline": "Deadline",
+      "deadline": "Hạn chót",
       "priority": "Ưu tiên",
       "name": "Tên",
       "added": "Ngày thêm"
@@ -28,20 +28,20 @@
     "order": { "asc": "Tăng dần", "desc": "Giảm dần" },
     "group": {
       "none": "Không nhóm",
-      "bySection": "Theo section",
+      "bySection": "Theo mục",
       "date": "Ngày",
-      "deadline": "Deadline",
+      "deadline": "Hạn chót",
       "priority": "Ưu tiên",
       "project": "Dự án",
-      "label": "Label",
+      "label": "Nhãn",
       "added": "Ngày thêm"
     },
     "groups": {
       "noDate": "Không có ngày",
-      "deadline": "Deadline {{date}}",
-      "noDeadline": "Không có deadline",
+      "deadline": "Hạn chót {{date}}",
+      "noDeadline": "Không có hạn chót",
       "priority": "Ưu tiên {{n}}",
-      "noLabel": "Không có label",
+      "noLabel": "Không có nhãn",
       "added": "Thêm {{date}}"
     },
     "due": {

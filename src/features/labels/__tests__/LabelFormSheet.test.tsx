@@ -42,9 +42,9 @@ describe('LabelFormSheet — create', () => {
   });
 
   it.each([
-    ['', 'Hãy nhập tên label'],
-    ['a b', 'Tên label không được có dấu cách và các ký tự @ % # / , ( ) | & ! \\ *'],
-    ['a'.repeat(61), 'Tên label tối đa 60 ký tự'],
+    ['', 'Hãy nhập tên nhãn'],
+    ['a b', 'Tên nhãn không được có dấu cách và các ký tự @ % # / , ( ) | & ! \\ *'],
+    ['a'.repeat(61), 'Tên nhãn tối đa 60 ký tự'],
   ])('rejects %p before any request', async (name, message) => {
     const { fetchMock } = await openForm({});
     await fireEvent.changeText(screen.getByTestId('label-form-name'), name);
@@ -60,7 +60,7 @@ describe('LabelFormSheet — create', () => {
     await fireEvent.changeText(screen.getByTestId('label-form-name'), 'gap');
     await fireEvent.press(screen.getByTestId('label-form-save'));
     expect(await screen.findByTestId('label-form-name-error')).toBeTruthy();
-    expect(screen.getByText('Đã có label cùng tên')).toBeTruthy();
+    expect(screen.getByText('Đã có nhãn cùng tên')).toBeTruthy();
     expect(onClose).not.toHaveBeenCalled();
   });
 

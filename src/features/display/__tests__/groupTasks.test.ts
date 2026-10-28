@@ -55,13 +55,13 @@ describe('groupTasks (server already sorted by group key)', () => {
       groupTasks([makeTask({ id: 'a', deadlineDate: '2026-10-30' }), makeTask({ id: 'b' })], 'DEADLINE', ctx).map(
         (g) => g.title,
       ),
-    ).toEqual([`Deadline ${formatDayHeader('2026-10-30', '2026-10-26')}`, 'Không có deadline']);
+    ).toEqual([`Hạn chót ${formatDayHeader('2026-10-30', '2026-10-26')}`, 'Không có hạn chót']);
     expect(
       groupTasks([makeTask({ id: 'a', projectId: 'p-1', projectName: 'Nhà' })], 'PROJECT', ctx).map((g) => g.title),
     ).toEqual(['Nhà']);
     expect(
       groupTasks([makeTask({ id: 'a', labelIds: ['l-a'] }), makeTask({ id: 'b' })], 'LABEL', ctx).map((g) => g.title),
-    ).toEqual(['gap', 'Không có label']);
+    ).toEqual(['gap', 'Không có nhãn']);
   });
 
   it('keeps subtasks with their root in tree mode', () => {

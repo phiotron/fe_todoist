@@ -39,7 +39,7 @@ function routes(extra: ApiRoutes = {}, settings: ApiRoutes = quickAddSettingsRou
 
 async function open(extra: ApiRoutes = {}, settings?: ApiRoutes) {
   const rendered = await renderSignedIn(<QuickAddSheet params={{}} />, routes(extra, settings));
-  await screen.findByText('Inbox');
+  await screen.findByText('Hộp thư đến');
   return rendered;
 }
 
@@ -49,7 +49,7 @@ const posted = (fetchMock: Parameters<typeof requestsTo>[0]) => requestsTo(fetch
 describe('Quick Add — English syntax (M6b)', () => {
   it('"Meeting tomorrow 9-10 #Work p1 %urgent {friday}" fills name, due + duration, project, priority, label, deadline', async () => {
     const { fetchMock } = await open();
-    await screen.findByText('Inbox');
+    await screen.findByText('Hộp thư đến');
 
     await type('Meeting tomorrow 9-10 #Work /meetings p1 %urgent {friday}');
     // The project / section chip follows the text at once.

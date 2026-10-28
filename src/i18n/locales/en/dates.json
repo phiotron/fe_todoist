@@ -3,6 +3,8 @@
     "today": "Today",
     "tomorrow": "Tomorrow",
     "yesterday": "Yesterday",
+    "am": "AM",
+    "pm": "PM",
     "weekday": {
       "mon": "Monday",
       "tue": "Tuesday",

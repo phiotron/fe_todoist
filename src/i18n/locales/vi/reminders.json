@@ -17,7 +17,7 @@
       "empty": "Chưa có nhắc nhở nào",
       "addAbsolute": "Thời điểm cụ thể",
       "relativeTitle": "Nhắc trước hạn",
-      "relativeNeedsTime": "Task cần có giờ mới đặt được nhắc trước hạn",
+      "relativeNeedsTime": "Công việc cần có giờ mới đặt được nhắc trước hạn",
       "pastTime": "Thời điểm nhắc phải ở tương lai",
       "remove": "Xoá nhắc nhở {{label}}",
       "close": "Đóng",
@@ -35,7 +35,7 @@
       "days": "{{count}} ngày trước"
     },
     "quickAdd": {
-      "partialFailure": "Đã thêm task nhưng không thêm được {{count}} nhắc nhở"
+      "partialFailure": "Đã thêm công việc nhưng không thêm được {{count}} nhắc nhở"
     },
     "urgent": {
       "channelName": "Nhắc khẩn cấp",
@@ -55,7 +55,7 @@
       "stop": "Dừng",
       "snooze": "Hoãn {{count}} phút",
       "complete": "Hoàn thành",
-      "missing": "Task này không còn nữa"
+      "missing": "Công việc này không còn nữa"
     },
     "location": {
       "unknownPlace": "một địa điểm",
@@ -69,7 +69,7 @@
       "title": "Nhắc nhở",
       "enabled": "Bật nhắc việc",
       "autoTitle": "Nhắc tự động",
-      "autoHint": "Áp dụng cho task có giờ. Task chỉ có ngày không được nhắc tự động.",
+      "autoHint": "Áp dụng cho công việc có giờ. Công việc chỉ có ngày không được nhắc tự động.",
       "autoOff": "Tắt",
       "permissionMissing": "Taskly chưa được phép gửi thông báo nên sẽ không nhắc việc.",
       "allowNotifications": "Cho phép thông báo",
@@ -107,7 +107,7 @@
       "invalidLongitude": "Kinh độ phải từ -180 đến 180",
       "invalidRadius": "Bán kính phải từ 100 đến 5000 mét",
       "radiusValue": "{{count}} m",
-      "backgroundHint": "Để được nhắc khi đã đóng app, hãy cho phép vị trí “mọi lúc” trong cài đặt hệ thống.",
+      "backgroundHint": "Để được nhắc khi đã đóng ứng dụng, hãy cho phép vị trí “mọi lúc” trong cài đặt hệ thống.",
       "openSystemSettings": "Mở cài đặt hệ thống"
     }
   }

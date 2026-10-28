@@ -102,7 +102,7 @@ describe('AlarmScreen (urgent reminder)', () => {
     routeApi(fetchMock, { 'GET /api/v1/tasks/t-1': () => problem(404, 'Not Found') });
     await renderWithProviders(<AlarmScreen taskId="t-1" onDone={onDone} />);
 
-    await waitFor(() => expect(screen.getByTestId('alarm-title')).toHaveTextContent('Task này không còn nữa'));
+    await waitFor(() => expect(screen.getByTestId('alarm-title')).toHaveTextContent('Công việc này không còn nữa'));
     expect(screen.getByTestId('alarm-complete').props.accessibilityState?.disabled).toBe(true);
   });
 });

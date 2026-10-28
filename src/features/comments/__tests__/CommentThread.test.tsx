@@ -36,7 +36,7 @@ describe('CommentThread', () => {
 
     expect(await screen.findByText('Một')).toBeOnTheScreen();
     expect(screen.getByText('Hai')).toBeOnTheScreen();
-    expect(screen.getByText('Comment (2)')).toBeOnTheScreen();
+    expect(screen.getByText('Bình luận (2)')).toBeOnTheScreen();
     expect(screen.getByText(vi.comments.you)).toBeOnTheScreen();
     expect(screen.getByText('Bình')).toBeOnTheScreen();
     const order = screen.getAllByTestId(/^comment-c-/).map((node) => node.props.testID);

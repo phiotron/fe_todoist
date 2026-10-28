@@ -37,7 +37,7 @@ function routes(create: ApiRoutes[string] = () => jsonResponse(201, makeTask()))
 
 async function open(params: QuickAddParams = {}, create?: ApiRoutes[string]) {
   const rendered = await renderSignedIn(<QuickAddSheet params={params} />, routes(create));
-  await screen.findByText('Inbox'); // the project chip resolves the Inbox name
+  await screen.findByText('Hộp thư đến'); // the project chip resolves the Inbox name
   return rendered;
 }
 
@@ -60,7 +60,7 @@ describe('QuickAddSheet', () => {
     expect(request.body).toEqual({ projectId: 'p-inbox', content: 'Mua sữa', priority: 4 });
     expect(request.headers['Idempotency-Key']).toMatch(/^[0-9a-f-]{36}$/);
     await waitFor(() => expect(nameText()).toBe(''));
-    expect(screen.getByTestId('quick-add-notice')).toHaveTextContent(viQuickAdd.quickAdd.added.replace('{{name}}', 'Inbox'));
+    expect(screen.getByTestId('quick-add-notice')).toHaveTextContent(viQuickAdd.quickAdd.added.replace('{{name}}', 'Hộp thư đến'));
     expect(router.back).not.toHaveBeenCalled();
   });
 

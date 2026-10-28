@@ -3,8 +3,8 @@
     "title": "Cài đặt",
     "edit": "Sửa",
     "saved": "Đã lưu",
-    "saveFailed": "Chưa lưu được lên máy chủ. Lựa chọn vẫn được giữ trên máy này và sẽ tự gửi lại lần mở app sau.",
-    "pendingNotice": "Có thay đổi chưa lưu lên máy chủ, app sẽ tự gửi lại khi mở lần sau.",
+    "saveFailed": "Chưa lưu được lên máy chủ. Lựa chọn vẫn được giữ trên máy này và sẽ tự gửi lại lần mở ứng dụng sau.",
+    "pendingNotice": "Có thay đổi chưa lưu lên máy chủ, ứng dụng sẽ tự gửi lại khi mở lần sau.",
     "autoAccept": {
       "title": "Tự động chấp nhận lời mời",
       "hint": "Tự tham gia dự án và nhóm bạn được mời mà không cần xác nhận từng lời mời."
@@ -27,12 +27,12 @@
     },
     "themeNames": {
       "TASKLY": "Taskly",
-      "MOONSTONE": "Moonstone",
-      "TANGERINE": "Tangerine",
-      "KALE": "Kale",
-      "BLUEBERRY": "Blueberry",
-      "LAVENDER": "Lavender",
-      "RASPBERRY": "Raspberry"
+      "MOONSTONE": "Đá mặt trăng",
+      "TANGERINE": "Quýt",
+      "KALE": "Cải xoăn",
+      "BLUEBERRY": "Việt quất",
+      "LAVENDER": "Oải hương",
+      "RASPBERRY": "Mâm xôi"
     },
     "language": {
       "title": "Ngôn ngữ",
@@ -53,7 +53,7 @@
       "dismiss": "Bỏ qua"
     },
     "targets": {
-      "INBOX": "Inbox",
+      "INBOX": "Hộp thư đến",
       "TODAY": "Hôm nay",
       "UPCOMING": "Sắp tới",
       "SEARCH": "Tìm kiếm",
@@ -68,7 +68,7 @@
     },
     "smartDate": {
       "title": "Nhận diện ngày thông minh",
-      "hint": "Tự nhận ra ngày giờ khi gõ tên task ở Thêm nhanh."
+      "hint": "Tự nhận ra ngày giờ khi gõ tên công việc ở Thêm nhanh."
     },
     "swipe": {
       "title": "Thao tác vuốt",
@@ -100,7 +100,7 @@
       "mdy": "Tháng/Ngày/Năm (10/26/2026)",
       "timeFormat": "Định dạng giờ",
       "h24": "24 giờ (14:30)",
-      "h12": "12 giờ (2:30 PM)",
+      "h12": "12 giờ (2:30 CH)",
       "example": "Ví dụ: {{date}} · {{time}}",
       "weekdays": {
         "1": "Thứ Hai",
@@ -113,26 +113,26 @@
       }
     },
     "navigation": {
-      "intro": "Chọn 3 đến 5 mục cho thanh tab. Duyệt luôn ở cuối. Thanh tab được lưu theo tài khoản.",
-      "current": "Trên thanh tab",
-      "available": "Thêm vào thanh tab",
+      "intro": "Chọn 3 đến 5 mục cho thanh điều hướng. Duyệt luôn ở cuối. Thanh điều hướng được lưu theo tài khoản.",
+      "current": "Trên thanh điều hướng",
+      "available": "Thêm vào thanh điều hướng",
       "moveUp": "Đưa {{name}} lên",
       "moveDown": "Đưa {{name}} xuống",
-      "remove": "Bỏ {{name}} khỏi thanh tab",
+      "remove": "Bỏ {{name}} khỏi thanh điều hướng",
       "add": "Thêm {{name}}",
       "pin": "Ghim dự án, nhãn hoặc bộ lọc",
       "changePin": "Đổi mục ghim",
       "pinHint": "Chỉ ghim được một mục.",
-      "full": "Thanh tab đã đủ 5 mục. Bỏ bớt một mục trước.",
-      "minimum": "Thanh tab cần ít nhất 3 mục.",
+      "full": "Thanh điều hướng đã đủ 5 mục. Bỏ bớt một mục trước.",
+      "minimum": "Thanh điều hướng cần ít nhất 3 mục.",
       "restore": "Khôi phục mặc định",
-      "restoreConfirmTitle": "Khôi phục thanh tab mặc định?",
-      "restoreConfirmMessage": "Thanh tab về Inbox, Hôm nay, Sắp tới, Duyệt. Không hoàn tác được.",
+      "restoreConfirmTitle": "Khôi phục thanh điều hướng mặc định?",
+      "restoreConfirmMessage": "Thanh điều hướng về Hộp thư đến, Hôm nay, Sắp tới, Duyệt. Không hoàn tác được.",
       "restoreConfirm": "Khôi phục",
-      "rejected": "{{reason}} Thanh tab vẫn như trước.",
-      "editTabBar": "Sửa thanh tab",
+      "rejected": "{{reason}} Thanh điều hướng vẫn như trước.",
+      "editTabBar": "Sửa thanh điều hướng",
       "pinnedEmpty": "Chưa ghim mục nào. Ghim một dự án, nhãn hoặc bộ lọc ở Cài đặt › Thanh điều hướng.",
-      "openSettings": "Mở cài đặt thanh tab"
+      "openSettings": "Mở cài đặt thanh điều hướng"
     },
     "picker": {
       "title": "Chọn mục",
@@ -172,7 +172,7 @@
     },
     "deleteAccount": {
       "title": "Xoá tài khoản",
-      "description": "Xoá vĩnh viễn tài khoản và mọi dữ liệu (dự án, task, nhãn, bộ lọc…). Không hoàn tác được.",
+      "description": "Xoá vĩnh viễn tài khoản và mọi dữ liệu (dự án, công việc, nhãn, bộ lọc…). Không hoàn tác được.",
       "button": "Xoá tài khoản",
       "confirmTitle": "Xoá vĩnh viễn tài khoản?",
       "confirmMessage": "Mọi dữ liệu sẽ mất và không hoàn tác được. Nhập mật khẩu để xác nhận.",
@@ -188,7 +188,7 @@
       "description": "Đưa mọi cài đặt về mặc định. Múi giờ giữ nguyên.",
       "button": "Khôi phục mặc định",
       "confirmTitle": "Khôi phục cài đặt mặc định?",
-      "confirmMessage": "Giao diện, ngôn ngữ, ngày & giờ, trang mở đầu, thao tác vuốt và thanh tab về mặc định. Không hoàn tác được.",
+      "confirmMessage": "Giao diện, ngôn ngữ, ngày & giờ, trang mở đầu, thao tác vuốt và thanh điều hướng về mặc định. Không hoàn tác được.",
       "confirm": "Khôi phục",
       "done": "Đã khôi phục cài đặt mặc định"
     },

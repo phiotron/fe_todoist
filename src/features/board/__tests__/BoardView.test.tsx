@@ -31,7 +31,7 @@ const c = makeTask({ id: 'c', content: 'Họp', sectionId: 's-1' });
 
 function columns(): BoardColumn[] {
   return [
-    { key: 'section:none', title: 'Không có section', tasks: [a, b], drop: { kind: 'section', projectId: 'p-1', sectionId: null }, add: { projectId: 'p-1' } },
+    { key: 'section:none', title: 'Không có mục', tasks: [a, b], drop: { kind: 'section', projectId: 'p-1', sectionId: null }, add: { projectId: 'p-1' } },
     { key: 'section:s-1', title: 'Một', tasks: [c], drop: { kind: 'section', projectId: 'p-1', sectionId: 's-1' } },
     { key: 'overdue', title: 'Quá hạn', tasks: [], drop: null },
   ];
@@ -47,7 +47,7 @@ describe('BoardView', () => {
     expect(screen.getByText('Họp')).toBeTruthy();
     expect(screen.getByTestId('board-add-section:none')).toBeTruthy();
     expect(screen.queryByTestId('board-add-section:s-1')).toBeNull();
-    expect(screen.getByText('Không có task')).toBeTruthy();
+    expect(screen.getByText('Không có công việc')).toBeTruthy();
   });
 
   it('a drop on another section column moves the task with ONE batch request (with an Idempotency-Key)', async () => {

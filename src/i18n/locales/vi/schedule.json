@@ -18,7 +18,7 @@
     },
     "picker": {
       "title": "Chọn dự án",
-      "noSection": "Không thuộc section",
+      "noSection": "Không thuộc mục",
       "back": "Quay lại danh sách dự án"
     }
   }

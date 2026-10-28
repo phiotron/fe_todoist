@@ -1,7 +1,7 @@
 {
   "sync": {
-    "offline": "Bạn đang offline — thay đổi sẽ được lưu và đồng bộ khi có mạng",
-    "offlinePending": "Bạn đang offline — {{n}} thay đổi chưa đồng bộ",
+    "offline": "Bạn đang ngoại tuyến — thay đổi sẽ được lưu và đồng bộ khi có mạng",
+    "offlinePending": "Bạn đang ngoại tuyến — {{n}} thay đổi chưa đồng bộ",
     "syncing": "Đang đồng bộ…",
     "pending": "{{n}} thay đổi chưa đồng bộ",
     "discard": {
