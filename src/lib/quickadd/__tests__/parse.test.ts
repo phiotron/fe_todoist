@@ -45,7 +45,8 @@ describe('parseQuickAdd — dates', () => {
     ['yesterday', '2026-10-26'],
     ['friday', '2026-10-30'],
     ['on fri', '2026-10-30'],
-    ['tue', '2026-11-03'], // today is Tuesday → the next one
+    // was bare 'tue': 3-letter weekday abbreviations now need an English context (VIQA, see the block at the end)
+    ['this tue', '2026-11-03'], // today is Tuesday → the next one
     ['next friday', '2026-11-06'], // Friday of NEXT week (Todoist)
     ['next monday', '2026-11-02'],
     ['next week', '2026-11-02'],
@@ -300,5 +301,54 @@ describe('parseQuickAdd — repeats (RecurrenceSpec, contract 8.1)', () => {
     const result = parse('Read every');
     expect(result.recurrence).toBeUndefined();
     expect(result.content).toBe('Read every');
+  });
+});
+
+/**
+ * 3-letter weekday abbreviations (mon … sun) collide with Vietnamese words ("Thu tiền", "món", "sát"): they count
+ * only with a clear English context — after on/next/this/every/starting/until/by, next to a time, inside {…} / !…,
+ * or as the whole text (the typed date field). Full names (friday) are unchanged. Default, chờ duyệt.
+ */
+describe('parseQuickAdd — short weekday names need an English context', () => {
+  it.each(['Thu tiền điện', 'thu tien dien', 'Mon ăn ngon', 'sat nhap', 'Pay tue', 'Gặp sun ở quán', 'Pay thu.'])(
+    '"%s" has no date',
+    (text) => {
+      const result = parse(text);
+      expect(result.due).toBeUndefined();
+      expect(result.content).toBe(text);
+    },
+  );
+
+  it.each([
+    ['Pay on sat', '2026-10-31', null],
+    ['Pay on thu.', '2026-10-29', null],
+    ['Pay this wed', '2026-10-28', null],
+    ['Pay next fri', '2026-11-06', null],
+    ['Pay thu 9am', '2026-10-29', '09:00'],
+    ['Pay Thu 5pm', '2026-10-29', '17:00'],
+    ['Pay 9am thu', '2026-10-29', '09:00'],
+    ['Pay thu 9h', '2026-10-29', '09:00'],
+    ['Pay friday', '2026-10-30', null],
+    ['Pay thursday', '2026-10-29', null],
+    ['fri', '2026-10-30', null],
+  ])('%s', (text, date, time) => {
+    const result = parse(text);
+    expect(result.due).toEqual({ date, time, durationMinutes: null });
+  });
+
+  it('"by fri": the date is recognised, "by" stays in the name', () => {
+    const result = parse('Pay by fri');
+    expect(result.due?.date).toBe('2026-10-30');
+    expect(result.content).toBe('Pay by');
+  });
+
+  it('repeats, modifiers, deadline and reminder keep the abbreviations', () => {
+    const every = parse('Gym every thu 9am');
+    expect(every.recurrence).toEqual({ freq: 'WEEKLY', interval: 1, byDay: [{ weekday: 'TH' }], fromCompletion: false });
+    expect(every.due).toEqual({ date: '2026-10-29', time: '09:00', durationMinutes: null });
+    expect(parse('Run every day starting mon').startDate).toBe('2026-11-02');
+    expect(parse('Run every day until fri').recurrence?.untilDate).toBe('2026-10-30');
+    expect(parse('Pay {thu}').deadline).toBe('2026-10-29');
+    expect(parse('Pay tomorrow !thu 9am').reminders).toEqual([{ type: 'ABSOLUTE', date: '2026-10-29', time: '09:00' }]);
   });
 });

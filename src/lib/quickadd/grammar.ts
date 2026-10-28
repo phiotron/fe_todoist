@@ -1,13 +1,44 @@
-import { addDays, addMonthsClamped, isoWeekday, quickDates, weekStart } from '../dates';
+import { addDays, quickDates, weekStart } from '../dates';
 import type { RecurrenceSpec, Weekday } from '../recurrence/types';
+import {
+  DAY_PART_TIME,
+  matchDateVi,
+  matchDayPartVi,
+  matchDurationVi,
+  matchEveryVi,
+  matchRepeatModifierVi,
+  matchTimeVi,
+  prevWord,
+  withDayPart,
+} from './grammar.vi';
+import {
+  END,
+  RRULE_DAYS,
+  WORKDAYS,
+  addUnits,
+  at,
+  dateKey,
+  emptySpec,
+  explicitYear,
+  inferYear,
+  nextWeekday,
+  pad,
+  sticky,
+  toMinutes,
+  type Phrase,
+  type PhraseValue,
+  type RecurrenceValue,
+} from './shared';
 import type { ParseContext } from './types';
 
-/**
- * English date grammar of Quick Add (Todoist syntax, spec 3.2 M6b). Works on the LOWER-CASED text with offsets equal
- * to the original text. Every phrase must end at a word boundary.
- */
+export { RRULE_DAYS };
+export type { Phrase, PhraseValue, RecurrenceValue };
 
-const END = '(?=$|[\\s,.;:!?)\\]}])';
+/**
+ * Date grammar of Quick Add (Todoist syntax, spec 3.2 M6b): English, plus Vietnamese side by side (./grammar.vi,
+ * tried first at each position — neither needs a setting). Works on the LOWER-CASED text with offsets equal to the
+ * original text. Every phrase must end at a word boundary.
+ */
 
 const MONTHS: Record<string, number> = {
   jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3, apr: 4, april: 4, may: 5, jun: 6, june: 6, jul: 7,
@@ -21,51 +52,10 @@ const WEEKDAYS: Record<string, number> = {
   thursday: 4, fri: 5, friday: 5, sat: 6, saturday: 6, sun: 7, sunday: 7,
 };
 
-export const RRULE_DAYS: readonly Weekday[] = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
-const WORKDAYS: Weekday[] = ['MO', 'TU', 'WE', 'TH', 'FR'];
-
 const alternation = (words: string[]) => [...words].sort((a, b) => b.length - a.length).join('|');
 const MONTH = `(${alternation(Object.keys(MONTHS))})`;
 const WEEKDAY = `(${alternation(Object.keys(WEEKDAYS))})`;
 const ORD = '(?:st|nd|rd|th)';
-
-function sticky(source: string): RegExp {
-  return new RegExp(source, 'y');
-}
-
-function at(re: RegExp, text: string, index: number): RegExpExecArray | null {
-  re.lastIndex = index;
-  return re.exec(text);
-}
-
-const pad = (value: number) => String(value).padStart(2, '0');
-
-function daysInMonth(year: number, month: number): number {
-  return new Date(Date.UTC(year, month, 0)).getUTCDate();
-}
-
-function dateKey(year: number, month: number, day: number): string | null {
-  if (month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return null;
-  return `${year}-${pad(month)}-${pad(day)}`;
-}
-
-/** Day + month without a year: this year, or next year when already past (29/02 → next leap-valid year only). */
-function inferYear(month: number, day: number, today: string): string | null {
-  const year = Number(today.slice(0, 4));
-  const thisYear = dateKey(year, month, day);
-  if (thisYear && thisYear >= today) return thisYear;
-  return dateKey(year + 1, month, day);
-}
-
-function explicitYear(raw: string | undefined): number | null {
-  if (!raw) return null;
-  const value = Number(raw);
-  return raw.length === 2 ? 2000 + value : value;
-}
-
-function nextWeekday(today: string, weekday: number): string {
-  return addDays(today, ((weekday - isoWeekday(today) + 7) % 7) || 7);
-}
 
 /** "HH:mm" from 12-hour / 24-hour parts; null when out of range. */
 function clock(hourText: string, minuteText: string | undefined, suffix: string | undefined): string | null {
@@ -79,26 +69,6 @@ function clock(hourText: string, minuteText: string | undefined, suffix: string 
     return null;
   }
   return `${pad(hour)}:${pad(minute)}`;
-}
-
-const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
-
-export interface RecurrenceValue {
-  spec: RecurrenceSpec;
-  startDate?: string;
-  /** "for N units": turned into untilDate once the start is known. */
-  forCount?: { count: number; unit: string };
-}
-
-export interface PhraseValue {
-  date?: string;
-  time?: string;
-  duration?: number;
-  recurrence?: RecurrenceValue;
-}
-
-export interface Phrase extends PhraseValue {
-  end: number;
 }
 
 // ---- dates ---------------------------------------------------------------------------------------------------------
@@ -142,15 +112,27 @@ const RE = {
   forCount: sticky(`for\\s+(\\d{1,3})\\s+(days?|weeks?|months?|years?)${END}`),
 };
 
-function addUnits(date: string, count: number, unit: string): string {
-  if (unit.startsWith('day')) return addDays(date, count);
-  if (unit.startsWith('week')) return addDays(date, count * 7);
-  if (unit.startsWith('month')) return addMonthsClamped(date, count);
-  return addMonthsClamped(date, count * 12);
+/**
+ * 3-letter weekday abbreviations collide with Vietnamese words ("Thu tiền", unaccented "món" / "sát"): alone they are
+ * text. They count after these English words, next to a time ("thu 9am", "9am thu"), inside {…} / !…, or as the
+ * whole text (the typed date field). Full names ("thursday") are not affected. Default, chờ duyệt.
+ */
+const SHORT_WEEKDAYS = new Set(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
+const ENGLISH_CONTEXT = new Set(['on', 'next', 'this', 'every', 'other', 'starting', 'from', 'until', 'ending', 'by']);
+
+function shortWeekdayAllowed(text: string, index: number, end: number, explicit: boolean): boolean {
+  if (explicit || ENGLISH_CONTEXT.has(prevWord(text, index))) return true;
+  if (text.slice(0, index).replace(/^\*\s/, '').trim() === '' && text.slice(end).trim() === '') return true;
+  let next = end;
+  while (isSpace(text[next])) next += 1;
+  return next > end && matchTime(text, next) !== null;
 }
 
-/** One date-only phrase at `index` (no time, no repeat). */
-export function matchDate(text: string, index: number, ctx: ParseContext): Phrase | null {
+/**
+ * One English date-only phrase at `index` (no time, no repeat). `explicit` = a date context is already clear (a time
+ * before it in the group, {…}, !…): short weekday names count there.
+ */
+function matchDateEn(text: string, index: number, ctx: ParseContext, explicit: boolean): Phrase | null {
   const { today } = ctx;
   let m: RegExpExecArray | null;
   const end = (match: RegExpExecArray) => index + match[0].length;
@@ -164,7 +146,11 @@ export function matchDate(text: string, index: number, ctx: ParseContext): Phras
     const target = WEEKDAYS[m[1]];
     return { end: end(m), date: addDays(start, (target - ctx.dateSettings.startDay + 7) % 7) };
   }
-  if ((m = at(RE.weekday, text, index))) return { end: end(m), date: nextWeekday(today, WEEKDAYS[m[1]]) };
+  if ((m = at(RE.weekday, text, index))) {
+    const prefixed = /^(?:on|this)\s/.test(m[0]);
+    if (SHORT_WEEKDAYS.has(m[1]) && !prefixed && !shortWeekdayAllowed(text, index, end(m), explicit)) return null;
+    return { end: end(m), date: nextWeekday(today, WEEKDAYS[m[1]]) };
+  }
   if ((m = at(RE.inUnits, text, index))) {
     const count = Number(m[1]);
     return count > 0 ? { end: end(m), date: addUnits(today, count, m[2]) } : null;
@@ -193,8 +179,22 @@ export function matchDate(text: string, index: number, ctx: ParseContext): Phras
   return null;
 }
 
-/** One time phrase (with an optional range = duration) at `index`. */
-export function matchTime(text: string, index: number): Phrase | null {
+/**
+ * One date-only phrase at `index`, Vietnamese or English. `source` = original-case text (capitalised names);
+ * `explicit` = the date context is already clear (see matchDateEn).
+ */
+export function matchDate(
+  text: string,
+  index: number,
+  ctx: ParseContext,
+  source?: string,
+  explicit = false,
+): Phrase | null {
+  return matchDateVi(text, index, ctx, source) ?? matchDateEn(text, index, ctx, explicit);
+}
+
+/** One English time phrase (with an optional range = duration) at `index`. */
+function matchTimeEn(text: string, index: number): Phrase | null {
   let m: RegExpExecArray | null;
   if ((m = at(RE.range, text, index))) {
     const endTime = clock(m[4], m[5], m[6]);
@@ -205,22 +205,27 @@ export function matchTime(text: string, index: number): Phrase | null {
     if (startTime && endTime) {
       let duration = toMinutes(endTime) - toMinutes(startTime);
       if (duration <= 0) duration += 24 * 60;
-      return { end: index + m[0].length, time: startTime, duration };
+      return { end: index + m[0].length, time: startTime, duration, fixed: Boolean(m[3] || m[6]) };
     }
   }
   if ((m = at(RE.timeWord, text, index))) {
-    return { end: index + m[0].length, time: m[1] === 'midnight' ? '00:00' : '12:00' };
+    return { end: index + m[0].length, time: m[1] === 'midnight' ? '00:00' : '12:00', fixed: true };
   }
   if ((m = at(RE.time, text, index))) {
     // A bare number is a time only after "at" (Todoist: "17" alone is text, "17:00" / "5pm" / "at 9" are times).
     if (!m[1] && m[3] === undefined && !m[4]) return null;
     const time = clock(m[2], m[3], m[4]);
-    return time ? { end: index + m[0].length, time } : null;
+    return time ? { end: index + m[0].length, time, fixed: Boolean(m[4]) } : null;
   }
   return null;
 }
 
-function matchDuration(text: string, index: number): Phrase | null {
+/** One time phrase (with an optional range = duration) at `index`, Vietnamese or English. */
+export function matchTime(text: string, index: number): Phrase | null {
+  return matchTimeVi(text, index) ?? matchTimeEn(text, index);
+}
+
+function matchDurationEn(text: string, index: number): Phrase | null {
   const m = at(RE.duration, text, index);
   if (!m) return null;
   const amount = Number(m[1]);
@@ -296,21 +301,26 @@ function matchEveryBody(text: string, index: number, fromCompletion: boolean): {
 }
 
 function matchEvery(text: string, index: number): Phrase | null {
+  const viPhrase = matchEveryVi(text, index);
+  if (viPhrase) return viPhrase;
   const every = at(RE.every, text, index);
   if (!every) return null;
   const body = matchEveryBody(text, index + every[0].length, every[1] === '!');
   return body ? { end: body.end, recurrence: { spec: body.spec } } : null;
 }
 
-/** starting / until / for N … after a repeat. */
-function matchRepeatModifier(text: string, index: number, ctx: ParseContext): Phrase | null {
+/** starting / until / for N … after a repeat (Vietnamese "bắt đầu từ / đến / trong N tuần" too). */
+function matchRepeatModifier(text: string, index: number, ctx: ParseContext, source?: string): Phrase | null {
+  const anyDate = (value: string, position: number) => matchDate(value, position, ctx, source);
+  const viPhrase = matchRepeatModifierVi(text, index, anyDate);
+  if (viPhrase) return viPhrase;
   let m: RegExpExecArray | null;
   if ((m = at(RE.starting, text, index))) {
-    const date = matchDate(text, index + m[0].length, ctx);
+    const date = anyDate(text, index + m[0].length);
     return date?.date ? { end: date.end, recurrence: { spec: emptySpec(), startDate: date.date } } : null;
   }
   if ((m = at(RE.until, text, index))) {
-    const date = matchDate(text, index + m[0].length, ctx);
+    const date = anyDate(text, index + m[0].length);
     return date?.date ? { end: date.end, recurrence: { spec: { ...emptySpec(), untilDate: date.date } } } : null;
   }
   if ((m = at(RE.forCount, text, index))) {
@@ -322,11 +332,6 @@ function matchRepeatModifier(text: string, index: number, ctx: ParseContext): Ph
   return null;
 }
 
-/** Placeholder spec of a modifier: only its untilDate is merged. */
-function emptySpec(): RecurrenceSpec {
-  return { freq: 'DAILY', interval: 1, fromCompletion: false };
-}
-
 // ---- groups --------------------------------------------------------------------------------------------------------
 
 export interface GroupOptions {
@@ -334,6 +339,10 @@ export interface GroupOptions {
   repeats: boolean;
   /** Times allowed (due, reminders); deadlines are date-only. */
   times: boolean;
+  /** The original-case text (same offsets): a capitalised "Mai" inside the text is a name. */
+  source?: string;
+  /** Inside {…} or after "!": the text is a date anyway, so short weekday names ("thu") count. */
+  explicit?: boolean;
 }
 
 function isSpace(char: string | undefined): boolean {
@@ -342,8 +351,8 @@ function isSpace(char: string | undefined): boolean {
 
 /**
  * Longest run of date / time / repeat phrases starting at `index`, separated by spaces, each component at most once
- * ("tomorrow 9-10", "next friday at 3pm", "every weekday at 9am starting nov 5"). null when nothing matches or the
- * run would only be a duration.
+ * ("tomorrow 9-10", "next friday at 3pm", "every weekday at 9am starting nov 5", "sáng mai 9h", "mỗi thứ hai tối 8h").
+ * null when nothing matches, the run would only be a duration, or a day part ("sáng") has no date / repeat.
  */
 export function matchGroup(text: string, index: number, ctx: ParseContext, options: GroupOptions): Phrase | null {
   const value: PhraseValue = {};
@@ -351,11 +360,16 @@ export function matchGroup(text: string, index: number, ctx: ParseContext, optio
   let position = index;
   for (;;) {
     let phrase: Phrase | null = null;
-    if (value.recurrence) phrase = matchRepeatModifier(text, position, ctx);
+    if (value.recurrence) phrase = matchRepeatModifier(text, position, ctx, options.source);
     if (!phrase && options.repeats && !value.recurrence && !value.date) phrase = matchEvery(text, position);
     if (!phrase && options.times && !value.time) phrase = matchTime(text, position);
-    if (!phrase && !value.date && !value.recurrence) phrase = matchDate(text, position, ctx);
-    if (!phrase && options.times && value.time && value.duration === undefined) phrase = matchDuration(text, position);
+    if (!phrase && options.times && !value.time && !value.dayPart) phrase = matchDayPartVi(text, position);
+    if (!phrase && !value.date && !value.recurrence) {
+      phrase = matchDate(text, position, ctx, options.source, Boolean(options.explicit) || value.time !== undefined);
+    }
+    if (!phrase && options.times && value.time && value.duration === undefined) {
+      phrase = matchDurationVi(text, position) ?? matchDurationEn(text, position);
+    }
     if (!phrase) break;
     if (phrase.recurrence && value.recurrence) {
       const { spec, startDate, forCount } = phrase.recurrence;
@@ -365,13 +379,18 @@ export function matchGroup(text: string, index: number, ctx: ParseContext, optio
     } else {
       if (phrase.recurrence) value.recurrence = phrase.recurrence;
       if (phrase.date) value.date = phrase.date;
-      if (phrase.time) value.time = phrase.time;
+      if (phrase.dayPart) value.dayPart = phrase.dayPart;
+      if (phrase.time) value.time = value.dayPart && !phrase.fixed ? withDayPart(phrase.time, value.dayPart) : phrase.time;
       if (phrase.duration !== undefined) value.duration = phrase.duration;
     }
     end = phrase.end;
     position = end;
     while (isSpace(text[position])) position += 1;
     if (position === end) break; // the next phrase must be separated by a space
+  }
+  if (value.dayPart) {
+    if (value.date === undefined && !value.recurrence) return null;
+    if (value.time === undefined) value.time = DAY_PART_TIME[value.dayPart];
   }
   if (end === index || (value.date === undefined && value.time === undefined && !value.recurrence)) return null;
   return { end, ...value };

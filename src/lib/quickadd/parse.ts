@@ -1,5 +1,6 @@
 import { firstOccurrence } from './firstOccurrence';
 import { matchGroup, matchTime, resolveRepeat } from './grammar';
+import { matchRelativeReminderVi } from './grammar.vi';
 import type { ParseContext, ParsedReminder, QuickAddParse, QuickAddToken, QuickAddTokenKind } from './types';
 
 /** Characters a label name cannot contain (M2 LabelNames: whitespace @ % # / , ( ) | & ! \ *). */
@@ -18,7 +19,9 @@ interface Candidate {
 }
 
 /**
- * Quick Add parser (spec 3.2 M6b, Todoist syntax, ENGLISH only — ADR 0006). Pure: `ctx.today` instead of the clock.
+ * Quick Add parser (spec 3.2 M6b, Todoist syntax). Dates, times, repeats and reminders are recognised in English AND
+ * Vietnamese side by side, no setting (VIQA — supersedes "English only" of ADR 0006). Pure: `ctx.today` instead of
+ * the clock.
  * A token starts a word (start of text or after a space). Single-value kinds (date, project, section, priority,
  * deadline, assignee) are recognised once — later ones stay text; labels and reminders add up.
  */
@@ -92,15 +95,15 @@ function tokenAt(
     const found = match.exec(text);
     return found ? { kind: 'assignee', end: index + 1 + found[0].length, apply: (r) => (r.assignee = found[0]) } : null;
   }
-  if (char === '!') return reminderAt(lower, index, ctx);
-  if (char === '{' && !done.has('deadline')) return deadlineAt(lower, index, ctx);
+  if (char === '!') return reminderAt(text, lower, index, ctx);
+  if (char === '{' && !done.has('deadline')) return deadlineAt(text, lower, index, ctx);
   if ((char === 'p' || char === 'P') && !done.has('priority')) {
     PRIORITY.lastIndex = index;
     const match = PRIORITY.exec(lower);
     if (match) return { kind: 'priority', end: index + 2, apply: (r) => (r.priority = Number(match[1])) };
   }
   if (ctx.smartDate && !done.has('date')) {
-    const group = matchGroup(lower, index, ctx, { repeats: true, times: true });
+    const group = matchGroup(lower, index, ctx, { repeats: true, times: true, source: text });
     if (group) {
       return {
         kind: 'date',
@@ -142,7 +145,7 @@ function matchName(text: string, lower: string, start: number, names: readonly s
   return null;
 }
 
-function reminderAt(lower: string, index: number, ctx: ParseContext): Candidate | null {
+function reminderAt(text: string, lower: string, index: number, ctx: ParseContext): Candidate | null {
   RELATIVE_REMINDER.lastIndex = index + 1;
   const relative = RELATIVE_REMINDER.exec(lower);
   if (relative) {
@@ -152,19 +155,31 @@ function reminderAt(lower: string, index: number, ctx: ParseContext): Candidate 
     const reminder: ParsedReminder = { type: 'RELATIVE', minuteOffset: minutes };
     return { kind: 'reminder', end: index + 1 + relative[0].length, apply: (r) => r.reminders.push(reminder) };
   }
-  // Absolute: "!5pm", "!at 17:00", "!nov 5 at 9am" — a time is required.
-  const group = matchGroup(lower, index + 1, { ...ctx, smartDate: true }, { repeats: false, times: true });
+  // Vietnamese: "!30 phút trước", "!1 tiếng trước".
+  const relativeVi = matchRelativeReminderVi(lower, index + 1);
+  if (relativeVi) {
+    const reminder: ParsedReminder = { type: 'RELATIVE', minuteOffset: relativeVi.minutes };
+    return { kind: 'reminder', end: relativeVi.end, apply: (r) => r.reminders.push(reminder) };
+  }
+  // Absolute: "!5pm", "!at 17:00", "!nov 5 at 9am", "!mai 9h" — a time is required.
+  const group = matchGroup(lower, index + 1, { ...ctx, smartDate: true }, {
+    repeats: false,
+    times: true,
+    source: text,
+    explicit: true,
+  });
   const time = group?.time ?? matchTime(lower, index + 1)?.time;
   if (!group || !time) return null;
   const reminder: ParsedReminder = { type: 'ABSOLUTE', date: group.date ?? null, time };
   return { kind: 'reminder', end: group.end, apply: (r) => r.reminders.push(reminder) };
 }
 
-function deadlineAt(lower: string, index: number, ctx: ParseContext): Candidate | null {
+function deadlineAt(text: string, lower: string, index: number, ctx: ParseContext): Candidate | null {
   const close = lower.indexOf('}', index + 1);
   if (close < 0 || !WORD_END.test(lower.slice(close + 1, close + 2))) return null;
   const inner = lower.slice(index + 1, close).trim();
-  const group = matchGroup(inner, 0, ctx, { repeats: false, times: false });
+  const source = text.slice(index + 1, close).trim();
+  const group = matchGroup(inner, 0, ctx, { repeats: false, times: false, source, explicit: true });
   if (!group?.date || group.end !== inner.length) return null;
   const date = group.date;
   return { kind: 'deadline', end: close + 1, apply: (r) => (r.deadline = date) };
