@@ -52,6 +52,8 @@ export interface SettingsResponse {
   pinReminders?: boolean;
   /** M12: install id of the device that rings urgent reminders; null = none chosen. */
   urgentDeviceId?: string | null;
+  /** M8a: invitations by email addressed to this account are accepted at once (default false). */
+  autoAcceptInvites?: boolean;
 }
 
 /**

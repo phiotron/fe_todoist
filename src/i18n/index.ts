@@ -38,6 +38,8 @@ import enSocial from './locales/en/social.json';
 import enTaskDetail from './locales/en/taskDetail.json';
 import enTaskList from './locales/en/taskList.json';
 import enTemplates from './locales/en/templates.json';
+import enSharing from './locales/en/sharing.json';
+import enTeam from './locales/en/team.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
 import enIntegrations from './locales/en/integrations.json';
@@ -80,6 +82,8 @@ import viSocial from './locales/vi/social.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
 import viTaskList from './locales/vi/taskList.json';
 import viTemplates from './locales/vi/templates.json';
+import viSharing from './locales/vi/sharing.json';
+import viTeam from './locales/vi/team.json';
 import viTwoFactor from './locales/vi/twoFactor.json';
 import viViews from './locales/vi/views.json';
 import viIntegrations from './locales/vi/integrations.json';
@@ -129,6 +133,8 @@ export const viTranslation = {
   ...viTaskDetail,
   ...viTaskList,
   ...viTemplates,
+  ...viSharing,
+  ...viTeam,
   ...viTwoFactor,
   ...viViews,
   ...viIntegrations,
@@ -175,6 +181,8 @@ export const enTranslation = {
   ...enTaskDetail,
   ...enTaskList,
   ...enTemplates,
+  ...enSharing,
+  ...enTeam,
   ...enTwoFactor,
   ...enViews,
   ...enIntegrations,

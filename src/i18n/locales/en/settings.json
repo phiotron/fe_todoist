@@ -5,6 +5,10 @@
     "saved": "Saved",
     "saveFailed": "Could not save to the server. Your choice is kept on this device and will be sent again next time you open the app.",
     "pendingNotice": "Some changes are not saved to the server yet; the app will send them next time it opens.",
+    "autoAccept": {
+      "title": "Auto accept invites",
+      "hint": "Join projects and teams you are invited to without confirming each one."
+    },
     "pages": {
       "account": "Account",
       "general": "General",

@@ -47,3 +47,11 @@ export function pinKinds(navTabs: readonly string[] | undefined): PinKind[] {
   }
   return kinds;
 }
+
+/** Adds the Team tab right before the last tab (Browse) unless the stored navTabs already has it. */
+export function insertTeamTab(items: readonly TabItem[], def: TabDefLike): TabItem[] {
+  if (items.some((item) => item.key === def.key)) return [...items];
+  const team: TabItem = { key: def.key, route: def.route, title: def.title(), icon: def.icon };
+  if (items.length === 0) return [team];
+  return [...items.slice(0, -1), team, items[items.length - 1]];
+}

@@ -1,0 +1,76 @@
+{
+  "team": {
+    "title": "Nhóm",
+    "loadFailed": "Không tải được nhóm",
+    "tabs": {
+      "active": "Đang hoạt động",
+      "joined": "Đã tham gia",
+      "notJoined": "Dự án chưa tham gia"
+    },
+    "empty": {
+      "active": "Nhóm chưa có dự án nào",
+      "joined": "Bạn chưa tham gia dự án nào của nhóm",
+      "notJoined": "Bạn đã tham gia mọi dự án của nhóm"
+    },
+    "people": "Thành viên",
+    "newProject": "Dự án mới của nhóm",
+    "newFolder": "Thư mục mới",
+    "folderName": "Tên thư mục",
+    "folderNameRequired": "Hãy nhập tên thư mục",
+    "folderCreate": "Thêm",
+    "deleteFolder": "Xoá thư mục {{name}}",
+    "deleteFolderTitle": "Xoá thư mục \"{{name}}\"?",
+    "deleteFolderMessage": "Các dự án trong thư mục vẫn được giữ và ra khỏi thư mục.",
+    "noFolder": "Không có thư mục",
+    "join": "Tham gia",
+    "members": "{{n}} người",
+    "tasks": "{{n}} việc",
+    "restricted": "Riêng tư",
+    "project": {
+      "restricted": "Riêng tư (chỉ người được mời)"
+    },
+    "create": {
+      "entry": "Tạo nhóm",
+      "title": "Tạo nhóm",
+      "nameLabel": "Tên nhóm",
+      "nameRequired": "Hãy nhập tên nhóm",
+      "submit": "Tạo"
+    },
+    "roles": {
+      "ADMIN": "Quản trị viên",
+      "MEMBER": "Thành viên",
+      "GUEST": "Khách"
+    },
+    "peopleScreen": {
+      "title": "Thành viên",
+      "you": "Bạn",
+      "changeRole": "Đổi vai trò của {{name}}",
+      "remove": "Xoá {{name}}",
+      "removeTitle": "Xoá {{name}} khỏi nhóm?",
+      "removeMessage": "Họ sẽ mất quyền vào mọi dự án của nhóm.",
+      "removeConfirm": "Xoá",
+      "leave": "Rời nhóm",
+      "leaveTitle": "Rời nhóm \"{{name}}\"?",
+      "leaveMessage": "Bạn sẽ mất quyền vào mọi dự án của nhóm.",
+      "leaveConfirm": "Rời nhóm",
+      "pending": "Đang chờ tham gia",
+      "inviteTitle": "Mời vào nhóm",
+      "invitePlaceholder": "ten@vi-du.com",
+      "inviteSubmit": "Mời",
+      "invited": "Đã gửi lời mời tới {{email}}",
+      "emailInvalid": "Hãy nhập email hợp lệ",
+      "roleLabel": "Vai trò",
+      "copyLink": "Sao chép liên kết nhóm",
+      "linkCopied": "Đã sao chép liên kết",
+      "resetLink": "Đặt lại liên kết",
+      "disableLink": "Tắt liên kết",
+      "linkHint": "Người vào bằng liên kết sẽ là thành viên.",
+      "revoke": "Thu hồi lời mời gửi tới {{email}}"
+    },
+    "browse": {
+      "title": "Nhóm",
+      "invitations": "Lời mời",
+      "join": "Tham gia bằng liên kết hoặc mã"
+    }
+  }
+}

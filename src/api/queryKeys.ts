@@ -65,6 +65,24 @@ export const queryKeys = {
     all: ['insights'] as const,
     project: (projectId: string) => ['insights', 'project', projectId] as const,
   },
+  /** M8a: sharing of one project + the invitations sent to me. No realtime: refreshed on open + pull to refresh. */
+  sharing: {
+    all: ['sharing'] as const,
+    members: (projectId: string) => ['sharing', 'members', projectId] as const,
+    invitations: (projectId: string) => ['sharing', 'invitations', projectId] as const,
+    inviteLink: (projectId: string) => ['sharing', 'inviteLink', projectId] as const,
+    mine: () => ['sharing', 'mine'] as const,
+  },
+  /** M8a team workspaces. */
+  workspaces: {
+    all: ['workspaces'] as const,
+    list: () => ['workspaces', 'list'] as const,
+    members: (workspaceId: string) => ['workspaces', 'members', workspaceId] as const,
+    invitations: (workspaceId: string) => ['workspaces', 'invitations', workspaceId] as const,
+    inviteLink: (workspaceId: string) => ['workspaces', 'inviteLink', workspaceId] as const,
+    projects: (workspaceId: string) => ['workspaces', 'projects', workspaceId] as const,
+    folders: (workspaceId: string) => ['workspaces', 'folders', workspaceId] as const,
+  },
 };
 
 /** Query roots touched by writes (M2 added 'labels', 'filters', 'search', 'viewOptions'). */
@@ -82,6 +100,8 @@ export const DATA_ROOTS: ReadonlySet<string> = new Set([
   'productivity',
   'activity',
   'insights',
+  'sharing',
+  'workspaces',
 ]);
 
 export interface InvalidateOptions {

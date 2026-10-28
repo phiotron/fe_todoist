@@ -31,6 +31,11 @@ import { EmailAddressDialog } from '../email/EmailAddressDialog';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { useAddButtonPlacement } from '../navMenu/useNavigationSettings';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
+import { useSnackbar } from '../../components/Snackbar';
+import { MoveToTeamSheet } from '../sharing/MoveToTeamSheet';
+import { canMoveToTeam, sharingOf } from '../sharing/sharingRules';
+import { useJoinProject, useLeaveProject } from '../sharing/useSharing';
+import { useHasTeam } from '../team/useTeam';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
 import { useProjectTemplateMenu } from '../templates/useProjectTemplateMenu';
@@ -72,7 +77,9 @@ function ProjectBody({
   const { t } = useTranslation();
   const selection = useTaskSelection();
   const addButtonPlacement = useAddButtonPlacement();
-  const readOnly = isProjectReadOnly(project);
+  const archived = isProjectReadOnly(project);
+  const sharing = sharingOf(project); // M8a: a team project I have not joined is a read-only preview until Join
+  const readOnly = archived || sharing.preview;
   const body = useProjectRows({ projectId: project.id, readOnly, display });
   const { all } = useProjects();
   const favorite = useSetProjectFavorite();
@@ -81,6 +88,12 @@ function ProjectBody({
   const remove = useDeleteProject();
   const reorderProject = useReorderProject();
   const copyLink = useCopyLink();
+  const joinProject = useJoinProject();
+  const leaveProject = useLeaveProject();
+  const hasTeam = useHasTeam();
+  const snackbar = useSnackbar();
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -103,7 +116,7 @@ function ProjectBody({
   const counts = deleteImpact(project);
   const children = useMemo(() => projectTreeRows(all).filter((row) => row.project.parentId === project.id), [all, project.id]);
   const noSectionRoots = body.groups.find((group) => group.section === null)?.rootTasks.length ?? 0;
-  const canAddSubproject = !project.isInbox && !readOnly && projectDepth(all, project.id) < MAX_PROJECT_DEPTH;
+  const canAddSubproject = !project.isInbox && !readOnly && !sharing.isTeamProject && projectDepth(all, project.id) < MAX_PROJECT_DEPTH;
 
   const rows = useMemo(
     () =>
@@ -124,6 +137,12 @@ function ProjectBody({
       disabled: !canAddSubproject,
       onPress: () => router.push({ pathname: '/project-form', params: { parentId: project.id } }),
     });
+  }
+  if (sharing.canShare) {
+    items.push({ key: 'share', label: t('sharing.menu.share'), icon: 'user-plus', onPress: () => router.push({ pathname: '/project-share/[id]', params: { id: project.id } }) });
+  }
+  if (sharing.canJoin) {
+    items.push({ key: 'join', label: t('sharing.menu.join'), icon: 'log-in', requiresOnline: true, onPress: () => joinProject.mutate(project.id) });
   }
   if (!readOnly) {
     items.push({ key: 'add-section', label: t('projectScreen.menuAddSection'), icon: 'plus-square', requiresOnline: true, onPress: body.actions.addSection });
@@ -174,8 +193,13 @@ function ProjectBody({
         },
       });
       items.push(...templateMenu.items);
+      if (sharing.canManage && canMoveToTeam(project, children.length > 0) && hasTeam) {
+        items.push({ key: 'move-to-team', label: t('sharing.menu.moveToTeam'), icon: 'users', requiresOnline: true, onPress: () => setMoveOpen(true) });
+      }
       // Archive asks nothing: it hides the project (with its sub-projects) and can be undone from Browse.
-      items.push({ key: 'archive', label: t('projectScreen.menuArchive'), icon: 'archive', requiresOnline: true, onPress: () => archive.mutate(project.id, { onSuccess: onLeave }) });
+      if (sharing.canManage) {
+        items.push({ key: 'archive', label: t('projectScreen.menuArchive'), icon: 'archive', requiresOnline: true, onPress: () => archive.mutate(project.id, { onSuccess: onLeave }) });
+      }
     }
   }
   // M10: Activity log of the project (the Inbox is a project too) and, for projects, Insights.
@@ -183,14 +207,23 @@ function ProjectBody({
   if (!project.isInbox) {
     items.push({ key: 'insights', label: t('insights.menu'), icon: 'bar-chart-2', requiresOnline: true, onPress: () => router.push({ pathname: '/project-insights', params: { id: project.id } }) });
   }
-  if (!project.isInbox) {
+  if (sharing.canLeave) {
+    items.push({ key: 'leave', label: t('sharing.menu.leave'), icon: 'log-out', requiresOnline: true, onPress: () => { leaveProject.reset(); setLeaveOpen(true); } });
+  }
+  if (!project.isInbox && sharing.canManage) {
     items.push({ key: 'delete', label: t('projectScreen.menuDelete'), icon: 'trash-2', destructive: true, requiresOnline: true, onPress: () => { remove.reset(); setDeleteOpen(true); } });
   }
 
-  const actionError = [favorite.error, archive.error, unarchive.error].find(Boolean);
+  const actionError = [favorite.error, archive.error, unarchive.error, joinProject.error].find(Boolean);
   const header = (
     <>
-      {readOnly ? (
+      {sharing.preview && !archived ? (
+        <View style={styles.banner} testID="project-preview-banner">
+          <Text style={[type.bodySmall, styles.bannerText]}>{t('sharing.preview.banner')}</Text>
+          <AppButton variant="outline" size="sm" label={t('sharing.preview.join')} requiresOnline busy={joinProject.isPending} onPress={() => joinProject.mutate(project.id)} testID="project-join" />
+        </View>
+      ) : null}
+      {archived ? (
         <View style={styles.banner} testID="project-archived-banner">
           <Text style={[type.bodySmall, styles.bannerText]}>{t('projectScreen.archivedBanner')}</Text>
           <AppButton
@@ -237,6 +270,24 @@ function ProjectBody({
       {templateMenu.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
       <EmailAddressDialog visible={emailOpen} target={{ kind: 'project', id: project.id }} onClose={() => setEmailOpen(false)} testID="project-email" />
+      <ConfirmDialog
+        visible={leaveOpen}
+        title={t('sharing.leave.title', { name: project.name })}
+        message={t('sharing.leave.message')}
+        confirmLabel={t('sharing.leave.confirm')}
+        destructive
+        busy={leaveProject.isPending}
+        error={leaveProject.error && !isNotFound(leaveProject.error) ? describeError(leaveProject.error).message : undefined}
+        onCancel={() => setLeaveOpen(false)}
+        onConfirm={() => leaveProject.mutate(project.id, { onSuccess: onLeave, onError: (error) => isNotFound(error) && onLeave() })}
+        testID="project-leave-dialog"
+      />
+      <MoveToTeamSheet
+        visible={moveOpen}
+        projectId={project.id}
+        onClose={() => setMoveOpen(false)}
+        onMoved={() => snackbar.show({ message: t('sharing.moveToTeam.moved') })}
+      />
       <DisplaySheet visible={displayOpen} viewKey={projectViewKey(project.id)} onClose={() => setDisplayOpen(false)} />
       <ConfirmDialog
         visible={deleteOpen}

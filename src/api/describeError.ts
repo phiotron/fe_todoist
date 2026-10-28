@@ -58,6 +58,8 @@ function limitMessage(limit: string | undefined, max: number | undefined): strin
       return i18n.t('errors.limit.reminders', { max: n });
     case 'TEMPLATES': // M11
       return i18n.t('templates.limitReached', { max: n });
+    case 'PROJECT_MEMBERS':
+      return i18n.t('errors.limit.projectMembers', { max: n });
     default:
       return i18n.t('errors.limit.other', { max: n });
   }

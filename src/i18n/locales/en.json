@@ -63,6 +63,7 @@
       "labels": "You can create at most {{max}} labels",
       "filters": "You can create at most {{max}} filters",
       "reminders": "You have reached the maximum of {{max}} reminders",
+      "projectMembers": "This project already has the maximum of {{max}} people (pending invitations count)",
       "other": "You have reached the maximum ({{max}})"
     }
   }

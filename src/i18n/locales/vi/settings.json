@@ -5,6 +5,10 @@
     "saved": "Đã lưu",
     "saveFailed": "Chưa lưu được lên máy chủ. Lựa chọn vẫn được giữ trên máy này và sẽ tự gửi lại lần mở app sau.",
     "pendingNotice": "Có thay đổi chưa lưu lên máy chủ, app sẽ tự gửi lại khi mở lần sau.",
+    "autoAccept": {
+      "title": "Tự động chấp nhận lời mời",
+      "hint": "Tự tham gia dự án và nhóm bạn được mời mà không cần xác nhận từng lời mời."
+    },
     "pages": {
       "account": "Tài khoản",
       "general": "Chung",
