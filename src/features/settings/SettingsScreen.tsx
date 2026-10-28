@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+﻿import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
@@ -65,6 +65,7 @@ export function SettingsScreen() {
       />
       <SettingsLinkRow testID="settings-row-navigation" icon="layout" label={t('settings.pages.navigation')} href="/settings/navigation" />
       <SettingsLinkRow testID="settings-row-navigation-menu" icon="menu" label={t('navMenu.title')} href="/settings/navigation-menu" />
+      <SettingsLinkRow testID="settings-row-quick-add" icon="plus-circle" label={t('quickAdd.settings.row')} href="/settings/quick-add" />
       <ResetDefaultsSection />
       <SignOutSection />
     </SettingsPage>

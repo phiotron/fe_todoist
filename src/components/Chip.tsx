@@ -17,10 +17,12 @@ export interface ChipProps {
   disabled?: boolean;
   testID?: string;
   accessibilityLabel?: string;
+  /** M6b Quick Add "Show action labels" off: only the icon is drawn (the label stays the accessibility label). */
+  iconOnly?: boolean;
 }
 
 /** .chip: secondary control (date, priority, project, deadline…). */
-export function Chip({ label, icon, color, selected = false, large = false, onPress, disabled, testID, accessibilityLabel }: ChipProps) {
+export function Chip({ label, icon, color, selected = false, large = false, onPress, disabled, testID, accessibilityLabel, iconOnly = false }: ChipProps) {
   const styles = useThemedStyles(createChipStyles);
   const { palette } = useTheme();
   const textColor = selected ? palette.acc2 : (color ?? palette.ink2);
@@ -41,9 +43,11 @@ export function Chip({ label, icon, color, selected = false, large = false, onPr
       ]}
     >
       {icon ? <Feather name={icon} size={size.iconSmall} color={textColor} /> : null}
-      <Text style={[type.chip, { color: textColor }]} numberOfLines={1}>
-        {label}
-      </Text>
+      {iconOnly && icon ? null : (
+        <Text style={[type.chip, { color: textColor }]} numberOfLines={1}>
+          {label}
+        </Text>
+      )}
     </Pressable>
   );
 }

@@ -3,6 +3,7 @@ import { requestsTo, type ApiRoutes } from '../../../test/apiRoutes';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeTask } from '../../../test/m1Fixtures';
 import { makeLabel } from '../../../test/m2Fixtures';
+import { nameText, quickAddSettingsRoute } from '../../../test/quickAddFixtures';
 import { renderSignedIn } from '../../../test/screen';
 import { NO_DUE } from '../../schedule/dueValue';
 import { buildCreateBody } from '../buildTask';
@@ -18,6 +19,7 @@ jest.mock('../../auth/useUserTimeZone', () => ({
 }));
 
 const routes: ApiRoutes = {
+  ...quickAddSettingsRoute(),
   'GET /api/v1/projects': () => jsonResponse(200, [inboxProject]),
   'GET /api/v1/projects/p-inbox/sections': () => jsonResponse(200, []),
   'GET /api/v1/labels': () => jsonResponse(200, [makeLabel({ id: 'l-1', name: 'gap' })]),
@@ -54,7 +56,7 @@ describe('Quick Add Labels chip', () => {
       labelIds: ['l-1'],
     });
     // Like the date and priority chips, the labels stay for the next task.
-    await waitFor(() => expect(screen.getByTestId('quick-add-name').props.value).toBe(''));
+    await waitFor(() => expect(nameText()).toBe(''));
     expect(screen.getByTestId('quick-add-label')).toHaveTextContent(/gap/);
   });
 

@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { requestsTo } from '../../../test/apiRoutes';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeTask } from '../../../test/m1Fixtures';
+import { quickAddSettingsRoute } from '../../../test/quickAddFixtures';
 import { renderSignedIn } from '../../../test/screen';
 import { QuickAddSheet } from '../../quickAdd/QuickAddSheet';
 
@@ -24,6 +25,7 @@ describe('Quick Add reminders', () => {
   it('creates the reminders of a task added from Quick Add', async () => {
     jest.mocked(DateTimePickerAndroid.open).mockClear();
     const { fetchMock } = await renderSignedIn(<QuickAddSheet params={{}} />, {
+      ...quickAddSettingsRoute(),
       'GET /api/v1/projects': () => jsonResponse(200, [inboxProject]),
       'GET /api/v1/projects/p-inbox/sections': () => jsonResponse(200, []),
       'POST /api/v1/tasks': () => jsonResponse(201, makeTask({ id: 't-9', content: 'Gọi khách' })),

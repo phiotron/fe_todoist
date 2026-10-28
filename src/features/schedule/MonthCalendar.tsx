@@ -20,6 +20,8 @@ interface MonthCalendarProps {
   onSelectDay: (dateKey: string) => void;
   onMonthChange: (monthKey: string) => void;
   testID: string;
+  /** M6b Date sheet: open tasks per day (yyyy-MM-dd → n), drawn small under the day; absent / 0 = nothing. */
+  dayCounts?: Readonly<Record<string, number>>;
 }
 
 function shiftMonth(month: string, delta: number): string {
@@ -29,7 +31,18 @@ function shiftMonth(month: string, delta: number): string {
 }
 
 /** M-Schedule month grid: 44px cells, selected day = 40px accent circle, past days muted (still selectable). */
-export function MonthCalendar({ month, selected, today, minDate, maxDate, startDay, onSelectDay, onMonthChange, testID }: MonthCalendarProps) {
+export function MonthCalendar({
+  month,
+  selected,
+  today,
+  minDate,
+  maxDate,
+  startDay,
+  onSelectDay,
+  onMonthChange,
+  testID,
+  dayCounts,
+}: MonthCalendarProps) {
   const styles = useThemedStyles(createMonthCalendarStyles);
   // Redraw when the user changes the date / time format (the formatting functions read the same store).
   useDisplayPrefs();
@@ -94,6 +107,11 @@ export function MonthCalendar({ month, selected, today, minDate, maxDate, startD
                     {Number(day.slice(8))}
                   </Text>
                 </View>
+                {dayCounts?.[day] ? (
+                  <Text testID={`${testID}-count-${day}`} style={styles.count}>
+                    {dayCounts[day]}
+                  </Text>
+                ) : null}
               </Pressable>
             ) : (
               <View key={`empty-${column}`} style={styles.cell} />
@@ -124,5 +142,6 @@ function createMonthCalendarStyles(palette: Palette) {
     past: { color: palette.mute },
     today: { fontFamily: fonts.bold, color: palette.acc },
     selectedText: { fontFamily: fonts.bold, color: palette.onacc },
+    count: { ...type.caption, position: 'absolute', bottom: 0, color: palette.mute, fontSize: 9, lineHeight: 10 },
   });
 }

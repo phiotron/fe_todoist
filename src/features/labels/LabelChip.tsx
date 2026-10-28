@@ -13,10 +13,19 @@ interface LabelChipProps {
   /** 36 high like the other chips of the task sheet / Quick Add sheet. */
   large?: boolean;
   testID?: string;
+  /** M6b Quick Add "Show action labels" off: icon only while no label is chosen. */
+  iconOnly?: boolean;
 }
 
 /** "Labels" chip of the task sheet and Quick Add (M-TaskDetail / M-AddTask chip row). */
-export function LabelChip({ labelIds, onChange, disabled = false, large = false, testID = 'label-chip' }: LabelChipProps) {
+export function LabelChip({
+  labelIds,
+  onChange,
+  disabled = false,
+  large = false,
+  testID = 'label-chip',
+  iconOnly = false,
+}: LabelChipProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const labels = useLabelMap(labelIds.length > 0 || open);
@@ -31,6 +40,7 @@ export function LabelChip({ labelIds, onChange, disabled = false, large = false,
         disabled={disabled}
         onPress={() => setOpen(true)}
         testID={testID}
+        iconOnly={iconOnly && chosen.length === 0}
       />
       <LabelPickerSheet
         visible={open}
