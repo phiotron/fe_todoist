@@ -41,14 +41,15 @@ describe('browseShortcuts (M3x Navigation menu)', () => {
   const keys = (items: readonly (typeof ALL)[number][], navTabs: string[]) =>
     browseShortcuts(items, navTabs).map((shortcut) => shortcut.key);
 
-  it('default menu + default tab bar: only Filters & Labels, then Completed', () => {
-    expect(keys(ALL, ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'])).toEqual(['filters-labels', 'completed']);
+  it('default menu + default tab bar: Filters & Labels, Browse templates (M11), then Completed', () => {
+    expect(keys(ALL, ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'])).toEqual(['filters-labels', 'templates', 'completed']); // M11: Browse templates has a screen
   });
 
-  it('follows the menu order and skips Reporting / Browse templates (no screen yet)', () => {
+  it('follows the menu order and skips Reporting (no screen yet; M10)', () => {
     expect(keys(['REPORTING', 'UPCOMING', 'INBOX', 'BROWSE_TEMPLATES'], ['SEARCH', 'FILTERS_LABELS', 'BROWSE'])).toEqual([
       'upcoming',
       'inbox',
+      'templates',
       'completed',
     ]);
   });
@@ -98,6 +99,6 @@ describe('Browse with Navigation menu settings (M3x)', () => {
     await renderBrowse({ navTabs: ['TODAY', 'UPCOMING', 'BROWSE'] });
 
     expect(await screen.findByTestId('browse-shortcut-inbox')).toBeOnTheScreen();
-    expect(shortcutIds()).toEqual(['browse-shortcut-inbox', 'browse-shortcut-filters-labels', 'browse-shortcut-completed']);
+    expect(shortcutIds()).toEqual(['browse-shortcut-inbox', 'browse-shortcut-filters-labels', 'browse-shortcut-templates', 'browse-shortcut-completed']);
   });
 });

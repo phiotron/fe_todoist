@@ -59,6 +59,7 @@ import { HighlightedNameInput } from './HighlightedNameInput';
 import { AVAILABLE_CHIPS, CHIP_META, readQuickAddPrefs, type QuickAddChip } from './quickAddChips';
 import { backspacedToken, pastedLines, tappedToken } from './quickAddText';
 import type { QuickAddParams } from './quickAddTarget';
+import type { RecurrenceSpec } from '../../lib/recurrence/types';
 import { recurrenceLabel } from './recurrenceLabel';
 import { parsedProjectId, resolveQuickAdd, type ManualChoice, type ResolvedQuickAdd } from './resolveQuickAdd';
 
@@ -93,6 +94,8 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   const [priority, setPriority] = useState(DEFAULT_PRIORITY);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<string | null>(null);
+  // M6c: the rule picked in the Date sheet (a rule typed as "every …" wins while it is recognised).
+  const [manualRepeat, setManualRepeat] = useState<RecurrenceSpec | null>(null);
   const [due, setDue] = useState<DueValue>(() => (params.dueDate ? { ...NO_DUE, dueDate: params.dueDate } : NO_DUE));
   const [target, setTarget] = useState<{ projectId?: string; sectionId: string | null }>({
     projectId: params.projectId,
@@ -144,6 +147,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
     today,
   });
 
+  const repeatSpec = resolved.recurrence ?? manualRepeat ?? undefined;
   const project = resolved.projectId ? byId.get(resolved.projectId) : undefined;
   const sectionName = sections.find((section) => section.id === resolved.sectionId)?.name;
   const projectLabel = project ? projectDisplayName(project) : '';
@@ -220,6 +224,7 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
       due: item.due,
       labelIds: [...item.labelIds, ...createdLabels],
       deadline: item.deadline,
+      recurrence: item.recurrence ?? manualRepeat,
     });
     const createdTask = await create.mutateAsync({ body, idempotencyKey: keys.keyFor(body) });
     keys.reset();
@@ -426,11 +431,11 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
         ) : null}
         <View style={styles.chips}>
           {shownChips.map(chipFor)}
-          {resolved.recurrence ? (
+          {repeatSpec ? (
             <Chip
               large
               icon="repeat"
-              label={t('quickAdd.repeat', { rule: recurrenceLabel(resolved.recurrence, t) })}
+              label={t('quickAdd.repeat', { rule: recurrenceLabel(repeatSpec, t) })}
               selected
               testID="quick-add-repeat"
             />
@@ -444,7 +449,6 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
             testID="quick-add-more"
           />
         </View>
-        {resolved.recurrence ? <Text style={styles.hint}>{t('quickAdd.repeatPending')}</Text> : null}
         {parse.assignee ? <Text style={styles.hint}>{t('quickAdd.assigneeLater')}</Text> : null}
         {notice ? (
           <Text testID="quick-add-notice" style={styles.notice}>
@@ -488,9 +492,11 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
       <DateSheet
         visible={overlay === 'date'}
         value={resolved.due}
-        onSelect={(next) => {
+        repeat={repeatSpec ?? null}
+        onSelect={(next, rule) => {
           dismissKinds('date');
           setDue(next);
+          if (rule !== undefined) setManualRepeat(rule);
         }}
         onClose={() => setOverlay('none')}
         testID="quick-add-schedule"

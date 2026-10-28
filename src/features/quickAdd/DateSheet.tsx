@@ -16,6 +16,10 @@ import { useNow } from '../../lib/useNow';
 import { size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
+import { describeRecurrence } from '../../lib/recurrence/describe';
+import { reanchor } from '../../lib/recurrence/presets';
+import type { RecurrenceSpec } from '../../lib/recurrence/types';
+import { RepeatSheet } from '../recurrence/RepeatSheet';
 import { MonthCalendar } from '../schedule/MonthCalendar';
 import {
   DURATION_OPTIONS,
@@ -33,7 +37,10 @@ import { useDayCounts } from './useDayCounts';
 export interface DateSheetProps {
   visible: boolean;
   value: DueValue;
-  onSelect: (value: DueValue) => void;
+  /** M6c: `repeat` (2nd argument) is the rule to keep with the due: null = does not repeat; given only when the `repeat` prop is. */
+  onSelect: (value: DueValue, repeat?: RecurrenceSpec | null) => void;
+  /** M6c: the current rule (null = none). undefined = no Repeat row. */
+  repeat?: RecurrenceSpec | null;
   onClose: () => void;
   testID?: string;
 }
@@ -52,7 +59,7 @@ interface Preset {
  * Next week / No date), a month calendar with the number of open tasks per day, Time and Duration tabs, Save.
  * Repeat arrives with M6c. Presets apply at once (keeping time and duration); the rest waits for Save.
  */
-export function DateSheet({ visible, value, onSelect, onClose, testID = 'date-sheet' }: DateSheetProps) {
+export function DateSheet({ visible, value, onSelect, repeat, onClose, testID = 'date-sheet' }: DateSheetProps) {
   const styles = useThemedStyles(createDateSheetStyles);
   const prefs = useDisplayPrefs();
   const { palette } = useTheme();
@@ -66,6 +73,11 @@ export function DateSheet({ visible, value, onSelect, onClose, testID = 'date-sh
   const [typed, setTyped] = useState('');
   const [tab, setTab] = useState<'time' | 'duration'>('time');
   const counts = useDayCounts(month, visible);
+  const repeatEnabled = repeat !== undefined;
+  const [pendingRepeat, setPendingRepeat] = useState<RecurrenceSpec | null>(repeat ?? null);
+  // The day the rule was chosen for (it follows the day if that changes before Save); null = rule untouched.
+  const [repeatBuiltFor, setRepeatBuiltFor] = useState<string | null>(null);
+  const [repeatOpen, setRepeatOpen] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
@@ -73,6 +85,9 @@ export function DateSheet({ visible, value, onSelect, onClose, testID = 'date-sh
     setMonth(taskDateKey(value) ?? today);
     setTyped('');
     setTab('time');
+    setPendingRepeat(repeat ?? null);
+    setRepeatBuiltFor(null);
+    setRepeatOpen(false);
     // Reset only when the sheet opens: the caller's object may change identity on every render.
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -103,8 +118,21 @@ export function DateSheet({ visible, value, onSelect, onClose, testID = 'date-sh
   const dayCount = day ? (counts[day] ?? 0) : 0;
 
   function apply(next: DueValue) {
-    onSelect(next);
+    if (repeatEnabled) {
+      const nextDay = taskDateKey(next);
+      let rule = nextDay === null ? null : pendingRepeat;
+      if (rule && repeatBuiltFor && nextDay) rule = reanchor(rule, repeatBuiltFor, nextDay);
+      onSelect(next, rule);
+    } else {
+      onSelect(next);
+    }
     onClose();
+  }
+
+  function openRepeat() {
+    // A rule needs a day: without one the sheet takes today.
+    if (day === null) setPending((current) => withDate(current, today));
+    setRepeatOpen(true);
   }
 
   function save() {
@@ -147,6 +175,7 @@ export function DateSheet({ visible, value, onSelect, onClose, testID = 'date-sh
   );
 
   return (
+    <>
     <BottomSheet visible={visible} onClose={onClose} header={header} testID={`${testID}-sheet`}>
       <TextInput
         testID={`${testID}-input`}
@@ -246,7 +275,31 @@ export function DateSheet({ visible, value, onSelect, onClose, testID = 'date-sh
       ) : (
         <Text style={styles.hint}>{t('quickAdd.dateSheet.needsTime')}</Text>
       )}
+      {repeatEnabled ? (
+        <Pressable testID={`${testID}-repeat`} accessibilityRole="button" onPress={openRepeat} style={styles.row}>
+          <Feather name="repeat" size={size.icon} color={pendingRepeat ? palette.acc : palette.ink2} />
+          <Text style={[type.bodyStrong, styles.rowLabel]}>{t('recurrence.row')}</Text>
+          <Text style={styles.rowHint} numberOfLines={1} testID={`${testID}-repeat-value`}>
+            {pendingRepeat ? describeRecurrence(pendingRepeat) : t('recurrence.none')}
+          </Text>
+        </Pressable>
+      ) : null}
     </BottomSheet>
+    {repeatEnabled ? (
+      <RepeatSheet
+        visible={visible && repeatOpen}
+        dueDay={day ?? today}
+        due={pending.dueDatetime ?? day ?? today}
+        value={pendingRepeat}
+        onSelect={(spec) => {
+          setPendingRepeat(spec);
+          setRepeatBuiltFor(spec ? (day ?? today) : null);
+        }}
+        onClose={() => setRepeatOpen(false)}
+        testID={`${testID}-repeat-sheet`}
+      />
+    ) : null}
+    </>
   );
 }
 

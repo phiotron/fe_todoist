@@ -15,7 +15,7 @@ export const LAYOUTS: readonly Layout[] = ['LIST', 'BOARD', 'CALENDAR'];
  * M7: the "Future occurrences" switch of Upcoming only makes sense with recurring tasks (M6c). Until M6c is merged the
  * switch stays hidden; the saved value is still kept and sent back.
  */
-export const FUTURE_OCCURRENCES_ENABLED = false;
+export const FUTURE_OCCURRENCES_ENABLED = true;
 
 export const DUE_FILTERS: readonly DueFilter[] = [
   'TODAY',

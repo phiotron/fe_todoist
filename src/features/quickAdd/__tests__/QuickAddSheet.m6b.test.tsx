@@ -141,7 +141,7 @@ describe('Quick Add — English syntax (M6b)', () => {
     expect(posted(fetchMock)[0].body).toMatchObject({ content: 'Gym', dueDatetime: '2026-10-24T17:00:00' });
   });
 
-  it('"every monday" shows a Repeat chip and, until M6c, sends only the first date', async () => {
+  it('"every monday" shows a Repeat chip and sends the rule with the first date (M6c)', async () => {
     const { fetchMock } = await open();
     await type('Water plants every monday');
 
@@ -153,6 +153,9 @@ describe('Quick Add — English syntax (M6b)', () => {
       content: 'Water plants',
       priority: 4,
       dueDate: '2026-10-26',
+      recurrenceRule: 'FREQ=WEEKLY;BYDAY=MO',
+      recurrenceFromCompletion: false,
+      dueString: expect.any(String),
     });
   });
 

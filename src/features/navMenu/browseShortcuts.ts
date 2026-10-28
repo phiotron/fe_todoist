@@ -2,14 +2,14 @@ import type { NavMenuItem } from '../../api/navigationSettings';
 import { BROWSE_SHORTCUTS, type BrowseShortcut } from '../browse/browseBlocks';
 import { browseMenuItems } from './navMenuModel';
 
-/** Browse shortcut drawn for each menu item that has a screen (Reporting / Browse templates come with M10 / M11). */
+/** Browse shortcut drawn for each menu item that has a screen (Reporting comes with M10; Browse templates is M11). */
 const SHORTCUT_KEY: Record<NavMenuItem, string | null> = {
   INBOX: 'inbox',
   TODAY: 'today',
   UPCOMING: 'upcoming',
   FILTERS_LABELS: 'filters-labels',
   REPORTING: null,
-  BROWSE_TEMPLATES: null,
+  BROWSE_TEMPLATES: 'templates',
 };
 
 /** Taskly's Completed screen is not a Todoist menu item: always offered, after the menu (ADR 0006 keeps it). */

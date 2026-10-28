@@ -1,4 +1,7 @@
 import type { CreateTaskRequest } from '../../api/models';
+import { describeRecurrence } from '../../lib/recurrence/describe';
+import { toRRule } from '../../lib/recurrence/rrule';
+import type { RecurrenceSpec } from '../../lib/recurrence/types';
 import type { DueValue } from '../schedule/dueValue';
 
 export interface QuickAddState {
@@ -13,13 +16,12 @@ export interface QuickAddState {
   labelIds?: string[];
   /** M6b: deadline chip / {…} in the name (yyyy-MM-dd); sent only when set. */
   deadline?: string | null;
+  /** M6c: repeat rule ("every monday" typed or picked in the Date sheet); sent only with a due date. */
+  recurrence?: RecurrenceSpec | null;
 }
 
-/**
- * M6b parses "every …" but the backend only accepts recurrenceRule from M6c (V9): until then the task is created for
- * its first date only. Turn on when M6c is merged (then send toRRule(spec), recurrenceFromCompletion, dueString).
- */
-export const SEND_RECURRENCE = false;
+/** M6c is merged: the repeat rule travels with the task (recurrenceRule + recurrenceFromCompletion + dueString). */
+export const SEND_RECURRENCE = true;
 
 /**
  * POST tasks body (spec 12.3): only what was set; the whole due travels together; `afterId` is never sent (absent = end of
@@ -36,5 +38,10 @@ export function buildCreateBody(state: QuickAddState): CreateTaskRequest {
   if (state.due.durationMinutes) body.durationMinutes = state.due.durationMinutes;
   if (state.labelIds && state.labelIds.length > 0) body.labelIds = [...state.labelIds];
   if (state.deadline) body.deadlineDate = state.deadline;
+  if (SEND_RECURRENCE && state.recurrence && (state.due.dueDate || state.due.dueDatetime)) {
+    body.recurrenceRule = toRRule(state.recurrence);
+    body.recurrenceFromCompletion = state.recurrence.fromCompletion;
+    body.dueString = describeRecurrence(state.recurrence);
+  }
   return body;
 }

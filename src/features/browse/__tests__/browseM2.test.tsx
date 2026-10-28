@@ -38,7 +38,7 @@ describe('Browse (M2 parts of M-Browse)', () => {
     await renderSignedIn(<BrowseScreen />, routes);
     await screen.findByTestId('browse-shortcut-filters-labels');
     const order = screen.getAllByTestId(/^browse-shortcut-/).map((node) => node.props.testID);
-    expect(order).toEqual(['browse-shortcut-filters-labels', 'browse-shortcut-completed', 'browse-shortcut-templates']); // M3x dropped inbox/today, M11 added templates
+    expect(order).toEqual(['browse-shortcut-filters-labels', 'browse-shortcut-templates', 'browse-shortcut-completed']); // M3x dropped inbox/today, M11 added templates
   });
 
   it('lists favorite labels and filters with the projects and opens them', async () => {
