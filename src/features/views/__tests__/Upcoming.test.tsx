@@ -104,6 +104,7 @@ describe('UpcomingScreen', () => {
 
   it('a task completed a moment ago keeps its row but the day block does not count it (interim decision, see review notes)', async () => {
     await renderSignedIn(<UpcomingScreen />, {
+      ...viewOptionsRoutes(['UPCOMING']),
       'GET /api/v1/tasks': (request: { query: URLSearchParams }) =>
         jsonResponse(
           200,
@@ -232,7 +233,7 @@ describe('UpcomingScreen', () => {
   });
 
   describe('jump limit: today + 3 calendar months', () => {
-    const emptyRoutes = () => ({ 'GET /api/v1/tasks': () => jsonResponse(200, page([])) });
+    const emptyRoutes = () => ({ ...viewOptionsRoutes(['UPCOMING']), 'GET /api/v1/tasks': () => jsonResponse(200, page([])) });
     const upcomingWindows = (fetchMock: Parameters<typeof requestsTo>[0]) =>
       requestsTo(fetchMock, 'GET', '/api/v1/tasks')
         .filter((r) => r.query.get('view') === 'upcoming')

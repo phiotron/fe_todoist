@@ -62,6 +62,7 @@ describe('TodayScreen', () => {
   it('a completed overdue task stays visible but is not counted, and Reschedule stays while another overdue task is open', async () => {
     const done = '2026-10-23T02:59:00Z';
     await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () =>
         jsonResponse(
           200,
@@ -80,6 +81,7 @@ describe('TodayScreen', () => {
 
   it('when the last overdue task is completed the count drops to 0 and Reschedule disappears', async () => {
     await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () =>
         jsonResponse(
           200,
@@ -97,6 +99,7 @@ describe('TodayScreen', () => {
 
   it('a task completed a moment ago keeps its row but is not counted: the Today block and the subtitle count open tasks only (interim decision, see review notes)', async () => {
     await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
       'GET /api/v1/tasks': () =>
         jsonResponse(
           200,
