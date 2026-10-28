@@ -2,6 +2,8 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { viTranslation as vi } from '../../../i18n';
 import { tokenStore } from '../../../lib/tokenStore';
+import { routeApi, requestsTo } from '../../../test/apiRoutes';
+import { testUser } from '../../../test/fixtures';
 import { countRequests, jsonResponse, mockFetch, problem, requestAt } from '../../../test/http';
 import { deferred } from '../../../test/m3Routes';
 import { renderWithProviders } from '../../../test/render';
@@ -45,17 +47,22 @@ describe('ForgotPasswordScreen', () => {
   it('sends the trimmed email without a bearer token and shows the same neutral "check your email" state', async () => {
     await tokenStore.setTokens({ accessToken: 'acc-1', refreshToken: 'ref-1' });
     const fetchMock = mockFetch();
-    fetchMock.mockResolvedValueOnce(jsonResponse(200));
+    // Routed (not mockResolvedValueOnce): with a stored token the SessionProvider asks GET /me on mount, and that call
+    // must not consume the one answer meant for the reset request.
+    routeApi(fetchMock, {
+      'GET /api/v1/me': () => jsonResponse(200, testUser),
+      [`POST ${REQUEST_PATH}`]: () => jsonResponse(200),
+    });
     await renderWithProviders(<ForgotPasswordScreen />);
 
     await submit('  an@example.com ');
 
     expect((await screen.findByTestId('forgot-sent')).props.children).toBe(sentText('an@example.com'));
     expect(screen.getByText(vi.passwordReset.forgot.sentTitle)).toBeTruthy();
-    const request = requestAt(fetchMock, 0);
-    expect(request.url).toMatch(/\/api\/v1\/auth\/password-reset\/request$/);
-    expect(request.body).toEqual({ email: 'an@example.com' });
-    expect(request.headers.Authorization).toBeUndefined();
+    const requests = requestsTo(fetchMock, 'POST', REQUEST_PATH);
+    expect(requests).toHaveLength(1);
+    expect(requests[0].body).toEqual({ email: 'an@example.com' });
+    expect(requests[0].headers.Authorization).toBeUndefined();
   });
 
   it('after sending, goes on to the reset screen, back to log in, or sends the email again', async () => {

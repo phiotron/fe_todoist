@@ -41,6 +41,7 @@ describe('InboxScreen', () => {
       'GET /api/v1/projects/p-inbox': () => jsonResponse(200, inboxProject),
       'GET /api/v1/projects/p-inbox/sections': () => jsonResponse(200, []),
       'GET /api/v1/tasks': () => jsonResponse(200, page([makeTask({ id: 'i1', content: 'Việc trong Inbox' })])),
+      ...viewOptionsRoutes(['project:p-inbox']),
     });
 
     expect(await screen.findByText(vi.errors.unknown)).toBeOnTheScreen();
