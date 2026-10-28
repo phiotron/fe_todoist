@@ -40,6 +40,10 @@ export function makeTask(overrides: Partial<Task> = {}): Task {
     projectName: 'Inbox',
     parentContent: null,
     labelIds: [],
+    recurrenceRule: null,
+    recurrenceFromCompletion: false,
+    dueTimezone: null,
+    isRecurring: false,
     ...overrides,
   };
 }

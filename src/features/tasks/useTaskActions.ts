@@ -2,12 +2,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../../api/describeError';
-import type { CreateTaskRequest, MoveTaskRequest, Task, TaskBatchRequest, UpdateTaskRequest } from '../../api/models';
+import type {
+  CloseTaskRequest,
+  CreateTaskRequest,
+  MoveTaskRequest,
+  Task,
+  TaskBatchRequest,
+  TaskChangeResponse,
+  UpdateTaskRequest,
+} from '../../api/models';
 import { reorderApi } from '../../api/reorder';
 import { queryKeys } from '../../api/queryKeys';
 import { applyTaskChange } from '../../api/taskCache';
 import { tasksApi } from '../../api/tasks';
 import { useSnackbar } from '../../components/Snackbar';
+import { taskDateKey } from '../../lib/dates';
+import { formatDateKey } from '../../lib/dates/format';
 import { useIdempotencyKeys } from '../../lib/idempotency';
 import { useDataMutation } from '../../lib/useDataMutation';
 
@@ -17,8 +27,10 @@ import { useDataMutation } from '../../lib/useDataMutation';
  */
 export function useCloseTask() {
   const queryClient = useQueryClient();
-  return useDataMutation(async (taskId: string) => {
-    const change = await tasksApi.close(taskId);
+  return useDataMutation(async (arg: string | { taskId: string; body?: CloseTaskRequest }) => {
+    const { taskId, body } = typeof arg === 'string' ? { taskId: arg, body: undefined } : arg;
+    // M6c: a repeating task is NOT completed by a plain close — it moves to its next due (answer: completedAt null).
+    const change = await tasksApi.close(taskId, body);
     applyTaskChange(queryClient, change);
     return change;
   });
@@ -111,12 +123,34 @@ export function useCompleteWithUndo() {
     [snackbar],
   );
 
+  /** "Completed" line of the snackbar: a repeating task that moved on says when it comes next (M6c). */
+  const completedMessage = useCallback(
+    (change: TaskChangeResponse, forever: boolean) => {
+      const task = change.task;
+      if (task.isRecurring && task.completedAt === null) {
+        const day = taskDateKey(task);
+        if (day) {
+          return t('recurrence.completedNext', { date: formatDateKey(day, day.slice(0, 4) !== String(new Date().getFullYear())) });
+        }
+      }
+      return forever && task.completedAt !== null ? t('recurrence.completedForever') : t('taskList.completedOne');
+    },
+    [t],
+  );
+
+  /**
+   * `forever` (Complete forever) and `resetSubtasks` (Complete & reset sub-tasks) only matter for a repeating task; without
+   * them the call is a plain close (the server then follows the `resetSubtasks` setting). Undo is the same in every case.
+   */
   const complete = useCallback(
-    (taskId: string, options: { onError?: (error: unknown) => void } = {}) => {
-      closeTask(taskId).then(
-        () =>
+    (taskId: string, options: { onError?: (error: unknown) => void; forever?: boolean; resetSubtasks?: boolean } = {}) => {
+      const body: CloseTaskRequest = {};
+      if (options.forever) body.forever = true;
+      if (options.resetSubtasks !== undefined) body.resetSubtasks = options.resetSubtasks;
+      closeTask(Object.keys(body).length > 0 ? { taskId, body } : taskId).then(
+        (change) =>
           snackbar.show({
-            message: t('taskList.completedOne'),
+            message: completedMessage(change, options.forever === true),
             actionLabel: t('common.undo'),
             onAction: () => {
               reopenTask({ taskId, undo: true }).catch(showError);
@@ -125,7 +159,7 @@ export function useCompleteWithUndo() {
         (failure: unknown) => options.onError?.(failure),
       );
     },
-    [closeTask, reopenTask, showError, snackbar, t],
+    [closeTask, completedMessage, reopenTask, showError, snackbar, t],
   );
 
   const completeMany = useCallback(

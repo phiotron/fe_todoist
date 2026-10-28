@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ResetSubtasksSection } from '../recurrence/ResetSubtasksSection';
 import { LanguageSection } from './LanguageSection';
 import { SettingsPage } from './SettingsPage';
 import { SmartDateSection } from './SmartDateSection';
@@ -15,6 +16,7 @@ export function GeneralSettingsScreen() {
       <TimeZoneSection />
       <StartPageSection />
       <SmartDateSection />
+      <ResetSubtasksSection />
       <SwipeSection />
     </SettingsPage>
   );

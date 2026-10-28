@@ -58,12 +58,33 @@ interface M2TaskWriteFields {
   labelIds?: string[];
 }
 
-export type Task = Strict<Schemas['TaskResponse']> & M2TaskFields;
+/** M6c fields (contract 8.1) until types.gen.ts is regenerated from backend M6c; names equal the DTO TaskResponse. */
+interface M6cTaskFields {
+  /** RRULE rút gọn, canonical (backend `RecurrenceRule.format`); null = not repeating. */
+  recurrenceRule: string | null;
+  /** `every!`: the next due is counted from the day it is completed. */
+  recurrenceFromCompletion: boolean;
+  /** Fixed IANA zone of a timed due; null = floating. */
+  dueTimezone: string | null;
+  isRecurring: boolean;
+}
+interface M6cTaskWriteFields {
+  /** What the user typed (Quick Add), at most 150 characters; PATCH: null = clear. */
+  dueString?: string | null;
+  /** PATCH: absent = keep, null = stop repeating. A rule needs a due (400 `recurrence-requires-due`). */
+  recurrenceRule?: string | null;
+  recurrenceFromCompletion?: boolean;
+  /** Only the account's current zone, only with a time. */
+  dueTimezone?: string | null;
+}
+
+export type Task = Strict<Schemas['TaskResponse']> & M2TaskFields & M6cTaskFields;
 export type Project = Strict<Schemas['ProjectResponse']>;
 export type Section = Strict<Schemas['SectionResponse']>;
 export type Favorite = Strict<Schemas['FavoriteResponse']>;
 export type FavoriteTargetType = Favorite['targetType'];
-export type TaskChangeResponse = Strict<Schemas['TaskChangeResponse']>;
+/** `task` is the hand-extended Task (M6c fields) until types.gen.ts is regenerated from the backend. */
+export type TaskChangeResponse = Omit<Strict<Schemas['TaskChangeResponse']>, 'task'> & { task: Task };
 export type CascadedTask = TaskChangeResponse['cascaded'][number];
 export type ReorderResponse = Strict<Schemas['ReorderResponse']>;
 export type AffectedTasksResponse = Strict<Schemas['AffectedTasksResponse']>;
@@ -128,7 +149,8 @@ export type CreateTaskRequest = Nullable<
   Schemas['CreateTaskRequest'],
   'sectionId' | 'parentId' | 'dueDate' | 'dueDatetime' | 'durationMinutes' | 'deadlineDate' | 'afterId'
 > &
-  M2TaskWriteFields;
+  M2TaskWriteFields &
+  M6cTaskWriteFields;
 /**
  * PATCH tasks/{id}: the version the edit started from + changed fields only. Absent = keep, null = clear; sending
  * dueDate or dueDatetime replaces the whole due.
@@ -137,7 +159,15 @@ export type UpdateTaskRequest = Nullable<
   Schemas['UpdateTaskRequest'],
   'dueDate' | 'dueDatetime' | 'durationMinutes' | 'deadlineDate'
 > &
-  M2TaskWriteFields;
+  M2TaskWriteFields &
+  M6cTaskWriteFields;
+/** POST tasks/{id}/close body (M6c). Only meaningful for a repeating task; absent body = a plain close. */
+export interface CloseTaskRequest {
+  /** "Complete forever": ends the cycle, the task is really completed. */
+  forever?: boolean;
+  /** "Complete & reset sub-tasks": reopen the completed direct sub-tasks (≤ 30); absent = the `resetSubtasks` setting. */
+  resetSubtasks?: boolean;
+}
 /** POST tasks/{id}/move: `sectionId` / `parentId` null or absent = none; `afterId` absent = end of the container, null = first. */
 export type MoveTaskRequest = Nullable<Schemas['MoveTaskRequest'], 'sectionId' | 'parentId' | 'afterId'>;
 export type BatchAction = Schemas['BatchTasksRequest']['action'] | 'ADD_LABELS' | 'REMOVE_LABELS';

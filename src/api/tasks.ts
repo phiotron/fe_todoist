@@ -1,6 +1,7 @@
 import { apiFetch, buildQuery } from './client';
 import type {
   AffectedTasksResponse,
+  CloseTaskRequest,
   CreateTaskRequest,
   DisplayParams,
   MoveTaskRequest,
@@ -57,7 +58,8 @@ export const tasksApi = {
    * Open descendants complete too, in one `completion_batch_id` (the basis of Undo, spec 5.1). The answer lists them in
    * `cascaded` with their new version; feed it to `applyTaskChange` (taskCache.ts).
    */
-  close: (taskId: string) => apiFetch<TaskChangeResponse>(`${base(taskId)}/close`, { method: 'POST' }),
+  close: (taskId: string, body?: CloseTaskRequest) =>
+    apiFetch<TaskChangeResponse>(`${base(taskId)}/close`, { method: 'POST', body }),
   /** undo=true also reopens the descendants of the same completion batch (spec 5.1). */
   reopen: (taskId: string, undo = false) =>
     apiFetch<TaskChangeResponse>(`${base(taskId)}/reopen`, { method: 'POST', body: undo ? { undo: true } : undefined }),

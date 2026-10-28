@@ -27,6 +27,8 @@ export interface SettingsResponse {
   remindersEnabled?: boolean;
   /** Minutes before a timed task's due time; null = automatic reminders off. */
   autoReminderMinutes?: number | null;
+  /** M6c: reopen the completed direct sub-tasks (≤ 30) when a repeating task moves to its next due. Default false. */
+  resetSubtasks?: boolean;
 }
 
 /**

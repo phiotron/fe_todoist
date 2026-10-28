@@ -14,6 +14,35 @@ describe('task draft', () => {
       durationMinutes: null,
       deadlineDate: null,
       labelIds: [],
+      recurrenceRule: null,
+      recurrenceFromCompletion: false,
+    });
+  });
+
+  it('M6c: reads the repeat rule and sends it (with every!) only when it changes', () => {
+    const repeating = makeTask({
+      dueDate: '2026-10-24',
+      recurrenceRule: 'FREQ=WEEKLY;BYDAY=SA',
+      recurrenceFromCompletion: false,
+      isRecurring: true,
+    });
+    const draft = draftFromTask(repeating);
+    expect(draft).toMatchObject({ recurrenceRule: 'FREQ=WEEKLY;BYDAY=SA', recurrenceFromCompletion: false });
+    expect(draftChanges(repeating, draft)).toEqual({});
+    expect(draftChanges(repeating, { ...draft, recurrenceRule: 'FREQ=DAILY' })).toEqual({
+      recurrenceRule: 'FREQ=DAILY',
+      recurrenceFromCompletion: false,
+    });
+    expect(draftChanges(repeating, { ...draft, recurrenceFromCompletion: true })).toEqual({
+      recurrenceRule: 'FREQ=WEEKLY;BYDAY=SA',
+      recurrenceFromCompletion: true,
+    });
+    // "does not repeat": an explicit null, no every! flag
+    expect(draftChanges(repeating, { ...draft, recurrenceRule: null })).toEqual({ recurrenceRule: null });
+    // setting a rule on a plain task
+    expect(draftChanges(base, { ...draftFromTask(base), recurrenceRule: 'FREQ=DAILY' })).toEqual({
+      recurrenceRule: 'FREQ=DAILY',
+      recurrenceFromCompletion: false,
     });
   });
 

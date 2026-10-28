@@ -15,6 +15,7 @@ import enPasswordReset from './locales/en/passwordReset.json';
 import enProjectScreen from './locales/en/projectScreen.json';
 import enProjects from './locales/en/projects.json';
 import enQuickAdd from './locales/en/quickAdd.json';
+import enRecurrence from './locales/en/recurrence.json';
 import enReminders from './locales/en/reminders.json';
 import enReorder from './locales/en/reorder.json';
 import enSchedule from './locales/en/schedule.json';
@@ -39,6 +40,7 @@ import viPasswordReset from './locales/vi/passwordReset.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
 import viQuickAdd from './locales/vi/quickAdd.json';
+import viRecurrence from './locales/vi/recurrence.json';
 import viReminders from './locales/vi/reminders.json';
 import viReorder from './locales/vi/reorder.json';
 import viSearch from './locales/vi/search.json';
@@ -70,6 +72,7 @@ export const viTranslation = {
   ...viProjectScreen,
   ...viProjects,
   ...viQuickAdd,
+  ...viRecurrence,
   ...viReminders,
   ...viReorder,
   ...viSearch,
@@ -98,6 +101,7 @@ export const enTranslation = {
   ...enProjectScreen,
   ...enProjects,
   ...enQuickAdd,
+  ...enRecurrence,
   ...enReminders,
   ...enReorder,
   ...enSchedule,
