@@ -84,7 +84,7 @@ describe('LabelPickerSheet', () => {
     });
     await fireEvent.changeText(screen.getByTestId('label-picker-search'), 'khac');
     await fireEvent.press(screen.getByTestId('label-picker-create'));
-    expect(await screen.findByText('Đã có label cùng tên')).toBeTruthy();
+    expect(await screen.findByText('Đã có nhãn cùng tên')).toBeTruthy();
   });
 
   it('blocks a 101st label (spec 2.1: 100 labels per task)', async () => {

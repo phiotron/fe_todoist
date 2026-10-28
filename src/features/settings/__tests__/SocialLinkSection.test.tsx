@@ -67,7 +67,7 @@ describe('SocialLinkSection', () => {
     await fireEvent.press(screen.getByTestId('settings-facebook-link'));
 
     expect((await screen.findByTestId('settings-facebook-message')).props.children).toBe(
-      'Bản app này chưa được cấu hình đăng nhập Facebook',
+      'Bản ứng dụng này chưa được cấu hình đăng nhập Facebook',
     );
     expect(browser.opened).toEqual([]);
   });

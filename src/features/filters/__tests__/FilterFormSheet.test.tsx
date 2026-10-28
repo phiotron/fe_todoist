@@ -72,7 +72,7 @@ describe('FilterFormSheet', () => {
   it('requires a name and a query before any request', async () => {
     const { fetchMock } = await openForm({});
     await fireEvent.press(screen.getByTestId('filter-form-save'));
-    expect(await screen.findByText('Hãy nhập tên filter')).toBeTruthy();
+    expect(await screen.findByText('Hãy nhập tên bộ lọc')).toBeTruthy();
     expect(screen.getByText('Hãy nhập truy vấn')).toBeTruthy();
     expect(requestsTo(fetchMock, 'POST', '/api/v1/filters')).toHaveLength(0);
   });

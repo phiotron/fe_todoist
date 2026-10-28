@@ -8,7 +8,7 @@ describe('reminderLabel', () => {
   it('labels an absolute reminder with the account date and time format', () => {
     expect(reminderLabel({ type: 'ABSOLUTE', at: '2026-10-24T09:05:00' }, vi, DMY24)).toBe('24/10/2026 09:05');
     expect(reminderLabel({ type: 'ABSOLUTE', at: '2026-10-24T21:05' }, vi, { dateFormat: 'MDY', timeFormat: 'H12' }))
-      .toBe('10/24/2026 9:05 PM');
+      .toBe('10/24/2026 9:05 CH');
   });
 
   it('labels a relative reminder by its offset', () => {

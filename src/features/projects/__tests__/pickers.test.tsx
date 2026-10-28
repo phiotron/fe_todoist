@@ -41,7 +41,7 @@ describe('ProjectSectionPicker', () => {
       routes,
     );
     expect(await screen.findByText('Kế hoạch')).toBeOnTheScreen();
-    expect(screen.getByTestId('project-picker-project-p-inbox')).toHaveTextContent(/Inbox/);
+    expect(screen.getByTestId('project-picker-project-p-inbox')).toHaveTextContent(/Hộp thư đến/);
 
     await fireEvent.press(screen.getByTestId('project-picker-project-p1'));
     expect(await screen.findByText('Việc gấp')).toBeOnTheScreen();

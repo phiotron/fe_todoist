@@ -92,7 +92,7 @@ describe('useQuickAddReminders', () => {
       await result.current.attach('t-9');
     });
 
-    expect(result.current.error).toBe('Đã thêm task nhưng không thêm được 1 nhắc nhở');
+    expect(result.current.error).toBe('Đã thêm công việc nhưng không thêm được 1 nhắc nhở');
     expect(result.current.drafts).toEqual([]);
   });
 });

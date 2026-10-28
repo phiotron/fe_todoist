@@ -18,6 +18,7 @@ import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { projectDisplayName } from '../projects/appearance';
+import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { useProjects } from '../projects/useProjects';
 import { sharingOf } from '../sharing/sharingRules';
 import { useProjectMembers } from '../sharing/useSharing';
@@ -45,6 +46,7 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
   const styles = useThemedStyles(createStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
+  const projectLabel = useProjectNameLabel();
   const now = useNow();
   const timeZone = useUserTimeZone();
   const today = dateKeyInZone(now, timeZone);
@@ -169,7 +171,7 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
               : t(`activity.event.${item.objectType}.${item.eventType}`, { name: item.objectName })}
           </Text>
           {item.projectName && item.objectType !== 'PROJECT' ? (
-            <Text style={styles.itemMeta}>{t('activity.inProject', { project: item.projectName })}</Text>
+            <Text style={styles.itemMeta}>{t('activity.inProject', { project: projectLabel(item.projectId, item.projectName) })}</Text>
           ) : null}
         </View>
       </Pressable>

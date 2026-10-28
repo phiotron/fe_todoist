@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import i18n from '../../i18n';
 
 export type DateFormat = 'DMY' | 'MDY';
 export type TimeFormat = 'H24' | 'H12';
@@ -45,11 +46,16 @@ export function formatDate(dateKey: string, withYear: boolean, format: DateForma
   return withYear ? `${dayMonth}/${year}` : dayMonth;
 }
 
-/** "14:30" (H24) or "2:30 PM" (H12) from "HH:mm" or "HH:mm:ss". */
+/** 12-hour clock marker in the app language: "SA" / "CH" in Vietnamese, "AM" / "PM" in English. */
+export function meridiem(hours: number): string {
+  return i18n.t(hours < 12 ? 'dates.am' : 'dates.pm');
+}
+
+/** "14:30" (H24) or "2:30 CH" / "2:30 PM" (H12) from "HH:mm" or "HH:mm:ss". */
 export function formatTime(time: string, format: TimeFormat = current.timeFormat): string {
   const [hours, minutes] = time.split(':').map(Number);
   const mm = String(minutes).padStart(2, '0');
   if (format === 'H24') return `${String(hours).padStart(2, '0')}:${mm}`;
   const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-  return `${hour12}:${mm} ${hours < 12 ? 'AM' : 'PM'}`;
+  return `${hour12}:${mm} ${meridiem(hours)}`;
 }

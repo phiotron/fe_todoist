@@ -29,7 +29,7 @@ describe('comment count on a task row', () => {
     await render(<TaskMeta task={makeTask({ id: 't1', commentCount: 3 })} {...props} />);
 
     expect(screen.getByTestId('task-comments-t1')).toHaveTextContent(/3/);
-    expect(screen.getByLabelText('3 comment')).toBeOnTheScreen();
+    expect(screen.getByLabelText('3 bình luận')).toBeOnTheScreen();
   });
 
   it('shows nothing for a task without comments (or from an older server)', async () => {

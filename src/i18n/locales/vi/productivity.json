@@ -2,7 +2,7 @@
   "productivity": {
     "title": "Năng suất",
     "open": "Mở Năng suất",
-    "tabs": { "daily": "Hằng ngày", "weekly": "Hằng tuần", "karma": "Karma" },
+    "tabs": { "daily": "Hằng ngày", "weekly": "Hằng tuần", "karma": "Điểm năng suất" },
     "daily": {
       "goalTitle": "Tiến độ mục tiêu ngày",
       "progress": "{{done}}/{{goal}}",
@@ -33,15 +33,15 @@
       "tasks": "{{n}} việc"
     },
     "karma": {
-      "score": "{{n}} điểm Karma",
+      "score": "{{n}} điểm năng suất",
       "level": "Cấp {{level}}",
       "toNext": "Còn {{n}} điểm để lên {{level}}",
       "maxLevel": "Bạn đã đạt cấp cao nhất",
-      "trend": "Xu hướng Karma (28 ngày)",
-      "aboutLevels": "Giới thiệu các cấp Karma",
-      "off": "Karma đang tắt. Bật lại trong Cài đặt → Năng suất.",
-      "aboutTitle": "Các cấp Karma",
-      "aboutIntro": "Bạn nhận điểm Karma khi hoàn thành công việc và đạt mục tiêu; công việc quá hạn từ 5 ngày trở lên bị trừ điểm. Karma đạt mốc sẽ lên cấp.",
+      "trend": "Xu hướng điểm năng suất (28 ngày)",
+      "aboutLevels": "Giới thiệu các cấp điểm năng suất",
+      "off": "Điểm năng suất đang tắt. Bật lại trong Cài đặt → Năng suất.",
+      "aboutTitle": "Các cấp điểm năng suất",
+      "aboutIntro": "Bạn nhận điểm năng suất khi hoàn thành công việc và đạt mục tiêu; công việc quá hạn từ 5 ngày trở lên bị trừ điểm. Điểm đạt mốc sẽ lên cấp.",
       "aboutRules": "Hoàn thành một việc +5 · đạt mục tiêu ngày +10 · đạt mục tiêu tuần +30 · quá hạn từ 5 ngày −2 · mở lại việc đã xong thì trừ lại điểm.",
       "minKarma": "từ {{n}} điểm",
       "current": "Cấp hiện tại"
@@ -62,14 +62,14 @@
     },
     "settings": {
       "title": "Năng suất",
-      "karma": "Karma",
-      "karmaHint": "Hiện điểm và cấp Karma trong màn Năng suất.",
+      "karma": "Điểm năng suất",
+      "karmaHint": "Hiện điểm và cấp năng suất trong màn Năng suất.",
       "dailyGoal": "Mục tiêu ngày",
       "weeklyGoal": "Mục tiêu tuần",
       "daysOff": "Ngày nghỉ",
       "daysOffHint": "Ngày nghỉ không làm đứt chuỗi mục tiêu.",
       "vacation": "Chế độ nghỉ phép",
-      "vacationHint": "Giữ nguyên chuỗi và không bị trừ Karma khi bạn nghỉ.",
+      "vacationHint": "Giữ nguyên chuỗi và không bị trừ điểm năng suất khi bạn nghỉ.",
       "celebrations": "Chúc mừng khi đạt mục tiêu"
     }
   }

@@ -99,7 +99,7 @@ describe('FiltersLabelsScreen (M-Filters)', () => {
     const { fetchMock } = await open({ 'DELETE /api/v1/filters/f-1': () => jsonResponse(204) });
     await fireEvent(await screen.findByTestId('fl-filter-f-1'), 'longPress');
     await fireEvent.press(screen.getByTestId('fl-actions-delete'));
-    expect(screen.getByText('Filter “Chưa lên lịch” sẽ bị xoá. Không hoàn tác được.')).toBeTruthy();
+    expect(screen.getByText('Bộ lọc “Chưa lên lịch” sẽ bị xoá. Không hoàn tác được.')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('fl-delete-cancel'));
     expect(requestsTo(fetchMock, 'DELETE', '/api/v1/filters/f-1')).toHaveLength(0);
 

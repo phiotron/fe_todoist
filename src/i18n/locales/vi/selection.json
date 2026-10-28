@@ -10,6 +10,6 @@
     "delete": "Xoá",
     "moveTitle": "Chuyển công việc đã chọn tới",
     "deleteTitle": "Xoá {{n}} công việc?",
-    "deleteMessage": "Các công việc đã chọn cùng mọi sub-task sẽ bị xoá vĩnh viễn. Không hoàn tác được."
+    "deleteMessage": "Các công việc đã chọn cùng mọi công việc con sẽ bị xoá vĩnh viễn. Không hoàn tác được."
   }
 }

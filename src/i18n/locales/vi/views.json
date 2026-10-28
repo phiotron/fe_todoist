@@ -1,9 +1,9 @@
 {
   "views": {
     "inbox": {
-      "title": "Inbox",
+      "title": "Hộp thư đến",
       "subtitle": "{{n}} công việc",
-      "emptyTitle": "Inbox đang trống",
+      "emptyTitle": "Hộp thư đến đang trống",
       "emptyText": "Nhấn + để ghi lại việc cần làm."
     },
     "today": {

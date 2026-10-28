@@ -2,22 +2,22 @@
   "search": {
     "title": "Tìm kiếm",
     "open": "Tìm kiếm",
-    "placeholder": "Tìm task, dự án, label…",
+    "placeholder": "Tìm công việc, dự án, nhãn…",
     "clear": "Xoá chữ đã nhập",
-    "hint": "Gõ để tìm task, dự án, section, label và filter",
-    "completedToggle": "Tìm trong task đã hoàn thành",
-    "completedTitle": "Task đã hoàn thành",
+    "hint": "Gõ để tìm công việc, dự án, mục, nhãn và bộ lọc",
+    "completedToggle": "Tìm trong công việc đã hoàn thành",
+    "completedTitle": "Công việc đã hoàn thành",
     "recentTitle": "Tìm gần đây",
     "recentClear": "Xoá lịch sử",
     "tooLong": "Từ khoá tối đa {{n}} ký tự",
-    "noTasks": "Không có task khớp. Thử từ khoá ngắn hơn hoặc ít từ hơn.",
-    "noCompleted": "Không có task đã hoàn thành khớp từ khoá",
+    "noTasks": "Không có công việc khớp. Thử từ khoá ngắn hơn hoặc ít từ hơn.",
+    "noCompleted": "Không có công việc đã hoàn thành khớp từ khoá",
     "groups": {
       "projects": "Dự án",
-      "sections": "Section",
-      "labels": "Label",
-      "filters": "Filter",
-      "tasks": "Task"
+      "sections": "Mục",
+      "labels": "Nhãn",
+      "filters": "Bộ lọc",
+      "tasks": "Công việc"
     }
   }
 }

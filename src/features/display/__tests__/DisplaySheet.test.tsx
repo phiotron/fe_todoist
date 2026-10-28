@@ -62,7 +62,7 @@ describe('DisplaySheet', () => {
     const puts = () => requestsTo(fetchMock, 'PUT', '/api/v1/view-options/project:p-1');
     await waitFor(() => expect(selected('display-sort-manual')).toBe(true));
     expect(screen.queryByTestId('display-order-asc')).toBeNull();
-    expect(screen.getByText('Theo section')).toBeTruthy();
+    expect(screen.getByText('Theo mục')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('display-sort-name'));
     expect(screen.getByTestId('display-order-desc')).toBeTruthy();

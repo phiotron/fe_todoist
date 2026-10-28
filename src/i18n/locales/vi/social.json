@@ -12,11 +12,11 @@
     "linkedMessage": "Từ lần sau bạn có thể đăng nhập bằng {{provider}}.",
     "linkFailedTitle": "Chưa liên kết được {{provider}}",
     "errors": {
-      "notConfigured": "Bản app này chưa được cấu hình đăng nhập {{provider}}",
+      "notConfigured": "Bản ứng dụng này chưa được cấu hình đăng nhập {{provider}}",
       "openFailed": "Không mở được trình duyệt để đăng nhập {{provider}}",
       "failed": "Đăng nhập {{provider}} không thành công, vui lòng thử lại",
       "emailProblem": "Tài khoản {{provider}} này không cung cấp email đã xác minh nên chưa dùng để đăng nhập được. Hãy cho phép chia sẻ email hoặc đăng ký bằng email.",
-      "stateMismatch": "Phiên đăng nhập {{provider}} đã hết hiệu lực hoặc không do app này mở. Vui lòng thử lại.",
+      "stateMismatch": "Phiên đăng nhập {{provider}} đã hết hiệu lực hoặc không do ứng dụng này mở. Vui lòng thử lại.",
       "linkConflict": "Không liên kết được: tài khoản {{provider}} này đã gắn với một tài khoản Taskly khác, hoặc tài khoản của bạn đã liên kết một tài khoản {{provider}} khác",
       "linkRejected": "Không liên kết được {{provider}}: yêu cầu đã hết hạn hoặc không khớp tài khoản này. Vui lòng thử lại."
     },

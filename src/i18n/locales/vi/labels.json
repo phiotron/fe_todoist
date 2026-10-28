@@ -1,36 +1,36 @@
 {
   "labels": {
     "picker": {
-      "title": "Chọn label",
-      "searchPlaceholder": "Tìm hoặc tạo label",
-      "empty": "Chưa có label nào. Gõ tên để tạo label đầu tiên.",
-      "create": "Tạo label “{{name}}”",
-      "full": "Mỗi task có tối đa {{n}} label",
+      "title": "Chọn nhãn",
+      "searchPlaceholder": "Tìm hoặc tạo nhãn",
+      "empty": "Chưa có nhãn nào. Gõ tên để tạo nhãn đầu tiên.",
+      "create": "Tạo nhãn “{{name}}”",
+      "full": "Mỗi công việc có tối đa {{n}} nhãn",
       "done": "Xong"
     },
     "form": {
-      "createTitle": "Thêm label",
-      "editTitle": "Sửa label",
-      "name": "Tên label",
+      "createTitle": "Thêm nhãn",
+      "editTitle": "Sửa nhãn",
+      "name": "Tên nhãn",
       "color": "Màu",
       "favorite": "Thêm vào Yêu thích",
       "save": "Lưu",
       "cancel": "Huỷ",
-      "nameRequired": "Hãy nhập tên label",
-      "nameTooLong": "Tên label tối đa {{n}} ký tự",
-      "nameInvalid": "Tên label không được có dấu cách và các ký tự @ % # / , ( ) | & ! \\ *",
-      "nameTaken": "Đã có label cùng tên"
+      "nameRequired": "Hãy nhập tên nhãn",
+      "nameTooLong": "Tên nhãn tối đa {{n}} ký tự",
+      "nameInvalid": "Tên nhãn không được có dấu cách và các ký tự @ % # / , ( ) | & ! \\ *",
+      "nameTaken": "Đã có nhãn cùng tên"
     },
     "delete": {
-      "title": "Xoá label?",
-      "message": "Label “{{name}}” sẽ bị xoá và gỡ khỏi mọi task. Không hoàn tác được.",
+      "title": "Xoá nhãn?",
+      "message": "Nhãn “{{name}}” sẽ bị xoá và gỡ khỏi mọi công việc. Không hoàn tác được.",
       "confirm": "Xoá"
     },
-    "chip": { "empty": "Label" },
-    "batch": { "open": "Label", "add": "Gắn label", "remove": "Gỡ label" },
+    "chip": { "empty": "Nhãn" },
+    "batch": { "open": "Nhãn", "add": "Gắn nhãn", "remove": "Gỡ nhãn" },
     "screen": {
-      "empty": "Không có task đang mở nào có label này",
-      "menu": "Tuỳ chọn label"
+      "empty": "Không có công việc đang mở nào có nhãn này",
+      "menu": "Tuỳ chọn nhãn"
     }
   }
 }

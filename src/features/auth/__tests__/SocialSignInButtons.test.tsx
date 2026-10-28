@@ -56,12 +56,12 @@ describe('SocialSignInButtons', () => {
 
     await fireEvent.press(screen.getByTestId('s-apple'));
 
-    expect((await screen.findByTestId('s-message')).props.children).toBe('Bản app này chưa được cấu hình đăng nhập Apple');
+    expect((await screen.findByTestId('s-message')).props.children).toBe('Bản ứng dụng này chưa được cấu hình đăng nhập Apple');
     expect(browser.opened).toEqual([]);
 
     await fireEvent.press(screen.getByTestId('s-facebook'));
     await waitFor(() =>
-      expect(screen.getByTestId('s-message').props.children).toBe('Bản app này chưa được cấu hình đăng nhập Facebook'),
+      expect(screen.getByTestId('s-message').props.children).toBe('Bản ứng dụng này chưa được cấu hình đăng nhập Facebook'),
     );
   });
 

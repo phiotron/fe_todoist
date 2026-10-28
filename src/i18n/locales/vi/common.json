@@ -15,6 +15,6 @@
     "expand": "Mở {{name}}",
     "collapse": "Thu gọn {{name}}",
     "loadErrorTitle": "Không tải được dữ liệu",
-    "offlineBanner": "Bạn đang offline — chỉ xem được dữ liệu đã tải"
+    "offlineBanner": "Bạn đang ngoại tuyến — chỉ xem được dữ liệu đã tải"
   }
 }

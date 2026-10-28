@@ -27,7 +27,7 @@ describe('date text follows the display preferences', () => {
 
   it('12-hour time, in the label and with a duration', () => {
     setDisplayPrefs({ dateFormat: 'DMY', timeFormat: 'H12' });
-    expect(formatDueLabel(timedLabel())).toBe('05/12 2:30 PM–3:00 PM');
+    expect(formatDueLabel(timedLabel())).toBe('05/12 2:30 CH–3:00 CH');
   });
 
   it('the Upcoming day header uses the date format', () => {

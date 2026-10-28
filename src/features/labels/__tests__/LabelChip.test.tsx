@@ -10,9 +10,9 @@ const labels = [makeLabel({ id: 'l-1', name: 'gap', sortOrder: 1 }), makeLabel({
 const routes = { 'GET /api/v1/labels': () => jsonResponse(200, labels) };
 
 describe('LabelChip', () => {
-  it('shows "Label" when empty', async () => {
+  it('shows "Nhãn" when empty', async () => {
     await renderSignedIn(<LabelChip labelIds={[]} onChange={jest.fn()} />, routes);
-    expect(screen.getByText('Label')).toBeTruthy();
+    expect(screen.getByText('Nhãn')).toBeTruthy();
   });
 
   it('applies the new set when Done is pressed', async () => {

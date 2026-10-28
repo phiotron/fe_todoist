@@ -32,7 +32,7 @@ describe('Quick Add reminders', () => {
       [`POST ${REMINDERS_PATH}`]: (request) =>
         jsonResponse(201, { id: 'r-1', taskId: 't-9', at: null, minuteOffset: null, createdAt: '2026-10-23T03:00:00Z', ...(request.body as object) }),
     });
-    await screen.findByText('Inbox'); // the project chip resolves the Inbox name
+    await screen.findByText('Hộp thư đến'); // the project chip resolves the Inbox name
 
     await fireEvent.changeText(screen.getByTestId('quick-add-name'), 'Gọi khách');
     await fireEvent.press(screen.getByTestId('quick-add-reminder-chip'));

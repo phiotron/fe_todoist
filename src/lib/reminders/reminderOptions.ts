@@ -1,3 +1,4 @@
+import { meridiem } from '../dates/displayFormat';
 import { parseFloating } from './floating';
 import type { WallClock } from './zonedTime';
 
@@ -32,7 +33,7 @@ export function formatWallClock(wall: WallClock, dateFormat: DateFormat, timeFor
       : `${pad(wall.day)}/${pad(wall.month)}/${wall.year}`;
   if (timeFormat === 'H12') {
     const hour = wall.hour % 12 === 0 ? 12 : wall.hour % 12;
-    return `${date} ${hour}:${pad(wall.minute)} ${wall.hour < 12 ? 'AM' : 'PM'}`;
+    return `${date} ${hour}:${pad(wall.minute)} ${meridiem(wall.hour)}`;
   }
   return `${date} ${pad(wall.hour)}:${pad(wall.minute)}`;
 }

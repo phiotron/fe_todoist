@@ -28,7 +28,7 @@ describe('projectBoardColumns', () => {
   it('puts "No Section" first, then the sections in order, root open tasks only', () => {
     const columns = projectBoardColumns(tasks, sections, 'p-1', 'NONE', ctx);
     expect(columns.map((column) => column.key)).toEqual(['section:none', 'section:s-1', 'section:s-2']);
-    expect(columns[0].title).toBe('Không có section');
+    expect(columns[0].title).toBe('Không có mục');
     expect(columns.map((column) => ids(column.tasks))).toEqual([['a', 'lost'], ['b'], ['c']]);
     expect(columns[1].drop).toEqual({ kind: 'section', projectId: 'p-1', sectionId: 's-1' });
     expect(columns[0].drop).toEqual({ kind: 'section', projectId: 'p-1', sectionId: null });

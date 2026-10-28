@@ -1,57 +1,57 @@
 {
   "templates": {
-    "title": "Template",
-    "browseRow": "Duyệt template",
-    "limitReached": "Bạn đã có tối đa {{max}} template — hãy xoá bớt template cũ",
-    "mine": "Template của tôi",
-    "mineEmpty": "Chưa có template nào. Mở menu ⋯ của một dự án và chọn Lưu thành template.",
+    "title": "Mẫu",
+    "browseRow": "Duyệt mẫu",
+    "limitReached": "Bạn đã có tối đa {{max}} mẫu — hãy xoá bớt mẫu cũ",
+    "mine": "Mẫu của tôi",
+    "mineEmpty": "Chưa có mẫu nào. Mở trình đơn ⋯ của một dự án và chọn Lưu thành mẫu.",
     "category": {
       "FEATURED": "Nổi bật",
       "PRODUCTIVITY_METHODS": "Phương pháp làm việc",
       "POPULAR": "Phổ biến"
     },
-    "counts": "{{sections}} section · {{tasks}} công việc",
+    "counts": "{{sections}} mục · {{tasks}} công việc",
     "preview": {
-      "noSection": "Không thuộc section",
-      "use": "Dùng template",
-      "delete": "Xoá template",
-      "deleteTitle": "Xoá template \"{{name}}\"?",
-      "deleteMessage": "Template sẽ bị xoá vĩnh viễn. Các dự án đã tạo từ template không bị ảnh hưởng.",
-      "deleted": "Đã xoá template"
+      "noSection": "Không thuộc mục",
+      "use": "Dùng mẫu",
+      "delete": "Xoá mẫu",
+      "deleteTitle": "Xoá mẫu \"{{name}}\"?",
+      "deleteMessage": "Mẫu sẽ bị xoá vĩnh viễn. Các dự án đã tạo từ mẫu không bị ảnh hưởng.",
+      "deleted": "Đã xoá mẫu"
     },
     "apply": {
-      "title": "Tạo dự án từ template",
+      "title": "Tạo dự án từ mẫu",
       "name": "Tên dự án",
       "submit": "Tạo dự án",
       "created": "Đã tạo dự án \"{{name}}\"",
-      "applied": "Đã thêm template vào dự án",
-      "pickTitle": "Chọn template để áp dụng",
+      "applied": "Đã thêm mẫu vào dự án",
+      "pickTitle": "Chọn mẫu để áp dụng",
       "nameRequired": "Vui lòng nhập tên dự án",
       "nameTooLong": "Tên dự án tối đa 120 ký tự"
     },
     "save": {
-      "title": "Lưu thành template",
-      "name": "Tên template",
+      "title": "Lưu thành mẫu",
+      "name": "Tên mẫu",
       "submit": "Lưu",
-      "saved": "Đã lưu template \"{{name}}\"",
-      "hint": "Template giữ section và công việc đang mở (không giữ ngày, nhắc, nhãn).",
-      "nameRequired": "Vui lòng nhập tên template",
-      "nameTooLong": "Tên template tối đa 120 ký tự"
+      "saved": "Đã lưu mẫu \"{{name}}\"",
+      "hint": "Mẫu giữ các mục và công việc đang mở (không giữ ngày, nhắc, nhãn).",
+      "nameRequired": "Vui lòng nhập tên mẫu",
+      "nameTooLong": "Tên mẫu tối đa 120 ký tự"
     },
     "menu": {
       "duplicate": "Nhân bản",
-      "saveAsTemplate": "Lưu thành template",
-      "applyTemplate": "Áp dụng template",
+      "saveAsTemplate": "Lưu thành mẫu",
+      "applyTemplate": "Áp dụng mẫu",
       "move": "Chuyển tới dự án khác",
-      "reorder": "Sắp xếp section"
+      "reorder": "Sắp xếp mục"
     },
     "duplicated": {
       "project": "Đã tạo bản sao \"{{name}}\"",
-      "section": "Đã nhân bản section \"{{name}}\""
+      "section": "Đã nhân bản mục \"{{name}}\""
     },
     "moveSection": {
-      "title": "Chuyển section tới",
-      "moved": "Đã chuyển section sang \"{{name}}\""
+      "title": "Chuyển mục tới",
+      "moved": "Đã chuyển mục sang \"{{name}}\""
     },
     "backups": {
       "title": "Sao lưu",

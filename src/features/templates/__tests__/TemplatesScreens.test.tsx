@@ -59,7 +59,7 @@ describe('TemplatesScreen', () => {
     await renderSignedIn(<TemplatesScreen />, routes());
     await screen.findByText('Ra mắt sản phẩm');
 
-    expect(screen.getByText('Template của tôi')).toBeOnTheScreen();
+    expect(screen.getByText('Mẫu của tôi')).toBeOnTheScreen();
     expect(screen.getByText('Nổi bật')).toBeOnTheScreen();
     expect(screen.getByText('Phương pháp làm việc')).toBeOnTheScreen();
     expect(screen.getByText('Phổ biến')).toBeOnTheScreen();
@@ -81,7 +81,7 @@ describe('TemplatesScreen', () => {
 describe('TemplatePreviewScreen', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('shows sections and nested tasks; "Dùng template" creates a project with the typed name and opens it', async () => {
+  it('shows sections and nested tasks; "Dùng mẫu" creates a project with the typed name and opens it', async () => {
     const created = makeProject({ id: 'pn', name: 'Ra mắt 2' });
     const { fetchMock } = await renderSignedIn(
       <TemplatePreviewScreen param="t1" />,

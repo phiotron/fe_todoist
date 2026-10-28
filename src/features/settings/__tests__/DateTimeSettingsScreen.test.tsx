@@ -54,7 +54,7 @@ describe('DateTimeSettingsScreen', () => {
     await fireEvent.press(screen.getByTestId('time-format-option-H12'));
 
     await waitFor(() => expect(patchBodies).toEqual([{ dateFormat: 'MDY' }, { timeFormat: 'H12' }]));
-    expect(await screen.findByText(example('10/26/2026', '2:30 PM'))).toBeTruthy();
+    expect(await screen.findByText(example('10/26/2026', '2:30 CH'))).toBeTruthy();
   });
 
   it('choosing the current value does not call the server', async () => {

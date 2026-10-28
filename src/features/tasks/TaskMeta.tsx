@@ -9,6 +9,7 @@ import { parseInstant } from '../../lib/dates/instant';
 import { size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { TaskLabels } from '../labels/TaskLabels';
+import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { progressLabel } from '../subtasks/tree';
 import { dueTone } from './dueTone';
 import { useProjectOrigin } from './projectOrigin';
@@ -105,6 +106,8 @@ function TaskProjectLabel({ task }: { task: Task }) {
   const { palette } = useTheme();
   const { t } = useTranslation();
   const origin = useProjectOrigin(task.projectId);
+  const projectLabel = useProjectNameLabel();
+  const projectName = projectLabel(task.projectId, task.projectName);
   return (
     <View style={styles.item}>
       {origin.kind === 'personal' ? null : (
@@ -117,7 +120,7 @@ function TaskProjectLabel({ task }: { task: Task }) {
         />
       )}
       <Text style={styles.text} numberOfLines={1} testID={`task-project-${task.id}`}>
-        {origin.kind === 'team' && origin.teamName ? `${task.projectName} · ${origin.teamName}` : task.projectName}
+        {origin.kind === 'team' && origin.teamName ? `${projectName} · ${origin.teamName}` : projectName}
       </Text>
     </View>
   );

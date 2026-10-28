@@ -15,6 +15,7 @@ import { type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { SEARCH_DEBOUNCE_MS, SEARCH_MAX_LENGTH, checkSearchTerm } from '../search/searchTerm';
 import { projectDisplayName, projectColorHex } from '../projects/appearance';
+import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { useProjects } from '../projects/useProjects';
 
 interface ShareTargetPickerProps {
@@ -31,6 +32,7 @@ export function ShareTargetPicker({ recent, onPick }: ShareTargetPickerProps) {
   const styles = useThemedStyles(createPickerStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
+  const projectLabel = useProjectNameLabel();
   const [text, setText] = useState('');
   const debounced = useDebouncedValue(text, SEARCH_DEBOUNCE_MS);
   const typed = checkSearchTerm(text);
@@ -104,7 +106,7 @@ export function ShareTargetPicker({ recent, onPick }: ShareTargetPickerProps) {
             {projects.map((project) => row(toProject(project), undefined, projectColorHex(project.color)))}
             {found.length > 0 ? <GroupTitle title={t('shareTarget.tasks')} /> : null}
             {found.map((task) =>
-              row({ kind: 'task', id: task.id, name: task.content }, t('shareTarget.inProject', { project: task.projectName })),
+              row({ kind: 'task', id: task.id, name: task.content }, t('shareTarget.inProject', { project: projectLabel(task.projectId, task.projectName) })),
             )}
           </View>
         );

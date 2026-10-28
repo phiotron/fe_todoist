@@ -52,6 +52,6 @@ describe('SettingsProvider → display format store', () => {
       formatDueLabel(
         describeDue({ dueDate: null, dueDatetime: '2026-12-05T14:30:00', durationMinutes: null }, new Date('2026-03-01T03:00:00Z'), 'Asia/Ho_Chi_Minh')!,
       ),
-    ).toBe('12/05 2:30 PM');
+    ).toBe('12/05 2:30 CH');
   });
 });

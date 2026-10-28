@@ -59,7 +59,7 @@ describe('ProductivityScreen', () => {
     await renderSignedIn(<ProductivityScreen />, routes());
     await fireEvent.press(await screen.findByTestId('productivity-tabs-karma'));
 
-    expect(screen.getByTestId('karma-score')).toHaveTextContent('223 điểm Karma');
+    expect(screen.getByTestId('karma-score')).toHaveTextContent('223 điểm năng suất');
     expect(screen.getByText('Cấp Người mới')).toBeOnTheScreen();
     expect(screen.getByTestId('karma-next')).toHaveTextContent('Còn 277 điểm để lên Tập sự');
     expect(screen.getByTestId('karma-trend-2026-11-12')).toBeOnTheScreen();

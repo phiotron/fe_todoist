@@ -96,7 +96,7 @@ describe('ProjectScreen', () => {
       ...viewOptionsRoutes(['project:p-inbox']),
     });
     await screen.findByText('Việc trong Inbox');
-    expect(screen.getByText('Inbox')).toBeOnTheScreen();
+    expect(screen.getByText('Hộp thư đến')).toBeOnTheScreen();
     expect(screen.queryByTestId('project-back')).toBeNull();
     expect(screen.queryByTestId('project-fab')).toBeNull();
 

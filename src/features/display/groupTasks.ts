@@ -19,6 +19,8 @@ export interface GroupContext {
   labels: ReadonlyMap<string, Label>;
   /** M7 "Added date": the account time zone that turns `createdAt` (an instant) into a day. Absent = UTC. */
   timeZone?: string;
+  /** VIUI: name shown for a project group (the Inbox follows the app language). Absent = the server name. */
+  projectName?: (projectId: string, projectName: string | null | undefined) => string;
 }
 
 /** M7: the account-zone day a task was created (group "Added date", spec 12.7 / plan M7 F2). */
@@ -64,7 +66,10 @@ function groupKeyOf(task: GroupableTask, groupBy: GroupBy, ctx: GroupContext): {
     case 'PRIORITY':
       return { key: `priority:${task.priority}`, title: i18n.t('display.groups.priority', { n: task.priority }) };
     case 'PROJECT':
-      return { key: `project:${task.projectId}`, title: task.projectName ?? '' };
+      return {
+        key: `project:${task.projectId}`,
+        title: ctx.projectName ? ctx.projectName(task.projectId, task.projectName) : (task.projectName ?? ''),
+      };
     case 'LABEL': {
       const label = firstLabelOf(task, ctx.labels);
       return label

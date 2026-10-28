@@ -164,7 +164,7 @@ describe('i18n (kept from M1)', () => {
   });
 
   it('ships the titles used by the tab bar', () => {
-    expect(i18n.t('views.inbox.title')).toBe('Inbox');
+    expect(i18n.t('views.inbox.title')).toBe('Hộp thư đến');
     expect(i18n.t('views.today.title')).toBe('Hôm nay');
     expect(i18n.t('views.upcoming.title')).toBe('Sắp tới');
     expect(i18n.t('views.browse.title')).toBe('Duyệt');

@@ -29,10 +29,10 @@ describe('formatTime', () => {
   it.each([
     ['14:30', 'H24', '14:30'],
     ['09:07:00', 'H24', '09:07'],
-    ['14:30', 'H12', '2:30 PM'],
-    ['00:05', 'H12', '12:05 AM'],
-    ['12:00', 'H12', '12:00 PM'],
-    ['11:59', 'H12', '11:59 AM'],
+    ['14:30', 'H12', '2:30 CH'],
+    ['00:05', 'H12', '12:05 SA'],
+    ['12:00', 'H12', '12:00 CH'],
+    ['11:59', 'H12', '11:59 SA'],
   ] as const)('formatTime(%s, %s) → %s', (time, format, expected) => {
     expect(formatTime(time, format)).toBe(expected);
   });
@@ -40,7 +40,7 @@ describe('formatTime', () => {
   it('uses the current display preference by default', () => {
     expect(formatTime('14:30')).toBe('14:30');
     setDisplayPrefs({ dateFormat: 'DMY', timeFormat: 'H12' });
-    expect(formatTime('14:30')).toBe('2:30 PM');
+    expect(formatTime('14:30')).toBe('2:30 CH');
   });
 });
 

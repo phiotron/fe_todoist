@@ -13,12 +13,12 @@ describe('describeError — label and filter cases of M2 (spec 12.10)', () => {
     expect(describeError(api(422, { code: 'limit-reached', limit: 'FILTERS', max: 150 })).message).toBe(
       i18n.t('errors.limit.filters', { max: 150 }),
     );
-    expect(i18n.t('errors.limit.labels', { max: 500 })).toBe('Bạn chỉ có thể tạo tối đa 500 label');
-    expect(i18n.t('errors.limit.filters', { max: 150 })).toBe('Bạn chỉ có thể tạo tối đa 150 filter');
+    expect(i18n.t('errors.limit.labels', { max: 500 })).toBe('Bạn chỉ có thể tạo tối đa 500 nhãn');
+    expect(i18n.t('errors.limit.filters', { max: 150 })).toBe('Bạn chỉ có thể tạo tối đa 150 bộ lọc');
   });
 
   it('explains a taken label name and a filter syntax error', () => {
-    expect(describeError(api(409, { code: 'label-name-taken' })).message).toBe('Đã có label cùng tên');
+    expect(describeError(api(409, { code: 'label-name-taken' })).message).toBe('Đã có nhãn cùng tên');
     expect(describeError(api(400, { code: 'filter-syntax' })).message).toBe('Truy vấn không đúng cú pháp');
   });
 

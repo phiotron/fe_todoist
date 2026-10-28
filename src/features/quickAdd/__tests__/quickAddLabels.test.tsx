@@ -38,7 +38,7 @@ describe('buildCreateBody with labels', () => {
 describe('Quick Add Labels chip', () => {
   it('creates the task with the labels picked on the chip and keeps them for the next task', async () => {
     const { fetchMock } = await renderSignedIn(<QuickAddSheet params={{}} />, routes);
-    await screen.findByText('Inbox');
+    await screen.findByText('Hộp thư đến');
 
     await fireEvent.press(screen.getByTestId('quick-add-label'));
     await fireEvent.press(await screen.findByTestId('quick-add-label-picker-item-l-1'));
@@ -62,7 +62,7 @@ describe('Quick Add Labels chip', () => {
 
   it('sends no labelIds when none were chosen (the M1 body is unchanged)', async () => {
     const { fetchMock } = await renderSignedIn(<QuickAddSheet params={{}} />, routes);
-    await screen.findByText('Inbox');
+    await screen.findByText('Hộp thư đến');
     await fireEvent.changeText(screen.getByTestId('quick-add-name'), 'Mua sữa');
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
 

@@ -5,6 +5,7 @@ import { Avatar } from '../../components/Avatar';
 import { fonts, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { stampLabel } from '../comments/commentTime';
+import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 
 interface NotificationRowProps {
   item: NotificationResponse;
@@ -17,10 +18,12 @@ interface NotificationRowProps {
 export function NotificationRow({ item, now, timeZone, onPress }: NotificationRowProps) {
   const styles = useThemedStyles(createNotificationRowStyles);
   const { t } = useTranslation();
+  const projectLabel = useProjectNameLabel();
   const name = item.actor?.name ?? t('notifications.someone');
+  const project = projectLabel(item.projectId, item.projectName);
   const where = item.taskContent
-    ? t('notifications.onTask', { task: item.taskContent, project: item.projectName })
-    : t('notifications.inProject', { project: item.projectName });
+    ? t('notifications.onTask', { task: item.taskContent, project })
+    : t('notifications.inProject', { project });
   return (
     <Pressable
       testID={`notification-${item.id}`}

@@ -1,17 +1,17 @@
 {
   "filters": {
     "form": {
-      "createTitle": "Thêm filter",
-      "editTitle": "Sửa filter",
-      "name": "Tên filter",
+      "createTitle": "Thêm bộ lọc",
+      "editTitle": "Sửa bộ lọc",
+      "name": "Tên bộ lọc",
       "query": "Truy vấn",
       "queryPlaceholder": "Ví dụ: today | overdue, p1 & #Công việc",
       "color": "Màu",
       "favorite": "Thêm vào Yêu thích",
       "save": "Lưu",
       "cancel": "Huỷ",
-      "nameRequired": "Hãy nhập tên filter",
-      "nameTooLong": "Tên filter tối đa {{n}} ký tự",
+      "nameRequired": "Hãy nhập tên bộ lọc",
+      "nameTooLong": "Tên bộ lọc tối đa {{n}} ký tự",
       "queryRequired": "Hãy nhập truy vấn",
       "queryTooLong": "Truy vấn tối đa {{n}} ký tự",
       "valid": "Hợp lệ · {{n}} danh sách"
@@ -20,18 +20,18 @@
       "at": "Lỗi cú pháp ở ký tự thứ {{n}}: “{{near}}”",
       "atEnd": "Lỗi cú pháp ở cuối truy vấn",
       "generic": "Truy vấn không đúng cú pháp",
-      "edit": "Sửa filter"
+      "edit": "Sửa bộ lọc"
     },
     "delete": {
-      "title": "Xoá filter?",
-      "message": "Filter “{{name}}” sẽ bị xoá. Không hoàn tác được.",
+      "title": "Xoá bộ lọc?",
+      "message": "Bộ lọc “{{name}}” sẽ bị xoá. Không hoàn tác được.",
       "confirm": "Xoá"
     },
     "screen": {
-      "empty": "Không có task đang mở khớp filter này",
-      "partEmpty": "Không có task",
+      "empty": "Không có công việc đang mở khớp bộ lọc này",
+      "partEmpty": "Không có công việc",
       "truncated": "Chỉ hiện {{n}} danh sách đầu",
-      "menu": "Tuỳ chọn filter"
+      "menu": "Tuỳ chọn bộ lọc"
     }
   }
 }

@@ -7,10 +7,10 @@
     },
     "tone": {
       "title": "Âm thanh hoàn thành",
-      "hint": "Phát một tiếng ngắn khi bạn hoàn thành task."
+      "hint": "Phát một tiếng ngắn khi bạn hoàn thành công việc."
     },
     "dynamicColor": {
-      "title": "Dynamic Color",
+      "title": "Màu động",
       "hint": "Dùng màu nhấn theo hình nền Android của bạn (Android 12 trở lên)."
     },
     "appIcon": {
@@ -36,7 +36,7 @@
       "search": "Tìm kiếm"
     },
     "share": {
-      "title": "Thêm nội dung chia sẻ thành task",
+      "title": "Thêm nội dung chia sẻ thành công việc",
       "empty": "Không có gì để thêm"
     },
     "widget": {
