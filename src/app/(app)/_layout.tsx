@@ -5,7 +5,9 @@ import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
+import { ShareIntentHandler } from '../../features/share/ShareIntentHandler';
 import { TimeZoneBanner } from '../../features/settings/TimeZoneBanner';
+import { WidgetSnapshotWriter } from '../../features/widgets/WidgetSnapshotWriter';
 import { useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 
@@ -31,6 +33,10 @@ export default function SignedInLayout() {
           <TimeZoneBanner />
           {/* M4: schedules the local reminders and handles the notification buttons; renders nothing. */}
           <ReminderHost />
+          {/* M12: text shared into Taskly from another app opens Quick Add. */}
+          <ShareIntentHandler />
+          {/* M12: the picture the home-screen widgets draw (Today's tasks). */}
+          <WidgetSnapshotWriter />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />

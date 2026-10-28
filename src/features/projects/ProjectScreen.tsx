@@ -7,6 +7,7 @@ import { describeError, isNotFound } from '../../api/describeError';
 import type { Project } from '../../api/models';
 import { invalidateData, queryKeys } from '../../api/queryKeys';
 import { ActionMenu, type ActionMenuItem } from '../../components/ActionMenu';
+import { useCopyLink } from '../links/useCopyLink';
 import { AppButton } from '../../components/AppButton';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { ErrorText } from '../../components/ErrorText';
@@ -70,6 +71,7 @@ function ProjectBody({
   const unarchive = useUnarchiveProject();
   const remove = useDeleteProject();
   const reorderProject = useReorderProject();
+  const copyLink = useCopyLink();
   const [menuOpen, setMenuOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -115,6 +117,13 @@ function ProjectBody({
       onPress: () => favorite.mutate({ projectId: project.id, favorite: !project.isFavorite }),
     });
   }
+  // M12: Copy link of a project, or of the Inbox (`taskly://inbox`).
+  items.push({
+    key: 'copy-link',
+    label: t('android.link.copy'),
+    icon: 'link',
+    onPress: () => void copyLink(project.isInbox ? { kind: 'inbox' } : { kind: 'project', id: project.id }),
+  });
   items.push({ key: 'display', label: t('projectScreen.menuDisplay'), icon: 'sliders', onPress: () => setDisplayOpen(true) });
   if (!readOnly) {
     items.push({ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() });

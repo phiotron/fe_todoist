@@ -27,9 +27,17 @@ export type ReminderSyncOutcome =
   | { kind: 'failed' }
   | { kind: 'synced'; result: SyncResult; snoozesCancelled: number };
 
+/** M12 flags applied when building the device schedule (absent = M4 behaviour). */
+export interface ReminderDeliveryOptions {
+  /** Pin reminders: notifications stay in the tray. */
+  pinReminders?: boolean;
+  /** This device is me/settings.urgentDeviceId: urgent occurrences ring as alarms here. */
+  urgentHere?: boolean;
+}
+
 export function buildDesiredReminders(
   occurrences: readonly OccurrenceInput[],
-  settings: PlanSettings,
+  settings: PlanSettings & ReminderDeliveryOptions,
   labels: ReminderLabels,
   nowMs: number,
 ): DesiredReminder[] {
@@ -40,6 +48,8 @@ export function buildDesiredReminders(
     fireAtMs: planned.fireAtMs,
     title: planned.title,
     body: planned.kind === 'ABSOLUTE' ? labels.reminder : labels.dueSoon,
+    ...(settings.pinReminders ? { pinned: true } : {}),
+    ...(planned.urgent && settings.urgentHere ? { urgent: true } : {}),
   }));
 }
 
@@ -48,7 +58,7 @@ export function buildDesiredReminders(
  * alone. API failure → keep the current schedule; the next trigger retries. Never throws.
  */
 export async function runReminderSync(
-  settings: PlanSettings,
+  settings: PlanSettings & ReminderDeliveryOptions,
   labels: ReminderLabels,
   deps: ReminderSyncDeps,
 ): Promise<ReminderSyncOutcome> {

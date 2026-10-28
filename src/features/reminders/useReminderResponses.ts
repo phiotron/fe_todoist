@@ -5,17 +5,22 @@ import { ApiError } from '../../api/errors';
 import { tasksApi } from '../../api/tasks';
 import { useDataMutation } from '../../lib/useDataMutation';
 import { getReminderPlatform, type ReminderPlatform, type ReminderTap } from './platform';
-import { scheduleSnooze } from './snooze';
+import { SNOOZE_MINUTES, scheduleSnooze } from './snooze';
 import { errorName, warnLog } from './syncReminders';
 
 export interface UseReminderResponsesOptions {
   /** Defaults to the installed platform. */
   platform?: ReminderPlatform;
   now?: () => number;
+  /** M12: me/settings.snoozeMinutes (default 15). */
+  snoozeMinutes?: number;
+  /** M12: me/settings.pinReminders — the snoozed notification is pinned too. */
+  pinReminders?: boolean;
 }
 
 /**
- * What happens when the user acts on a reminder (spec 5.8): tap → task detail; Snooze → again in 15 minutes on
+ * What happens when the user acts on a reminder (spec 5.8): tap → task detail; Snooze → again in N minutes (M12
+ * setting, default 15) on
  * this device; Complete → close the task. Both buttons open the app first (opensAppToForeground), so this also
  * handles the response that launched the app. A failed Complete (offline, server error) opens the task instead.
  */
@@ -25,9 +30,10 @@ export function useReminderResponses(options: UseReminderResponsesOptions = {}):
   const close = useDataMutation((taskId: string) => tasksApi.close(taskId));
 
   const platform = options.platform ?? getReminderPlatform();
-  const latest = useRef({ router, t, closeTask: close.mutateAsync, platform, now: options.now ?? Date.now });
+  const snooze = { minutes: options.snoozeMinutes ?? SNOOZE_MINUTES, pinned: options.pinReminders === true };
+  const latest = useRef({ router, t, closeTask: close.mutateAsync, platform, now: options.now ?? Date.now, snooze });
   useEffect(() => {
-    latest.current = { router, t, closeTask: close.mutateAsync, platform, now: options.now ?? Date.now };
+    latest.current = { router, t, closeTask: close.mutateAsync, platform, now: options.now ?? Date.now, snooze };
   });
 
   useEffect(() => {
@@ -40,10 +46,17 @@ export function useReminderResponses(options: UseReminderResponsesOptions = {}):
       }
       if (tap.action === 'snooze') {
         try {
+          const { minutes, pinned } = current.snooze;
           await scheduleSnooze(
             current.platform.scheduler,
-            { taskId: tap.taskId, title: tap.title, body: current.t('reminders.notification.snoozedBody') },
+            {
+              taskId: tap.taskId,
+              title: tap.title,
+              body: current.t('reminders.notification.snoozedBody', { count: minutes }),
+            },
             current.now(),
+            minutes,
+            pinned,
           );
         } catch (error) {
           warnLog(`snooze failed for task ${tap.taskId}: ${errorName(error)}`);

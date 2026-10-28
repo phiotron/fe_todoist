@@ -6,6 +6,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { describeError, isNotFound } from '../../../api/describeError';
 import { invalidateData, queryKeys } from '../../../api/queryKeys';
 import { ActionMenu, type ActionMenuItem } from '../../../components/ActionMenu';
+import { useCopyLink } from '../../links/useCopyLink';
 import { AppButton } from '../../../components/AppButton';
 import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { ErrorText } from '../../../components/ErrorText';
@@ -60,6 +61,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   const [hideCompleted, setHideCompleted] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
   const [localGone, setLocalGone] = useState(false);
+  const copyLink = useCopyLink();
 
   function leave() {
     // Refresh the lists but not this detail (it is gone), then drop it from the cache.
@@ -109,6 +111,12 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
             duplicateKeys.reset();
             snackbar.show({ message: t('taskDetail.duplicated') });
           }, onActionError),
+    },
+    {
+      key: 'copy-link',
+      label: t('android.link.copy'),
+      icon: 'link',
+      onPress: () => void copyLink({ kind: 'task', id: taskId }),
     },
     {
       key: 'toggle-completed',

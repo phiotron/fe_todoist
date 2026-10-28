@@ -52,8 +52,9 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   const online = useIsOnline();
   const insets = useSafeAreaInsets();
   const { inbox, byId } = useProjects();
-  const [content, setContent] = useState('');
-  const [description, setDescription] = useState('');
+  // M12: share-to-app / widgets open the sheet with the shared text already in (`content`, `description` params).
+  const [content, setContent] = useState(params.content ?? '');
+  const [description, setDescription] = useState(params.description ?? '');
   const [priority, setPriority] = useState(DEFAULT_PRIORITY);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [due, setDue] = useState<DueValue>(() => (params.dueDate ? { ...NO_DUE, dueDate: params.dueDate } : NO_DUE));

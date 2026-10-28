@@ -8,7 +8,9 @@ import { queryKeys } from '../../api/queryKeys';
 import { applyTaskChange } from '../../api/taskCache';
 import { tasksApi } from '../../api/tasks';
 import { useSnackbar } from '../../components/Snackbar';
+import { getDeviceSettings } from '../../lib/device/deviceSettings';
 import { useIdempotencyKeys } from '../../lib/idempotency';
+import { playCompletionTone } from '../../lib/native/tasklyAndroid';
 import { useDataMutation } from '../../lib/useDataMutation';
 
 /**
@@ -20,6 +22,8 @@ export function useCloseTask() {
   return useDataMutation(async (taskId: string) => {
     const change = await tasksApi.close(taskId);
     applyTaskChange(queryClient, change);
+    // M12: the "Task complete tone" setting of this device (on by default); silent without the native module.
+    if (getDeviceSettings().completionTone) playCompletionTone();
     return change;
   });
 }

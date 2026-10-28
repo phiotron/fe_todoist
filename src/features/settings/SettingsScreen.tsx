@@ -63,6 +63,7 @@ export function SettingsScreen() {
         value={t(THEME_NAME_KEYS[settings.theme])}
         href="/settings/theme"
       />
+      <SettingsLinkRow testID="settings-row-app-icon" icon="smartphone" label={t('android.appIcon.title')} href="/settings/app-icon" />
       <SettingsLinkRow testID="settings-row-navigation" icon="layout" label={t('settings.pages.navigation')} href="/settings/navigation" />
       <ResetDefaultsSection />
       <SignOutSection />

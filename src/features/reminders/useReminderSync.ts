@@ -12,7 +12,7 @@ import { onReminderSyncRequested } from './syncSignal';
 import type { ReminderPermission } from './types';
 
 export interface ReminderRuntimeDeps extends ReminderSyncDeps {
-  ensureChannel: (name: string) => Promise<void>;
+  ensureChannel: (name: string, urgentName?: string) => Promise<void>;
   configureActions: (labels: ReminderActionLabels) => Promise<void>;
   requestPermission: () => Promise<ReminderPermission>;
 }
@@ -26,7 +26,7 @@ export const defaultReminderRuntimeDeps: ReminderRuntimeDeps = {
   fetchTaskState,
   getPermission: () => getReminderPlatform().getPermission(),
   requestPermission: () => getReminderPlatform().requestPermission(),
-  ensureChannel: (name) => getReminderPlatform().ensureChannel(name),
+  ensureChannel: (name, urgentName) => getReminderPlatform().ensureChannel(name, urgentName),
   configureActions: (labels) => getReminderPlatform().configureActions(labels),
   now: () => Date.now(),
 };
@@ -76,8 +76,10 @@ export function useReminderSync(settings: ReminderRuntimeSettings | null, option
   );
 
   // Settings, time zone or language changed (and the first time settings are known).
+  // M12: Pin reminders and "this device rings urgent reminders" change how every notification is scheduled.
   const key = settings
-    ? `${settings.enabled}|${settings.timeZone}|${settings.autoReminderMinutes}|${i18n.language}`
+    ? `${settings.enabled}|${settings.timeZone}|${settings.autoReminderMinutes}|${i18n.language}` +
+      `|${settings.pinReminders === true}|${settings.urgentHere === true}`
     : null;
   useEffect(() => {
     if (key !== null) void runner.run();
@@ -86,6 +88,7 @@ export function useReminderSync(settings: ReminderRuntimeSettings | null, option
   // Channel first (Android 13+ shows the prompt only once a channel exists), buttons, then ask once if undetermined.
   const enabled = settings?.enabled ?? false;
   const channelName = t('reminders.channelName');
+  const urgentChannelName = t('reminders.urgent.channelName');
   const snoozeLabel = t('reminders.notification.snoozeAction');
   const completeLabel = t('reminders.notification.completeAction');
   useEffect(() => {
@@ -94,7 +97,7 @@ export function useReminderSync(settings: ReminderRuntimeSettings | null, option
     void (async () => {
       const current = latest.current.deps;
       try {
-        await current.ensureChannel(channelName);
+        await current.ensureChannel(channelName, urgentChannelName);
         await current.configureActions({ snooze: snoozeLabel, complete: completeLabel });
         const permission = await current.getPermission();
         if (permission.granted || permission.status !== 'undetermined' || !permission.canAskAgain) return;
@@ -107,7 +110,7 @@ export function useReminderSync(settings: ReminderRuntimeSettings | null, option
     return () => {
       active = false;
     };
-  }, [enabled, channelName, snoozeLabel, completeLabel, runner]);
+  }, [enabled, channelName, urgentChannelName, snoozeLabel, completeLabel, runner]);
 
   // Back to the foreground.
   useEffect(() => {

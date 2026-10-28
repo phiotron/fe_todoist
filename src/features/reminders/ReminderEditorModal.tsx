@@ -7,6 +7,7 @@ import { BottomSheet } from '../../components/BottomSheet';
 import { Chip } from '../../components/Chip';
 import { ErrorText } from '../../components/ErrorText';
 import { ListRow } from '../../components/ListRow';
+import { Toggle } from '../../components/Toggle';
 import { RELATIVE_REMINDER_MINUTES, type ReminderDraft, type TimeFormat } from '../../lib/reminders';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { size, type, useTheme } from '../../theme';
@@ -37,6 +38,8 @@ export interface ReminderEditorModalProps {
   /** Adding / removing is a server write (task detail); Quick Add drafts are not. */
   requiresOnline?: boolean;
   now?: () => number;
+  /** M12: saved places for "when arriving / leaving"; the section is hidden when omitted. */
+  places?: readonly { id: string; name: string }[];
 }
 
 /**
@@ -57,24 +60,32 @@ export function ReminderEditorModal({
   error,
   requiresOnline = false,
   now = Date.now,
+  places,
 }: ReminderEditorModalProps) {
   const { t } = useTranslation();
   const { palette } = useTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const online = useIsOnline();
   const [pickError, setPickError] = useState<string | undefined>();
+  // M12: the next time reminder added is an urgent one (a full-screen alarm on the chosen device).
+  const [urgent, setUrgent] = useState(false);
   const locked = busy || (requiresOnline && !online);
 
   const addAbsolute = async () => {
     setPickError(undefined);
     const result = await pickAbsoluteReminder({ timeZone, is24Hour: timeFormat === 'H24', now });
-    if (result.kind === 'picked') onAdd({ type: 'ABSOLUTE', at: result.at });
+    if (result.kind === 'picked') onAdd(urgent ? { type: 'ABSOLUTE', at: result.at, urgent: true } : { type: 'ABSOLUTE', at: result.at });
     else if (result.kind === 'past') setPickError(t('reminders.editor.pastTime'));
   };
 
   const addRelative = (minuteOffset: number) => {
     setPickError(undefined);
-    onAdd({ type: 'RELATIVE', minuteOffset });
+    onAdd(urgent ? { type: 'RELATIVE', minuteOffset, urgent: true } : { type: 'RELATIVE', minuteOffset });
+  };
+
+  const addLocation = (place: { id: string; name: string }, trigger: 'ON_ENTER' | 'ON_LEAVE') => {
+    setPickError(undefined);
+    onAdd({ type: 'LOCATION', locationId: place.id, trigger, locationName: place.name });
   };
 
   return (
@@ -107,6 +118,18 @@ export function ReminderEditorModal({
 
         {readOnly ? null : (
           <View style={styles.add}>
+            <ListRow
+              title={t('reminders.editor.urgentToggle')}
+              right={
+                <Toggle
+                  testID="reminder-urgent-switch"
+                  label={t('reminders.editor.urgentToggle')}
+                  value={urgent}
+                  onChange={setUrgent}
+                />
+              }
+            />
+            <Text style={styles.hint}>{t('reminders.editor.urgentHint')}</Text>
             <AppButton
               testID="reminder-add-absolute"
               variant="outline"
@@ -137,6 +160,39 @@ export function ReminderEditorModal({
                 {t('reminders.editor.relativeNeedsTime')}
               </Text>
             )}
+            {places ? (
+              <>
+                <Text accessibilityRole="header" style={styles.heading}>
+                  {t('reminders.editor.locationTitle')}
+                </Text>
+                {places.length === 0 ? (
+                  <Text testID="reminder-location-none" style={styles.hint}>
+                    {t('reminders.editor.locationNone')}
+                  </Text>
+                ) : (
+                  <View style={styles.chips}>
+                    {places.flatMap((place) => [
+                      <Chip
+                        key={`${place.id}-enter`}
+                        large
+                        testID={`reminder-add-location-${place.id}-ON_ENTER`}
+                        label={t('reminders.editor.locationEnter', { place: place.name })}
+                        disabled={locked}
+                        onPress={() => addLocation(place, 'ON_ENTER')}
+                      />,
+                      <Chip
+                        key={`${place.id}-leave`}
+                        large
+                        testID={`reminder-add-location-${place.id}-ON_LEAVE`}
+                        label={t('reminders.editor.locationLeave', { place: place.name })}
+                        disabled={locked}
+                        onPress={() => addLocation(place, 'ON_LEAVE')}
+                      />,
+                    ])}
+                  </View>
+                )}
+              </>
+            ) : null}
           </View>
         )}
 

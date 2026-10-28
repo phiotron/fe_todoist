@@ -1,12 +1,16 @@
 import * as Notifications from 'expo-notifications';
 import type { NotificationResponse } from 'expo-notifications';
 import { Linking, Platform } from 'react-native';
+import { getTasklyAndroid } from '../../lib/native/tasklyAndroid';
+import { createUrgentAwareScheduler } from './urgentScheduler';
 import { errorName, warnLog, type ReminderLog } from './syncReminders';
 import { setReminderPlatform, type ReminderActionLabels, type ReminderPlatform, type ReminderTap, type ReminderTapAction } from './platform';
 import type { ReminderPermission, ReminderRequest, ReminderScheduler, ScheduledKind, ScheduledReminder } from './types';
 
 /** Android notification channel for task reminders. */
 export const REMINDER_CHANNEL_ID = 'reminders';
+/** M12: channel of urgent reminders when the native alarm is missing (max importance, rings through Do Not Disturb). */
+export const URGENT_CHANNEL_ID = 'urgent-reminders';
 /** Notification category carrying the Snooze / Complete buttons (spec 5.8). */
 export const REMINDER_CATEGORY_ID = 'task-reminder';
 export const SNOOZE_ACTION_ID = 'snooze';
@@ -48,11 +52,14 @@ export const expoReminderScheduler: ReminderScheduler = {
         body: reminder.body,
         data: { taskId: reminder.taskId, kind: reminder.kind, signature: reminder.signature },
         categoryIdentifier: REMINDER_CATEGORY_ID,
+        // M12 Pin reminders (and urgent ones): Android cannot swipe them away; tapping a button still clears them.
+        ...(reminder.pinned || reminder.urgent ? { sticky: true } : {}),
+        ...(reminder.urgent ? { priority: 'max' } : {}),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: reminder.fireAtMs,
-        channelId: REMINDER_CHANNEL_ID,
+        channelId: reminder.urgent ? URGENT_CHANNEL_ID : REMINDER_CHANNEL_ID,
       },
     });
   },
@@ -61,13 +68,23 @@ export const expoReminderScheduler: ReminderScheduler = {
   cancelAll: () => Notifications.cancelAllScheduledNotificationsAsync(),
 };
 
-/** Android 13+ only shows the permission prompt once a channel exists, so call this first. */
-export async function ensureReminderChannel(name: string, os: string = Platform.OS): Promise<void> {
+/**
+ * Android 13+ only shows the permission prompt once a channel exists, so call this first. M12: with `urgentName` the
+ * urgent channel is created too (max importance, bypasses Do Not Disturb).
+ */
+export async function ensureReminderChannel(name: string, os: string = Platform.OS, urgentName?: string): Promise<void> {
   if (os !== 'android') return;
   await Notifications.setNotificationChannelAsync(REMINDER_CHANNEL_ID, {
     name,
     importance: Notifications.AndroidImportance.HIGH,
   });
+  if (urgentName) {
+    await Notifications.setNotificationChannelAsync(URGENT_CHANNEL_ID, {
+      name: urgentName,
+      importance: Notifications.AndroidImportance.MAX,
+      bypassDnd: true,
+    });
+  }
 }
 
 /**
@@ -192,8 +209,9 @@ export async function cancelAllReminders(log: ReminderLog = warnLog): Promise<vo
 
 /** The ReminderPlatform port backed by expo-notifications (installed at startup by installReminderPlatform). */
 export const expoReminderPlatform: ReminderPlatform = {
-  scheduler: expoReminderScheduler,
-  ensureChannel: (name) => ensureReminderChannel(name),
+  // M12: urgent requests ring as native full-screen alarms when the TasklyAndroid module is in the build.
+  scheduler: createUrgentAwareScheduler(expoReminderScheduler, getTasklyAndroid),
+  ensureChannel: (name, urgentName) => ensureReminderChannel(name, Platform.OS, urgentName),
   configureActions: configureReminderActions,
   configurePresentation: configureReminderPresentation,
   getPermission: getReminderPermission,

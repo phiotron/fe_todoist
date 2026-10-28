@@ -15,6 +15,8 @@ export interface OccurrenceInput {
   /** Floating "yyyy-MM-ddTHH:mm:ss" computed by the server in the account time zone. */
   fireAt: string;
   content: string;
+  /** M12: urgent reminder (absent = false; AUTO is never urgent). */
+  urgent?: boolean;
 }
 
 export interface PlanSettings {
@@ -30,6 +32,8 @@ export interface PlannedReminder {
   kind: OccurrenceKind;
   title: string;
   fireAtMs: number;
+  /** M12: carried from the occurrence (only when true). */
+  urgent?: boolean;
 }
 
 function byFireTimeThenId(a: PlannedReminder, b: PlannedReminder): number {
@@ -64,6 +68,7 @@ export function planReminders(
       kind: occurrence.kind,
       title: occurrence.content,
       fireAtMs,
+      ...(occurrence.urgent ? { urgent: true } : {}),
     };
     const slot = `${occurrence.taskId}|${fireAtMs}`;
     const existing = bySlot.get(slot);

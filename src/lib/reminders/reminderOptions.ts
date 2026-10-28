@@ -42,11 +42,20 @@ export function formatFloatingForDisplay(value: string, dateFormat: DateFormat, 
   return wall ? formatWallClock(wall, dateFormat, timeFormat) : null;
 }
 
-/** A reminder not sent yet (Quick Add) or about to be sent (task sheet). Same shape as the POST body. */
-export type ReminderDraft = { type: 'ABSOLUTE'; at: string } | { type: 'RELATIVE'; minuteOffset: number };
+/**
+ * A reminder not sent yet (Quick Add) or about to be sent (task sheet). Same shape as the POST body.
+ * M12: time reminders may be `urgent` (full-screen alarm on the chosen device); LOCATION = when arriving at / leaving a
+ * saved place (`locationName` is for labels only, never sent).
+ */
+export type ReminderDraft =
+  | { type: 'ABSOLUTE'; at: string; urgent?: boolean }
+  | { type: 'RELATIVE'; minuteOffset: number; urgent?: boolean }
+  | { type: 'LOCATION'; locationId: string; trigger: 'ON_ENTER' | 'ON_LEAVE'; locationName?: string };
 
 export function draftId(draft: ReminderDraft): string {
-  return draft.type === 'ABSOLUTE' ? `ABSOLUTE:${draft.at}` : `RELATIVE:${draft.minuteOffset}`;
+  if (draft.type === 'LOCATION') return `LOCATION:${draft.locationId}:${draft.trigger}`;
+  const base = draft.type === 'ABSOLUTE' ? `ABSOLUTE:${draft.at}` : `RELATIVE:${draft.minuteOffset}`;
+  return draft.urgent ? `${base}:urgent` : base;
 }
 
 export function addDraft(drafts: readonly ReminderDraft[], draft: ReminderDraft): ReminderDraft[] {
@@ -54,7 +63,7 @@ export function addDraft(drafts: readonly ReminderDraft[], draft: ReminderDraft)
   return drafts.some((existing) => draftId(existing) === id) ? [...drafts] : [...drafts, draft];
 }
 
-/** RELATIVE needs a due time (spec 5.8): without one only ABSOLUTE drafts remain. */
+/** RELATIVE needs a due time (spec 5.8): without one only ABSOLUTE (and M12 LOCATION) drafts remain. */
 export function applicableDrafts(drafts: readonly ReminderDraft[], hasTime: boolean): ReminderDraft[] {
-  return hasTime ? [...drafts] : drafts.filter((draft) => draft.type === 'ABSOLUTE');
+  return hasTime ? [...drafts] : drafts.filter((draft) => draft.type !== 'RELATIVE');
 }

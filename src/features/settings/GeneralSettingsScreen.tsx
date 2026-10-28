@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { CompletionToneSection } from './CompletionToneSection';
 import { LanguageSection } from './LanguageSection';
 import { SettingsPage } from './SettingsPage';
 import { SmartDateSection } from './SmartDateSection';
@@ -16,6 +17,7 @@ export function GeneralSettingsScreen() {
       <StartPageSection />
       <SmartDateSection />
       <SwipeSection />
+      <CompletionToneSection />
     </SettingsPage>
   );
 }

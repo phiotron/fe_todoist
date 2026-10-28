@@ -1,0 +1,57 @@
+{
+  "android": {
+    "link": {
+      "copy": "Sao chép liên kết",
+      "copied": "Đã chép liên kết",
+      "failed": "Không chép được liên kết"
+    },
+    "tone": {
+      "title": "Âm thanh hoàn thành",
+      "hint": "Phát một tiếng ngắn khi bạn hoàn thành task."
+    },
+    "dynamicColor": {
+      "title": "Dynamic Color",
+      "hint": "Dùng màu nhấn theo hình nền Android của bạn (Android 12 trở lên)."
+    },
+    "appIcon": {
+      "title": "Biểu tượng ứng dụng",
+      "intro": "Chọn giao diện của Taskly trên màn hình chính.",
+      "activate": "Bật biểu tượng tuỳ chỉnh",
+      "activeHint": "Biểu tượng tuỳ chỉnh đang bật. Ứng dụng tự đóng một lúc khi bạn chọn.",
+      "confirmTitle": "Bật biểu tượng tuỳ chỉnh?",
+      "confirmMessage": "Khi đổi biểu tượng, Android có thể đóng Taskly và làm mới màn hình chính. Dữ liệu của bạn không bị ảnh hưởng.",
+      "confirm": "Bật",
+      "unsupported": "Bản ứng dụng này chưa hỗ trợ biểu tượng tuỳ chỉnh.",
+      "failed": "Không đổi được biểu tượng",
+      "names": {
+        "default": "Taskly",
+        "dark": "Nửa đêm",
+        "light": "Sương mờ"
+      }
+    },
+    "shortcuts": {
+      "addTask": "Thêm việc",
+      "today": "Hôm nay",
+      "upcoming": "Sắp tới",
+      "search": "Tìm kiếm"
+    },
+    "share": {
+      "title": "Thêm nội dung chia sẻ thành task",
+      "empty": "Không có gì để thêm"
+    },
+    "widget": {
+      "addTask": "Thêm việc",
+      "addTaskHint": "Chạm để thêm việc",
+      "taskListTitle": "Hôm nay",
+      "taskListEmpty": "Hôm nay không có việc đến hạn",
+      "taskListMore": "+{{count}} việc nữa",
+      "productivityTitle": "Năng suất",
+      "productivityEmpty": "Mở Taskly để xem tiến độ",
+      "productivityProgress": "{{done}} / {{goal}} hôm nay",
+      "needsSignIn": "Hãy đăng nhập Taskly",
+      "descriptionAddTask": "Thêm việc chỉ bằng một chạm.",
+      "descriptionTaskList": "Các việc đến hạn hôm nay.",
+      "descriptionProductivity": "Mục tiêu hằng ngày trong tầm mắt."
+    }
+  }
+}

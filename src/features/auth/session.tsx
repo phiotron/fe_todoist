@@ -14,7 +14,9 @@ import {
   isChallengeSpent,
   twoFactorTokenOf,
 } from '../two-factor/twoFactorToken';
+import { getGeofencePlatform } from '../locations/geofencePlatform';
 import { cancelAllReminders } from '../reminders/platform';
+import { clearWidgetSnapshot } from '../widgets/widgetSnapshot';
 import { linkTokenOf } from './googleErrors';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'signedIn';
@@ -82,6 +84,9 @@ async function wipeCaches(clearMemory: () => void): Promise<void> {
   clearMemory();
   // The previous user's reminders must never fire after sign-out / session end / another sign-in (spec 5.8).
   await cancelAllReminders();
+  // M12: the same for location reminders (geofences) and for what the home-screen widgets show.
+  await getGeofencePlatform().stop().catch(() => undefined);
+  await clearWidgetSnapshot();
   try {
     await queryPersister.removeClient();
   } catch {

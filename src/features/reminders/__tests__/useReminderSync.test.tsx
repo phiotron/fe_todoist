@@ -12,7 +12,14 @@ import { useReminderSync, type ReminderRuntimeDeps } from '../useReminderSync';
 
 /** 10:00 on 23 Oct 2026 in Asia/Ho_Chi_Minh. */
 const NOW = Date.parse('2026-10-23T03:00:00Z');
-const SETTINGS: ReminderRuntimeSettings = { enabled: true, timeZone: 'Asia/Ho_Chi_Minh', autoReminderMinutes: 30 };
+const SETTINGS: ReminderRuntimeSettings = {
+  enabled: true,
+  timeZone: 'Asia/Ho_Chi_Minh',
+  autoReminderMinutes: 30,
+  snoozeMinutes: 15,
+  pinReminders: false,
+  urgentDeviceId: null,
+};
 const OCCURRENCES: OccurrenceInput[] = [
   { key: 'auto:t-1', taskId: 't-1', kind: 'AUTO', fireAt: '2026-10-23T11:30:00', content: 'Họp nhóm' },
   { key: 'r-1', taskId: 't-2', kind: 'ABSOLUTE', fireAt: '2026-10-24T09:00:00', content: 'Nộp báo cáo' },
@@ -156,7 +163,7 @@ describe('useReminderSync', () => {
 
     await waitFor(() => expect(scheduler.requests.size).toBe(2));
     expect(order).toEqual(['channel', 'actions', 'request']);
-    expect(deps.ensureChannel).toHaveBeenCalledWith('Nhắc việc');
+    expect(deps.ensureChannel).toHaveBeenCalledWith('Nhắc việc', 'Nhắc khẩn cấp');
     expect(deps.configureActions).toHaveBeenCalledWith({ snooze: 'Hoãn', complete: 'Hoàn thành' });
     expect(deps.requestPermission).toHaveBeenCalledTimes(1);
   });

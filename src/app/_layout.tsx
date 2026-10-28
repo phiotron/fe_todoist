@@ -12,9 +12,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SessionProvider } from '../features/auth/session';
+import { installGeofencePlatform } from '../features/locations/geofenceExpo';
 import { installReminderPlatform } from '../features/reminders/notifications';
 import { SettingsProvider } from '../features/settings/SettingsProvider';
 import { SettingsThemeProvider } from '../features/settings/SettingsThemeProvider';
+import { loadDeviceSettings } from '../lib/device/deviceSettings';
 import { installNativeGoogleSignIn } from '../lib/googleSignInAdapter';
 import { persistOptions, queryClient } from '../lib/queryClient';
 import { useTheme } from '../theme';
@@ -23,6 +25,10 @@ import { useTheme } from '../theme';
 installNativeGoogleSignIn();
 // Startup, once, before any screen renders: reminders talk to the OS only through the ReminderPlatform port.
 installReminderPlatform();
+// M12: location reminders (expo-location geofencing) talk to the OS only through the GeofencePlatform port.
+installGeofencePlatform();
+// M12: the device-only settings (complete tone, Dynamic Color, app icon) are read once at start.
+void loadDeviceSettings();
 
 /**
  * Status bar icons and every header / tab / sheet background of the navigators follow the active theme (the navigation

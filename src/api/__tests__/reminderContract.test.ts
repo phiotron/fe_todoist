@@ -11,12 +11,19 @@ type Schemas = components['schemas'];
 type Same<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 function assertTrue<_T extends true>(): void {}
 
-// Reminder reads are the generated types themselves.
-assertTrue<Same<ReminderOccurrence, Schemas['ReminderOccurrence']>>();
-assertTrue<Same<ReminderResponse, Schemas['ReminderResponse']>>();
+// Reminder reads: M12 adds `urgent` / `locationId` / `locationTrigger` and the LOCATION type by hand (until types.gen.ts is
+// regenerated from the M12 backend), so the app types are no longer identical to the generated ones; what the server
+// sends must still be readable as the app types.
+const readOccurrence = (item: Schemas['ReminderOccurrence']): ReminderOccurrence => item;
+const readReminder = (item: Schemas['ReminderResponse']): ReminderResponse => item;
+void readOccurrence;
+void readReminder;
+void assertTrue;
+export type { Same };
 
-// Reminder writes: what the app sends is always accepted by the generated request type.
-const toGenerated = (request: CreateReminderRequest): Schemas['CreateReminderRequest'] => request;
+// Reminder writes: what the app sends (time reminders) is always accepted by the generated request type.
+const toGenerated = (request: Exclude<CreateReminderRequest, { type: 'LOCATION' }>): Schemas['CreateReminderRequest'] =>
+  request;
 
 // me/settings: what the server sends can be read as the app type, and what the app sends fits the generated PATCH body.
 const readSettings = (response: Schemas['SettingsResponse']): SettingsResponse => response;

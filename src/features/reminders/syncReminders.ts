@@ -12,8 +12,10 @@ export interface SyncResult {
   failed: number;
 }
 
+/** M12: the pin / urgent flags are part of the fingerprint, so changing them replaces the scheduled notification. */
 export function reminderSignature(reminder: DesiredReminder): string {
-  return `${reminder.fireAtMs}|${reminder.title}|${reminder.body}`;
+  const flags = `${reminder.pinned ? '|pin' : ''}${reminder.urgent ? '|urgent' : ''}`;
+  return `${reminder.fireAtMs}|${reminder.title}|${reminder.body}${flags}`;
 }
 
 export function errorName(error: unknown): string {

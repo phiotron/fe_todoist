@@ -180,3 +180,33 @@ jest.mock('expo-notifications', () => {
     addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   };
 });
+
+// --- M12 expo-location / expo-task-manager -----------------------------------------------------------
+// Native-only: location reminders are tested through the GeofencePlatform port; these keep imports working.
+jest.mock('expo-location', () => ({
+  __esModule: true,
+  GeofencingEventType: { Enter: 1, Exit: 2 },
+  getForegroundPermissionsAsync: jest.fn(async () => ({ granted: false, canAskAgain: true, status: 'undetermined' })),
+  getBackgroundPermissionsAsync: jest.fn(async () => ({ granted: false, canAskAgain: true, status: 'undetermined' })),
+  requestForegroundPermissionsAsync: jest.fn(async () => ({ granted: true, canAskAgain: true, status: 'granted' })),
+  requestBackgroundPermissionsAsync: jest.fn(async () => ({ granted: true, canAskAgain: true, status: 'granted' })),
+  getCurrentPositionAsync: jest.fn(async () => ({ coords: { latitude: 10.7769, longitude: 106.7009 } })),
+  startGeofencingAsync: jest.fn(async () => undefined),
+  stopGeofencingAsync: jest.fn(async () => undefined),
+  hasStartedGeofencingAsync: jest.fn(async () => false),
+}));
+
+jest.mock('expo-task-manager', () => ({
+  __esModule: true,
+  defineTask: jest.fn(),
+}));
+
+// --- M12 react-native-android-widget ------------------------------------------------------------------
+// Native-only. The widget views are plain element trees (inspected without rendering); the update call is a spy.
+jest.mock('react-native-android-widget', () => ({
+  __esModule: true,
+  FlexWidget: () => null,
+  TextWidget: () => null,
+  registerWidgetTaskHandler: jest.fn(),
+  requestWidgetUpdate: jest.fn(async () => undefined),
+}));

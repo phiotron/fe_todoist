@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Chip } from '../../components/Chip';
 import { DEFAULT_TIME_ZONE, draftId } from '../../lib/reminders';
+import { useLocations } from '../locations/useLocations';
 import { ReminderEditorModal } from './ReminderEditorModal';
 import { reminderChipLabel, reminderLabel } from './reminderLabel';
 import type { QuickAddReminders } from './useQuickAddReminders';
@@ -20,6 +21,7 @@ export function QuickAddReminderChip({ reminders, hasTime, timeZone = DEFAULT_TI
   const [open, setOpen] = useState(false);
   const formats = useReminderFormats();
 
+  const places = useLocations(open).data;
   const items = reminders.drafts.map((draft) => ({ id: draftId(draft), label: reminderLabel(draft, t, formats) }));
   const label = reminderChipLabel(items.map((item) => item.label), t);
 
@@ -35,6 +37,7 @@ export function QuickAddReminderChip({ reminders, hasTime, timeZone = DEFAULT_TI
         hasTime={hasTime}
         timeZone={timeZone}
         timeFormat={formats.timeFormat}
+        places={places ?? []}
       />
     </>
   );

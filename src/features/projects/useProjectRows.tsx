@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { describeError, isNotFound } from '../../api/describeError';
 import type { Section } from '../../api/models';
 import { ActionMenu } from '../../components/ActionMenu';
+import { useCopyLink } from '../links/useCopyLink';
 import { AddRow } from '../../components/AddRow';
 import { AppButton } from '../../components/AppButton';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -53,6 +54,7 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
   const styles = useThemedStyles(createUseProjectRowsStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
+  const copyLink = useCopyLink();
   const { query, tasks } = useTaskList({ projectId, ...(display?.params ?? {}) });
   const groupBy = display?.options.groupBy ?? 'NONE';
   const ctx = useGroupContext(groupBy);
@@ -218,6 +220,12 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
                   icon: 'plus',
                   requiresOnline: true,
                   onPress: () => openQuickAdd({ projectId, sectionId: menuSection.id }),
+                },
+                {
+                  key: 'copy-link',
+                  label: t('android.link.copy'),
+                  icon: 'link',
+                  onPress: () => void copyLink({ kind: 'project', id: projectId, sectionId: menuSection.id }),
                 },
                 {
                   key: 'reorder-tasks',
