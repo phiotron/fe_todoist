@@ -221,8 +221,19 @@ export function addSessionExpiredListener(listener: () => void): () => void {
   };
 }
 
-/** App-wide client: base URL from EXPO_PUBLIC_API_URL, tokens from SecureStore. */
-export const apiFetch: ApiClient = createApiClient({
+/**
+ * M9 hook on the write path: a handled request never reaches the network (it was queued for the sync engine).
+ * Installed once by lib/sync/runtime.ts; null (the default, and in every test that does not install one) = no hook.
+ */
+export type RequestInterceptor = (path: string, options: ApiRequestOptions) => { value: unknown } | null;
+let requestInterceptor: RequestInterceptor | null = null;
+
+export function setRequestInterceptor(next: RequestInterceptor | null): void {
+  requestInterceptor = next;
+}
+
+/** App-wide client WITHOUT the interceptor: base URL from EXPO_PUBLIC_API_URL, tokens from SecureStore. The sync engine sends through this one. */
+export const rawApiFetch: ApiClient = createApiClient({
   baseUrl: API_URL,
   tokens: tokenStore,
   language: () => i18n.language,
@@ -237,3 +248,17 @@ export const apiFetch: ApiClient = createApiClient({
     });
   },
 });
+
+/** App-wide client every screen / hook uses: `rawApiFetch` behind the M9 interceptor. */
+export const apiFetch: ApiClient = Object.assign(
+  <T>(path: string, options: ApiRequestOptions = {}): Promise<T> => {
+    try {
+      const handled = requestInterceptor?.(path, options);
+      if (handled) return Promise.resolve(handled.value as T);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    return rawApiFetch<T>(path, options);
+  },
+  { resetSession: () => rawApiFetch.resetSession() },
+);

@@ -21,6 +21,7 @@ import enSchedule from './locales/en/schedule.json';
 import enSearch from './locales/en/search.json';
 import enSelection from './locales/en/selection.json';
 import enSettings from './locales/en/settings.json';
+import enSync from './locales/en/sync.json';
 import enTaskDetail from './locales/en/taskDetail.json';
 import enTaskList from './locales/en/taskList.json';
 import enTwoFactor from './locales/en/twoFactor.json';
@@ -45,6 +46,7 @@ import viSearch from './locales/vi/search.json';
 import viSchedule from './locales/vi/schedule.json';
 import viSelection from './locales/vi/selection.json';
 import viSettings from './locales/vi/settings.json';
+import viSync from './locales/vi/sync.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
 import viTaskList from './locales/vi/taskList.json';
 import viTwoFactor from './locales/vi/twoFactor.json';
@@ -76,6 +78,7 @@ export const viTranslation = {
   ...viSchedule,
   ...viSelection,
   ...viSettings,
+  ...viSync,
   ...viTaskDetail,
   ...viTaskList,
   ...viTwoFactor,
@@ -104,6 +107,7 @@ export const enTranslation = {
   ...enSearch,
   ...enSelection,
   ...enSettings,
+  ...enSync,
   ...enTaskDetail,
   ...enTaskList,
   ...enTwoFactor,
