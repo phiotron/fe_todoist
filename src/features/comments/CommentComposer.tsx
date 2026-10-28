@@ -22,14 +22,23 @@ import { useMe } from '../auth/session';
 import { activeMentionIds, commentTextProblem, filterMentionable, formatFileSize, insertMention, mentionFragment } from './commentRules';
 import { useCommentActions, useMentionable } from './useComments';
 
+interface CommentComposerProps {
+  target: CommentTarget;
+  actions: ReturnType<typeof useCommentActions>;
+  /** X4: text already in the box (a share into Taskly). Read once, when the composer is created. */
+  initialText?: string;
+  /** X4: called after the comment was sent (the box has been cleared). */
+  onSent?: () => void;
+}
+
 /** Comment box: text (≤ 15 000), one file (≤ 100 MB, uploaded first), @mention picker, Send. Clears itself once sent. */
-export function CommentComposer({ target, actions }: { target: CommentTarget; actions: ReturnType<typeof useCommentActions> }) {
+export function CommentComposer({ target, actions, initialText = '', onSent }: CommentComposerProps) {
   const styles = useThemedStyles(createCommentComposerStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
   const online = useIsOnline();
   const me = useMe();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
   const [attachment, setAttachment] = useState<AttachmentResponse | null>(null);
   const [uploading, setUploading] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>();
@@ -76,6 +85,7 @@ export function CommentComposer({ target, actions }: { target: CommentTarget; ac
       setText('');
       setAttachment(null);
       setPicked(new Map());
+      onSent?.();
     }
   }
 

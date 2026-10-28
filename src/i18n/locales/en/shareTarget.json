@@ -1,0 +1,29 @@
+{
+  "shareTarget": {
+    "title": "Shared to Taskly",
+    "createTask": "Create task",
+    "createTaskHint": "Open Quick Add with this content",
+    "addComment": "Add to comment",
+    "addCommentHint": "Send this content as a comment on a task or a project",
+    "cancel": "Cancel",
+    "pickTitle": "Add the comment where?",
+    "searchLabel": "Find a task or project",
+    "searchPlaceholder": "Find a task or project…",
+    "searchTooLong": "A keyword has at most {{n}} characters",
+    "recent": "Recent",
+    "projects": "Projects",
+    "tasks": "Tasks",
+    "noResults": "No task or project found",
+    "loadError": "Could not load the list",
+    "retry": "Try again",
+    "inProject": "In {{project}}",
+    "composeTo": "Add to the comments of {{name}}",
+    "change": "Choose another",
+    "loadingTarget": "Opening…",
+    "chooseAnother": "Choose another",
+    "taskCompleted": "This task is completed — you can still add a comment.",
+    "archived": "This project is archived — comments cannot be added.",
+    "offline": "You are offline — your text is kept, send it when you are back online.",
+    "sent": "Added to the comments"
+  }
+}

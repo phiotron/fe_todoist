@@ -10,7 +10,7 @@ import { useCopyLink } from '../useCopyLink';
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
 // quickAddTarget imports the router, which is ESM-only; these tests never navigate.
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn() }, usePathname: () => '/' }));
 const mockedClipboard = jest.mocked(Clipboard);
 
 const TASK_ID = '5b0d6c3e-9a4f-4f6e-8a51-2f2d7e4c1b90';

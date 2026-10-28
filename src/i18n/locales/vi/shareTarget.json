@@ -1,0 +1,29 @@
+{
+  "shareTarget": {
+    "title": "Chia sẻ vào Taskly",
+    "createTask": "Tạo task",
+    "createTaskHint": "Mở Thêm nhanh với nội dung này",
+    "addComment": "Thêm vào comment",
+    "addCommentHint": "Gửi nội dung này vào comment của một task hoặc dự án",
+    "cancel": "Huỷ",
+    "pickTitle": "Thêm comment vào đâu?",
+    "searchLabel": "Tìm task hoặc dự án",
+    "searchPlaceholder": "Tìm task hoặc dự án…",
+    "searchTooLong": "Từ khoá tối đa {{n}} ký tự",
+    "recent": "Gần đây",
+    "projects": "Dự án",
+    "tasks": "Task",
+    "noResults": "Không tìm thấy task hay dự án nào",
+    "loadError": "Không tải được danh sách",
+    "retry": "Thử lại",
+    "inProject": "Trong {{project}}",
+    "composeTo": "Thêm vào comment của {{name}}",
+    "change": "Đổi nơi khác",
+    "loadingTarget": "Đang mở…",
+    "chooseAnother": "Chọn nơi khác",
+    "taskCompleted": "Task này đã hoàn thành — vẫn có thể thêm comment.",
+    "archived": "Dự án này đã lưu trữ — không thể thêm comment.",
+    "offline": "Bạn đang offline — nội dung được giữ lại, hãy gửi khi có mạng.",
+    "sent": "Đã thêm vào comment"
+  }
+}
