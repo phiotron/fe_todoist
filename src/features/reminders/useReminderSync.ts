@@ -8,7 +8,7 @@ import type { ReminderRuntimeSettings } from './reminderSettings';
 import { runReminderSync, type ReminderLabels, type ReminderSyncDeps } from './runReminderSync';
 import { createSerialRunner } from './serialRunner';
 import { errorName, warnLog } from './syncReminders';
-import { onReminderSyncRequested } from './syncSignal';
+import { isReminderHandledWrite, onReminderSyncAfterWrite, onReminderSyncRequested } from './syncSignal';
 import type { ReminderPermission } from './types';
 
 export interface ReminderRuntimeDeps extends ReminderSyncDeps {
@@ -120,18 +120,24 @@ export function useReminderSync(settings: ReminderRuntimeSettings | null, option
     return () => subscription.remove();
   }, [runner]);
 
-  // After every successful write on this device.
+  // After every successful write on this device. PERF: data writes (useDataMutation) say themselves whether they can
+  // move a reminder (requestReminderSyncAfterWrite); other mutations still re-plan after any success.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => void runner.run(), debounceMs);
+    };
     const unsubscribe = queryClient.getMutationCache().subscribe((event) => {
-      if (event.type === 'updated' && event.action.type === 'success') {
-        clearTimeout(timer);
-        timer = setTimeout(() => void runner.run(), debounceMs);
+      if (event.type === 'updated' && event.action.type === 'success' && !isReminderHandledWrite(event.mutation.meta)) {
+        schedule();
       }
     });
+    const unsubscribeWrites = onReminderSyncAfterWrite(schedule);
     return () => {
       clearTimeout(timer);
       unsubscribe();
+      unsubscribeWrites();
     };
   }, [queryClient, runner, debounceMs]);
 
