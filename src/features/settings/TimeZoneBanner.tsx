@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { ErrorText } from '../../components/ErrorText';
-import { useTopInset } from '../../components/useTopInset';
+import { useBannerTopInset, useCoverStatusBar } from '../../components/useTopInset';
 import { describeSettingsSaveError } from './settingsErrors';
 import { useSettingsStyles } from './ui';
 import { useSettings } from './useSettings';
@@ -13,12 +13,16 @@ export function TimeZoneBanner() {
   const { t } = useTranslation();
   const styles = useSettingsStyles();
   // The banner sits at the very top of the signed-in layout: keep it clear of the status bar (clock, wifi icons).
-  const topInset = useTopInset();
+  const topInset = useBannerTopInset();
   const { settings, deviceTimeZone, timeZoneMismatch, update, dismissTimeZoneMismatch } = useSettings();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
-  if (!timeZoneMismatch || !deviceTimeZone) return null;
+  const showing = timeZoneMismatch && !!deviceTimeZone;
+  // The screens below start right under this banner while it shows, so they must not add the status-bar inset too.
+  useCoverStatusBar(showing);
+
+  if (!showing || !deviceTimeZone) return null;
   const deviceZone: string = deviceTimeZone;
 
   async function onUpdate() {
