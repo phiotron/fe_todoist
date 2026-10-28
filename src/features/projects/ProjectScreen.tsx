@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+﻿import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,12 @@ import { SubHeader } from '../../components/SubHeader';
 import { gutter, radius, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { DisplaySheet } from '../display/DisplaySheet';
-import { projectViewKey } from '../display/displayRules';
+import { BoardView } from '../board/BoardView';
+import { projectBoardColumns } from '../board/boardColumns';
+import { CalendarView } from '../calendar/CalendarView';
+import { calendarFilters, projectScope } from '../calendar/useCalendarTasks';
+import { layoutOf, projectViewKey } from '../display/displayRules';
+import { useGroupContext } from '../display/useGroupContext';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { useAddButtonPlacement } from '../navMenu/useNavigationSettings';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
@@ -78,6 +83,15 @@ function ProjectBody({
   const [reorderOpen, setReorderOpen] = useState(false);
 
   const showCompleted = display.options.showCompleted === true;
+  // M7: List / Board / Calendar of this project (saved with the Display).
+  const layout = layoutOf(display.options);
+  const groupBy = display.options.groupBy;
+  const groupContext = useGroupContext(groupBy);
+  const boardColumns = useMemo(
+    () => projectBoardColumns(body.tasks, body.sections, project.id, groupBy, groupContext, readOnly),
+    [body.tasks, body.sections, project.id, groupBy, groupContext, readOnly],
+  );
+  const calendarScope = useMemo(() => projectScope(project.id), [project.id]);
 
   // Spec 3.1: the numbers of the delete dialog are the server's (never re-summed from `all`).
   const counts = deleteImpact(project);
@@ -175,7 +189,18 @@ function ProjectBody({
         right={<IconButton icon="more-horizontal" label={t('projectScreen.menu')} onPress={() => setMenuOpen(true)} testID="project-menu-open" />}
       />
       {header}
-      <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
+      {layout === 'BOARD' ? (
+        <BoardView
+          columns={boardColumns}
+          query={body.query}
+          readOnly={readOnly}
+          testID="project-board"
+        />
+      ) : layout === 'CALENDAR' ? (
+        <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} readOnly={readOnly} testID="project-calendar" />
+      ) : (
+        <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
+      )}
       {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} placement={addButtonPlacement} testID="project-fab" /> : null}
       {body.dialogs}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={items} testID="project-menu" />
@@ -208,7 +233,7 @@ function ProjectBody({
   );
 }
 
-/** Waits for the saved Display, so the open tasks are fetched once with the right parameters (Quyết định 14). */
+/** Waits for the saved Display, so the open tasks are fetched once with the right parameters (Quyáº¿t Ä‘á»‹nh 14). */
 function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: boolean; onLeave: () => void }) {
   const styles = useThemedStyles(createProjectScreenStyles);
   const { palette } = useTheme();
@@ -219,7 +244,7 @@ function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: 
   return <ProjectBody project={project} tab={tab} onLeave={onLeave} display={display} />;
 }
 
-/** Project / Inbox screen (spec 9.2 "Màn dự án / Inbox (List)"): header, menu ⋯, sections, Completed tasks, read-only when archived. */
+/** Project / Inbox screen (spec 9.2 "MÃ n dá»± Ã¡n / Inbox (List)"): header, menu â‹¯, sections, Completed tasks, read-only when archived. */
 export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
   const styles = useThemedStyles(createProjectScreenStyles);
   const queryClient = useQueryClient();

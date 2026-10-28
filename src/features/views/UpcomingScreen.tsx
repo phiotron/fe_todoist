@@ -16,7 +16,12 @@ import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { DisplaySheet } from '../display/DisplaySheet';
-import { UPCOMING_VIEW_KEY } from '../display/displayRules';
+import { BoardView } from '../board/BoardView';
+import { dayBoardColumns } from '../board/boardColumns';
+import { CalendarView } from '../calendar/CalendarView';
+import { allTasksScope, calendarFilters } from '../calendar/useCalendarTasks';
+import { CompletedTodayBlock } from '../display/CompletedTodayBlock';
+import { UPCOMING_VIEW_KEY, layoutOf } from '../display/displayRules';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { NO_DUE } from '../schedule/dueValue';
@@ -102,9 +107,21 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
         ),
       );
     }
+    // M7: Display → Completed tasks also shows what was completed today.
+    if (display.options.showCompleted === true) {
+      result.push(nodeRow('completed-today', <CompletedTodayBlock today={today} />));
+    }
     return result;
     // reschedule.start only opens the sheet; overdue.query is read for hasNextPage / fetchNextPage.
-  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs, display.options.showCompleted]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // M7: List / Board / Calendar of Upcoming (saved with the Display). The board has one column per loaded day.
+  const layout = layoutOf(display.options);
+  const boardColumns = useMemo(
+    () => dayBoardColumns(dayRange(today, loadedThrough), groupByDueDate(upcoming.tasks), today),
+    [today, loadedThrough, upcoming.tasks],
+  );
+  const calendarScope = useMemo(() => allTasksScope(), []);
 
   // Scroll to the target day, loading more pages / windows first while it has not arrived (spec 9.2: infinite list of days, at most 2 years; jumps are limited to 3 months, so only a few windows load here).
   useEffect(() => {
@@ -188,6 +205,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
         selected={selectedDay}
         onSelectDay={chooseDay}
         onShiftWeek={shiftWeek}
+        onLongPressDay={(day) => openQuickAdd({ dueDate: day })}
       />
       <View style={styles.error}>
         <ErrorText message={reschedule.errorMessage} testID="upcoming-error" />
@@ -198,7 +216,13 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
   return (
     <View style={styles.fill}>
       {header}
-      <TaskListView rows={rows} query={upcoming.query} showProject testID="upcoming-list" listRef={listRef} initialNumToRender={100} />
+      {layout === 'BOARD' ? (
+        <BoardView columns={boardColumns} query={upcoming.query} showProject autoLoadAll={false} testID="upcoming-board" />
+      ) : layout === 'CALENDAR' ? (
+        <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} testID="upcoming-calendar" />
+      ) : (
+        <TaskListView rows={rows} query={upcoming.query} showProject testID="upcoming-list" listRef={listRef} initialNumToRender={100} />
+      )}
       {reschedule.sheet}
       <ScheduleSheet
         visible={jumpOpen}

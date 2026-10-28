@@ -4,9 +4,18 @@ import type {
   DisplayParams,
   DisplaySortParam,
 } from '../../api/models';
-import type { DueFilter, GroupBy, SortBy, ViewKey, ViewOptions, ViewOptionsBody } from '../../api/viewOptions';
+import type { DueFilter, GroupBy, Layout, SortBy, ViewKey, ViewOptions, ViewOptionsBody } from '../../api/viewOptions';
 
 export type ViewKind = 'today' | 'upcoming' | 'project' | 'label' | 'filter';
+
+/** M7: every view offers the three layouts (contract 2), List first (the default). */
+export const LAYOUTS: readonly Layout[] = ['LIST', 'BOARD', 'CALENDAR'];
+
+/**
+ * M7: the "Future occurrences" switch of Upcoming only makes sense with recurring tasks (M6c). Until M6c is merged the
+ * switch stays hidden; the saved value is still kept and sent back.
+ */
+export const FUTURE_OCCURRENCES_ENABLED = false;
 
 export const DUE_FILTERS: readonly DueFilter[] = [
   'TODAY',
@@ -23,8 +32,10 @@ export interface ViewRule {
   sorts: readonly SortBy[];
   /** Allowed groupings, NONE (the default) first. */
   groups: readonly GroupBy[];
-  /** Only project views have the "Completed tasks" switch. */
+  /** "Completed tasks" switch: projects (M2), Today and Upcoming (M7, as Todoist); not labels / filters. */
   hasCompleted: boolean;
+  /** M7: "Future occurrences" switch (Upcoming only). */
+  hasFutureOccurrences: boolean;
   /**
    * Due filters the server accepts for this view (spec 12.7 / 12.10): Today has no "no date" (every Today task has a
    * due), Upcoming has neither "no date" nor "overdue" (always empty) — the server answers 400 for them.
@@ -34,28 +45,33 @@ export interface ViewRule {
 
 const LIST_RULE: ViewRule = {
   sorts: ['DATE', 'DEADLINE', 'PRIORITY', 'NAME', 'ADDED'],
-  groups: ['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'PROJECT', 'LABEL'],
+  groups: ['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'PROJECT', 'LABEL', 'ADDED'],
   hasCompleted: false,
+  hasFutureOccurrences: false,
   dueFilters: DUE_FILTERS,
 };
 
+// M7: "Added date" grouping (appended) everywhere but Upcoming (always by day).
 export const VIEW_RULES: Readonly<Record<ViewKind, ViewRule>> = {
   today: {
     sorts: ['DATE', 'PRIORITY', 'NAME', 'ADDED', 'DEADLINE'],
-    groups: ['NONE', 'PRIORITY', 'PROJECT', 'LABEL', 'DEADLINE'],
-    hasCompleted: false,
+    groups: ['NONE', 'PRIORITY', 'PROJECT', 'LABEL', 'DEADLINE', 'ADDED'],
+    hasCompleted: true,
+    hasFutureOccurrences: false,
     dueFilters: DUE_FILTERS.filter((due) => due !== 'NO_DATE'),
   },
   upcoming: {
     sorts: ['DATE', 'PRIORITY', 'NAME', 'ADDED', 'DEADLINE'],
     groups: ['NONE'],
-    hasCompleted: false,
+    hasCompleted: true,
+    hasFutureOccurrences: true,
     dueFilters: DUE_FILTERS.filter((due) => due !== 'NO_DATE' && due !== 'OVERDUE'),
   },
   project: {
     sorts: ['MANUAL', 'DATE', 'DEADLINE', 'PRIORITY', 'NAME', 'ADDED'],
-    groups: ['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'LABEL'],
+    groups: ['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'LABEL', 'ADDED'],
     hasCompleted: true,
+    hasFutureOccurrences: false,
     dueFilters: DUE_FILTERS,
   },
   label: LIST_RULE,
@@ -89,7 +105,14 @@ export function defaultViewOptions(viewKey: ViewKey): ViewOptions {
     filterLabelId: null,
     filterDue: null,
     showCompleted: rule.hasCompleted ? false : null,
+    layout: 'LIST',
+    showFutureOccurrences: rule.hasFutureOccurrences ? false : null,
   };
+}
+
+/** M7: the saved layout, LIST when unknown / absent (answers of a server without M7). */
+export function layoutOf(options: Pick<ViewOptions, 'layout'>): Layout {
+  return options.layout && LAYOUTS.includes(options.layout) ? options.layout : 'LIST';
 }
 
 /** The saved Display of a view cleaned against its rules: a value the view does not allow falls back to default. */
@@ -108,6 +131,8 @@ export function resolveViewOptions(viewKey: ViewKey, saved: readonly ViewOptions
     filterLabelId: found.filterLabelId ?? null,
     filterDue: found.filterDue !== null && rule.dueFilters.includes(found.filterDue) ? found.filterDue : null,
     showCompleted: rule.hasCompleted ? found.showCompleted === true : null,
+    layout: layoutOf(found),
+    showFutureOccurrences: rule.hasFutureOccurrences ? found.showFutureOccurrences === true : null,
   };
 }
 
@@ -120,7 +145,9 @@ export function isDefaultViewOptions(viewKey: ViewKey, options: ViewOptions): bo
     options.filterPriority === fallback.filterPriority &&
     options.filterLabelId === fallback.filterLabelId &&
     options.filterDue === fallback.filterDue &&
-    options.showCompleted === fallback.showCompleted
+    options.showCompleted === fallback.showCompleted &&
+    layoutOf(options) === fallback.layout &&
+    (options.showFutureOccurrences ?? null) === fallback.showFutureOccurrences
   );
 }
 
@@ -137,7 +164,10 @@ export function toDisplayParams(options: ViewOptions): DisplayParams {
   return params;
 }
 
-/** Body of PUT view-options/{viewKey}: null fields left out (showCompleted is null outside projects). */
+/**
+ * Body of PUT view-options/{viewKey}: null fields left out (showCompleted is null on labels / filters,
+ * showFutureOccurrences outside Upcoming). M7: the layout is always sent.
+ */
 export function toViewOptionsBody(options: ViewOptions): ViewOptionsBody {
   const body: ViewOptionsBody = {
     sortBy: options.sortBy,
@@ -148,5 +178,9 @@ export function toViewOptionsBody(options: ViewOptions): ViewOptionsBody {
   if (options.filterLabelId !== null) body.filterLabelId = options.filterLabelId;
   if (options.filterDue !== null) body.filterDue = options.filterDue;
   if (options.showCompleted !== null) body.showCompleted = options.showCompleted;
+  body.layout = layoutOf(options);
+  if (options.showFutureOccurrences !== null && options.showFutureOccurrences !== undefined) {
+    body.showFutureOccurrences = options.showFutureOccurrences;
+  }
   return body;
 }

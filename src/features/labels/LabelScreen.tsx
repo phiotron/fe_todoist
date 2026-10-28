@@ -13,7 +13,11 @@ import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
 import { useTheme } from '../../theme';
 import { DisplaySheet } from '../display/DisplaySheet';
-import { labelViewKey } from '../display/displayRules';
+import { BoardView } from '../board/BoardView';
+import { listBoardColumns } from '../board/boardColumns';
+import { CalendarView } from '../calendar/CalendarView';
+import { calendarFilters, labelScope } from '../calendar/useCalendarTasks';
+import { labelViewKey, layoutOf } from '../display/displayRules';
 import { displayRows } from '../display/groupTasks';
 import { useGroupContext } from '../display/useGroupContext';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
@@ -130,6 +134,13 @@ function LabelTasks({ labelId, display }: { labelId: string; display: ViewDispla
   const groupBy = display.options.groupBy;
   const ctx = useGroupContext(groupBy);
   const rows = useMemo(() => displayRows(tasks, groupBy, ctx), [tasks, groupBy, ctx]);
+  const layout = layoutOf(display.options);
+  const boardColumns = useMemo(() => listBoardColumns(tasks, groupBy, ctx, ''), [tasks, groupBy, ctx]);
+  const calendarScope = useMemo(() => labelScope(labelId), [labelId]);
+  if (layout === 'BOARD') return <BoardView columns={boardColumns} query={query} showProject testID="label-board" />;
+  if (layout === 'CALENDAR') {
+    return <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} testID="label-calendar" />;
+  }
   return (
     <TaskListView
       rows={rows}

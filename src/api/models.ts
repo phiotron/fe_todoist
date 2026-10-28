@@ -89,12 +89,13 @@ export type CascadedTask = TaskChangeResponse['cascaded'][number];
 export type ReorderResponse = Strict<Schemas['ReorderResponse']>;
 export type AffectedTasksResponse = Strict<Schemas['AffectedTasksResponse']>;
 
-export type TaskView = 'today' | 'upcoming' | 'overdue' | 'completed';
+/** M7 adds 'calendar': GET tasks?view=calendar&from=&to= (both required, ≤ 42 days; may carry ONE of projectId / labelId / filter). */
+export type TaskView = 'today' | 'upcoming' | 'overdue' | 'completed' | 'calendar';
 
 /** Display query parameters of task lists (spec 12.7); query enums are lowercase. */
 export type DisplaySortParam = 'manual' | 'date' | 'deadline' | 'priority' | 'name' | 'added';
 export type DisplayOrderParam = 'asc' | 'desc';
-export type DisplayGroupParam = 'none' | 'date' | 'deadline' | 'priority' | 'project' | 'label';
+export type DisplayGroupParam = 'none' | 'date' | 'deadline' | 'priority' | 'project' | 'label' | 'added';
 export type DisplayDueParam =
   | 'today'
   | 'this_week'

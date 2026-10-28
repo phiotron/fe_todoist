@@ -16,7 +16,11 @@ import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
 import { type, useTheme } from '../../theme';
 import { DisplaySheet } from '../display/DisplaySheet';
-import { filterViewKey } from '../display/displayRules';
+import { BoardView } from '../board/BoardView';
+import { listBoardColumns } from '../board/boardColumns';
+import { CalendarView } from '../calendar/CalendarView';
+import { calendarFilters, filterScope } from '../calendar/useCalendarTasks';
+import { filterViewKey, layoutOf } from '../display/displayRules';
 import { displayRows } from '../display/groupTasks';
 import { useGroupContext } from '../display/useGroupContext';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
@@ -166,6 +170,15 @@ function FilterTasks({ parts, display }: { parts: readonly string[]; display: Vi
   const { lists, combined, truncated } = useFilterTaskLists(parts, display.params);
   const groupBy = display.options.groupBy;
   const ctx = useGroupContext(groupBy);
+  const layout = layoutOf(display.options);
+  const boardColumns = useMemo(() => {
+    // One block of columns per comma part, as the List has one block per part (a task matching two parts shows twice).
+    if (lists.length === 1) return listBoardColumns(lists[0].tasks, groupBy, ctx, lists[0].part);
+    return lists.flatMap((list, index) =>
+      listBoardColumns(list.tasks, groupBy, ctx, list.part).map((column) => ({ ...column, key: `part-${index}:${column.key}` })),
+    );
+  }, [lists, groupBy, ctx]);
+  const calendarScope = useMemo(() => filterScope(parts), [parts]);
 
   const rows = useMemo(() => {
     if (combined.isPending || combined.isError) return [];
@@ -194,13 +207,19 @@ function FilterTasks({ parts, display }: { parts: readonly string[]; display: Vi
           {t('filters.screen.truncated', { n: MAX_FILTER_PARTS })}
         </Text>
       ) : null}
-      <TaskListView
-        rows={rows}
-        query={combined}
-        empty={<StateView tone="ok" icon="filter" title={t('filters.screen.empty')} testID="filter-tasks-empty" />}
-        showProject
-        testID="filter-tasks"
-      />
+      {layout === 'BOARD' ? (
+        <BoardView columns={boardColumns} query={combined} showProject testID="filter-board" />
+      ) : layout === 'CALENDAR' ? (
+        <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} testID="filter-calendar" />
+      ) : (
+        <TaskListView
+          rows={rows}
+          query={combined}
+          empty={<StateView tone="ok" icon="filter" title={t('filters.screen.empty')} testID="filter-tasks-empty" />}
+          showProject
+          testID="filter-tasks"
+        />
+      )}
     </View>
   );
 }

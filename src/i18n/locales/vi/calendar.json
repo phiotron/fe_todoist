@@ -1,0 +1,18 @@
+{
+  "calendar": {
+    "mode": { "agenda": "Lịch trình", "threeDays": "3 ngày", "week": "Tuần", "month": "Tháng" },
+    "previous": "Trước",
+    "next": "Sau",
+    "today": "Hôm nay",
+    "allDay": "Cả ngày",
+    "noDate": "Không ngày ({{n}})",
+    "noDateTitle": "Task chưa có ngày",
+    "noDateHint": "Nhấn giữ một task rồi kéo vào lịch",
+    "noDateEmpty": "Mọi task đều đã có ngày",
+    "more": "+{{n}}",
+    "empty": "Không có task",
+    "addOnDay": "Thêm task ngày {{date}}",
+    "dayLabel": "{{weekday}} {{day}}",
+    "modes": "Chế độ xem lịch"
+  }
+}

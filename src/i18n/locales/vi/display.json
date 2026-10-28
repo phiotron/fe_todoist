@@ -11,6 +11,10 @@
     "all": "Tất cả",
     "priorityN": "P{{n}}",
     "completed": "Completed tasks",
+    "futureOccurrences": "Future occurrences",
+    "layoutTitle": "Bố cục",
+    "layout": { "list": "Danh sách", "board": "Bảng", "calendar": "Lịch" },
+    "completedToday": "Đã hoàn thành hôm nay",
     "reset": "Đặt lại mặc định",
     "done": "Xong",
     "sort": {
@@ -29,14 +33,16 @@
       "deadline": "Deadline",
       "priority": "Ưu tiên",
       "project": "Dự án",
-      "label": "Label"
+      "label": "Label",
+      "added": "Ngày thêm"
     },
     "groups": {
       "noDate": "Không có ngày",
       "deadline": "Deadline {{date}}",
       "noDeadline": "Không có deadline",
       "priority": "Ưu tiên {{n}}",
-      "noLabel": "Không có label"
+      "noLabel": "Không có label",
+      "added": "Thêm {{date}}"
     },
     "due": {
       "today": "Hôm nay",

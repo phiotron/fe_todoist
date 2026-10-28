@@ -1,0 +1,12 @@
+{
+  "board": {
+    "noSection": "Không có section",
+    "overdue": "Quá hạn",
+    "all": "Tất cả",
+    "empty": "Không có task",
+    "addTask": "Thêm task",
+    "dragHint": "Nhấn giữ rồi kéo để chuyển task",
+    "moved": "Đã chuyển {{n}} task",
+    "openTask": "Mở {{name}}"
+  }
+}

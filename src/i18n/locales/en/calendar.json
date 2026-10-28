@@ -1,0 +1,18 @@
+{
+  "calendar": {
+    "mode": { "agenda": "Agenda", "threeDays": "3 days", "week": "Week", "month": "Month" },
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "allDay": "All day",
+    "noDate": "No date ({{n}})",
+    "noDateTitle": "Tasks without a date",
+    "noDateHint": "Long press a task, then drag it onto the calendar",
+    "noDateEmpty": "Every task has a date",
+    "more": "+{{n}}",
+    "empty": "No tasks",
+    "addOnDay": "Add a task on {{date}}",
+    "dayLabel": "{{weekday}} {{day}}",
+    "modes": "Calendar view"
+  }
+}

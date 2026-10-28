@@ -2,18 +2,28 @@ import type { Label } from '../../api/labels';
 import type { Task } from '../../api/models';
 import type { GroupBy } from '../../api/viewOptions';
 import i18n from '../../i18n';
+import { dateKeyInZone } from '../../lib/dates';
 import { formatDayHeader } from '../../lib/dates/format';
+import { parseInstant } from '../../lib/dates/instant';
 import { sectionRow, taskRows, treeRows, type TaskListRow } from '../tasks/taskRows';
 
 export type GroupableTask = Pick<
   Task,
   'id' | 'parentId' | 'dueDate' | 'dueDatetime' | 'deadlineDate' | 'priority' | 'projectId' | 'projectName' | 'labelIds'
->;
+> &
+  Partial<Pick<Task, 'createdAt'>>;
 
 export interface GroupContext {
   /** yyyy-MM-dd of today in the account time zone (day titles: "Hôm nay", "Ngày mai"…). */
   todayKey: string;
   labels: ReadonlyMap<string, Label>;
+  /** M7 "Added date": the account time zone that turns `createdAt` (an instant) into a day. Absent = UTC. */
+  timeZone?: string;
+}
+
+/** M7: the account-zone day a task was created (group "Added date", spec 12.7 / plan M7 F2). */
+export function addedDayOf(task: Partial<Pick<Task, 'createdAt'>>, timeZone = 'UTC'): string | null {
+  return task.createdAt ? dateKeyInZone(parseInstant(task.createdAt), timeZone) : null;
 }
 
 export interface TaskGroup<T> {
@@ -60,6 +70,12 @@ function groupKeyOf(task: GroupableTask, groupBy: GroupBy, ctx: GroupContext): {
       return label
         ? { key: `label:${label.id}`, title: label.name }
         : { key: 'label:none', title: i18n.t('display.groups.noLabel') };
+    }
+    case 'ADDED': {
+      const day = addedDayOf(task, ctx.timeZone);
+      return day
+        ? { key: `added:${day}`, title: i18n.t('display.groups.added', { date: formatDayHeader(day, ctx.todayKey) }) }
+        : { key: 'added:none', title: '' };
     }
     default:
       return { key: 'all', title: '' };

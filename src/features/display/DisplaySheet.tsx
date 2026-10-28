@@ -11,8 +11,8 @@ import { Toggle } from '../../components/Toggle';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { type, useTheme } from '../../theme';
 import { useLabels } from '../labels/useLabels';
-import { PRIORITY_FILTERS, VIEW_RULES, viewKindOf } from './displayRules';
-import { dueFilterLabel, groupLabel, sortLabel } from './displayLabels';
+import { FUTURE_OCCURRENCES_ENABLED, LAYOUTS, PRIORITY_FILTERS, VIEW_RULES, layoutOf, viewKindOf } from './displayRules';
+import { dueFilterLabel, groupLabel, layoutLabel, sortLabel } from './displayLabels';
 import { useViewDisplay } from './useViewDisplay';
 
 interface DisplaySheetProps {
@@ -22,7 +22,10 @@ interface DisplaySheetProps {
   testID?: string;
 }
 
-/** Display (spec 12.7): sort / order / group / filters (+ Completed tasks on projects), applied on tap. */
+/**
+ * Display (spec 12.7): M7 layout (List / Board / Calendar), sort / order / group / filters, Completed tasks (projects,
+ * Today, Upcoming) and Future occurrences (Upcoming, hidden until recurring tasks exist), applied on tap.
+ */
 export function DisplaySheet({ visible, viewKey, onClose, testID = 'display' }: DisplaySheetProps) {
   const { t } = useTranslation();
   const { palette } = useTheme();
@@ -43,6 +46,19 @@ export function DisplaySheet({ visible, viewKey, onClose, testID = 'display' }: 
   return (
     <BottomSheet visible={visible} title={t('display.title')} onClose={onClose} testID={testID}>
       <>
+        {section(
+          t('display.layoutTitle'),
+          LAYOUTS.map((layout) => (
+            <Chip
+              key={layout}
+              label={layoutLabel(layout)}
+              selected={layoutOf(options) === layout}
+              disabled={locked}
+              onPress={() => save({ layout })}
+              testID={`${testID}-layout-${layout.toLowerCase()}`}
+            />
+          )),
+        )}
         {section(
           t('display.sortTitle'),
           rule.sorts.map((sort) => (
@@ -161,6 +177,18 @@ export function DisplaySheet({ visible, viewKey, onClose, testID = 'display' }: 
               label={t('display.completed')}
               value={options.showCompleted === true}
               onChange={(value) => save({ showCompleted: value })}
+              disabled={locked}
+            />
+          </View>
+        ) : null}
+        {rule.hasFutureOccurrences && FUTURE_OCCURRENCES_ENABLED ? (
+          <View style={styles.switchRow}>
+            <Text style={[styles.switchLabel, { color: palette.ink }]}>{t('display.futureOccurrences')}</Text>
+            <Toggle
+              testID={`${testID}-future-occurrences`}
+              label={t('display.futureOccurrences')}
+              value={options.showFutureOccurrences === true}
+              onChange={(value) => save({ showFutureOccurrences: value })}
               disabled={locked}
             />
           </View>
