@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { KeyboardScreen } from '../../components/KeyboardScreen';
 import { useTheme } from '../../theme';
 import { useIsOnline } from '../../lib/useIsOnline';
@@ -11,6 +11,7 @@ import { describeAuthError, type AuthErrorView } from './authErrors';
 import { GoogleSignInButton, OrDivider } from './GoogleSignInButton';
 import { goHomeAfterAuth, goToTwoFactor } from './LoginScreen';
 import { useSession } from './session';
+import { SocialSignInButtons } from './SocialSignInButtons';
 import { useAuthStyles } from './styles';
 import { hasErrors, validateRegister, type RegisterValues } from './validation';
 
@@ -65,7 +66,7 @@ export function RegisterScreen() {
     <KeyboardScreen contentStyle={styles.screen}>
       <AuthLogo />
       <Text style={styles.title}>{t('auth.register.title')}</Text>
-      {/* The design also draws Apple / Microsoft here; only Google exists in M5 (Apple is M13). */}
+      {/* The design draws Apple / Microsoft too: Google (M5), Apple and Facebook (M13b); no Microsoft sign-in. */}
       <GoogleSignInButton
         testID="register-google"
         disabled={submitting}
@@ -74,6 +75,9 @@ export function RegisterScreen() {
         onLinkRequired={goToLogin}
         onTwoFactorRequired={goToTwoFactor}
       />
+      <View style={{ marginTop: 12 }}>
+        <SocialSignInButtons testID="register-social" disabled={submitting} />
+      </View>
       <OrDivider />
       <AuthTextField
         testID="register-displayName"

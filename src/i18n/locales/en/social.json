@@ -1,0 +1,40 @@
+{
+  "social": {
+    "continueApple": "Continue with Apple",
+    "continueFacebook": "Continue with Facebook",
+    "opening": "Opening the browser to sign in. When you are done you will be brought back to Taskly.",
+    "names": {
+      "APPLE": "Apple",
+      "FACEBOOK": "Facebook"
+    },
+    "linkRequired": "This email already has a Taskly account. Sign in with your password to link {{provider}}; if you forgot it, choose \"Forgot your password?\" below.",
+    "linkedTitle": "{{provider}} linked",
+    "linkedMessage": "Next time you can sign in with {{provider}}.",
+    "linkFailedTitle": "Could not link {{provider}}",
+    "errors": {
+      "notConfigured": "This build is not set up for {{provider}} sign-in",
+      "openFailed": "Could not open the browser for {{provider}} sign-in",
+      "failed": "{{provider}} sign-in failed, please try again",
+      "emailProblem": "This {{provider}} account does not share a verified email, so it cannot be used to sign in yet. Allow sharing your email or sign up with email.",
+      "stateMismatch": "The {{provider}} sign-in has expired or was not started by this app. Please try again.",
+      "linkConflict": "Could not link: this {{provider}} account is already linked to another Taskly account, or your account is already linked to a different {{provider}} account",
+      "linkRejected": "Could not link {{provider}}: the request has expired or does not match this account. Please try again."
+    },
+    "settings": {
+      "title": "Link {{provider}}",
+      "linked": "Linked with {{provider}}",
+      "notLinked": "Not linked",
+      "link": "Link {{provider}}",
+      "unlink": "Unlink",
+      "opening": "Opening the browser. When you are done you will be brought back to Account.",
+      "linkSuccess": "{{provider}} linked",
+      "unlinkSuccess": "{{provider}} unlinked",
+      "needPassword": "Your account has no password yet. Set one with \"Forgot your password?\" on the login screen before unlinking {{provider}}."
+    },
+    "callback": {
+      "working": "Finishing sign-in…",
+      "toLogin": "Back to login",
+      "toAccount": "Back to Account"
+    }
+  }
+}

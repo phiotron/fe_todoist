@@ -1,0 +1,53 @@
+{
+  "calendar": {
+    "title": "Calendar",
+    "providers": {
+      "GOOGLE": "Google Calendar",
+      "OUTLOOK": "Outlook"
+    },
+    "intro": "Connect a calendar to see its events in Today and Upcoming. Each account can connect one calendar.",
+    "connectGoogle": "Connect Google Calendar",
+    "connectOutlook": "Connect Outlook",
+    "opening": "Opening the browser to grant access. When you are done you will be brought back to Taskly.",
+    "connectedResult": "Calendar connected",
+    "connectedAs": "{{provider}} connected",
+    "account": "Calendar account",
+    "showEvents": "Show events",
+    "showEventsHint": "Read-only events, shown in Today and Upcoming.",
+    "syncTasks": "Sync tasks to calendar",
+    "syncTasksHint": "Your tasks with a date are added to a separate \"Taskly\" calendar. Moving an event in that calendar updates the task if it does not repeat; repeating tasks only change in Taskly.",
+    "syncNow": "Sync now",
+    "syncResult": "Synced: {{created}} added, {{updated}} updated, {{deleted}} removed, {{pulled}} changed from the calendar",
+    "lastSynced": "Last synced: {{time}}",
+    "neverSynced": "Not synced yet",
+    "needsReauth": "Access to the calendar was revoked. Disconnect and connect again.",
+    "disconnect": "Disconnect",
+    "disconnectTitle": "Disconnect the calendar?",
+    "disconnectMessage": "Taskly stops showing events and stops syncing. The \"Taskly\" calendar already created in your calendar account is kept.",
+    "disconnected": "Calendar disconnected",
+    "feed": {
+      "title": "Calendar feed",
+      "description": "A read-only iCal link to subscribe to in Google Calendar, Outlook or Apple Calendar. Repeating tasks show at most 7 times. Anyone with the link can see your calendar.",
+      "copy": "Copy calendar link",
+      "copied": "Calendar link copied",
+      "reset": "Reset link",
+      "resetTitle": "Reset the calendar link?",
+      "resetMessage": "The old link stops working right away. Calendars subscribed with the old link need to subscribe again with the new one.",
+      "resetConfirm": "Reset",
+      "resetDone": "New link created and copied to the clipboard"
+    },
+    "events": {
+      "title": "Calendar events",
+      "allDay": "All day"
+    },
+    "errors": {
+      "alreadyConnected": "A calendar is already connected. Disconnect it before connecting another one.",
+      "notConfigured": "The server is not set up to connect this calendar.",
+      "unavailable": "Could not reach the calendar service, please try again later.",
+      "openFailed": "Could not open the browser to connect the calendar.",
+      "denied": "Access to the calendar was not granted, so it could not be connected.",
+      "invalidState": "The connection request has expired. Please try again.",
+      "connectFailed": "Could not connect the calendar, please try again."
+    }
+  }
+}

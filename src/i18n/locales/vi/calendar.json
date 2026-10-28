@@ -1,0 +1,53 @@
+{
+  "calendar": {
+    "title": "Lịch",
+    "providers": {
+      "GOOGLE": "Google Calendar",
+      "OUTLOOK": "Outlook"
+    },
+    "intro": "Kết nối một lịch để xem sự kiện ngay trong Hôm nay và Sắp tới. Mỗi tài khoản chỉ kết nối một lịch.",
+    "connectGoogle": "Kết nối Google Calendar",
+    "connectOutlook": "Kết nối Outlook",
+    "opening": "Đang mở trình duyệt để cấp quyền. Xong bạn sẽ được đưa về Taskly.",
+    "connectedResult": "Đã kết nối lịch",
+    "connectedAs": "Đã kết nối {{provider}}",
+    "account": "Tài khoản lịch",
+    "showEvents": "Hiện sự kiện",
+    "showEventsHint": "Sự kiện chỉ đọc, hiện trong Hôm nay và Sắp tới.",
+    "syncTasks": "Đồng bộ công việc sang lịch",
+    "syncTasksHint": "Công việc có ngày của bạn được thêm vào lịch riêng \"Taskly\". Đổi ngày giờ trong lịch đó cập nhật lại công việc không lặp; công việc lặp chỉ đổi trong Taskly.",
+    "syncNow": "Đồng bộ ngay",
+    "syncResult": "Đã đồng bộ: thêm {{created}}, sửa {{updated}}, xoá {{deleted}}, cập nhật ngược {{pulled}}",
+    "lastSynced": "Đồng bộ lần cuối: {{time}}",
+    "neverSynced": "Chưa đồng bộ lần nào",
+    "needsReauth": "Quyền truy cập lịch đã bị thu hồi. Hãy ngắt kết nối rồi kết nối lại.",
+    "disconnect": "Ngắt kết nối",
+    "disconnectTitle": "Ngắt kết nối lịch?",
+    "disconnectMessage": "Taskly sẽ ngừng hiện sự kiện và ngừng đồng bộ. Lịch \"Taskly\" đã tạo trong tài khoản lịch của bạn được giữ nguyên.",
+    "disconnected": "Đã ngắt kết nối lịch",
+    "feed": {
+      "title": "Calendar feed",
+      "description": "Link iCal chỉ đọc để đăng ký trong Google Calendar, Outlook hoặc Apple Calendar. Công việc lặp chỉ hiện tối đa 7 lần. Ai có link đều xem được lịch của bạn.",
+      "copy": "Sao chép link lịch",
+      "copied": "Đã sao chép link lịch",
+      "reset": "Đặt lại link",
+      "resetTitle": "Đặt lại link lịch?",
+      "resetMessage": "Link cũ sẽ ngừng hoạt động ngay. Các lịch đã đăng ký bằng link cũ cần đăng ký lại bằng link mới.",
+      "resetConfirm": "Đặt lại",
+      "resetDone": "Đã tạo link mới và sao chép vào bộ nhớ tạm"
+    },
+    "events": {
+      "title": "Sự kiện lịch",
+      "allDay": "Cả ngày"
+    },
+    "errors": {
+      "alreadyConnected": "Tài khoản đã kết nối một lịch. Hãy ngắt kết nối trước khi nối lịch khác.",
+      "notConfigured": "Máy chủ chưa được cấu hình để kết nối lịch này.",
+      "unavailable": "Không kết nối được tới dịch vụ lịch, vui lòng thử lại sau.",
+      "openFailed": "Không mở được trình duyệt để kết nối lịch.",
+      "denied": "Bạn chưa cấp quyền cho lịch nên chưa kết nối được.",
+      "invalidState": "Yêu cầu kết nối đã hết hạn. Vui lòng thử lại.",
+      "connectFailed": "Chưa kết nối được lịch, vui lòng thử lại."
+    }
+  }
+}

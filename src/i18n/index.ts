@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enCore from './locales/en.json';
 import enBrowse from './locales/en/browse.json';
+import enCalendar from './locales/en/calendar.json';
 import enCommon from './locales/en/common.json';
 import enDates from './locales/en/dates.json';
 import enDisplay from './locales/en/display.json';
@@ -21,12 +22,14 @@ import enSchedule from './locales/en/schedule.json';
 import enSearch from './locales/en/search.json';
 import enSelection from './locales/en/selection.json';
 import enSettings from './locales/en/settings.json';
+import enSocial from './locales/en/social.json';
 import enTaskDetail from './locales/en/taskDetail.json';
 import enTaskList from './locales/en/taskList.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
 import viCore from './locales/vi.json';
 import viBrowse from './locales/vi/browse.json';
+import viCalendar from './locales/vi/calendar.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
 import viDisplay from './locales/vi/display.json';
@@ -45,6 +48,7 @@ import viSearch from './locales/vi/search.json';
 import viSchedule from './locales/vi/schedule.json';
 import viSelection from './locales/vi/selection.json';
 import viSettings from './locales/vi/settings.json';
+import viSocial from './locales/vi/social.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
 import viTaskList from './locales/vi/taskList.json';
 import viTwoFactor from './locales/vi/twoFactor.json';
@@ -58,6 +62,7 @@ import viViews from './locales/vi/views.json';
 export const viTranslation = {
   ...viCore,
   ...viBrowse,
+  ...viCalendar,
   ...viCommon,
   ...viDates,
   ...viDisplay,
@@ -76,6 +81,7 @@ export const viTranslation = {
   ...viSchedule,
   ...viSelection,
   ...viSettings,
+  ...viSocial,
   ...viTaskDetail,
   ...viTaskList,
   ...viTwoFactor,
@@ -86,6 +92,7 @@ export const viTranslation = {
 export const enTranslation = {
   ...enCore,
   ...enBrowse,
+  ...enCalendar,
   ...enCommon,
   ...enDates,
   ...enDisplay,
@@ -104,6 +111,7 @@ export const enTranslation = {
   ...enSearch,
   ...enSelection,
   ...enSettings,
+  ...enSocial,
   ...enTaskDetail,
   ...enTaskList,
   ...enTwoFactor,

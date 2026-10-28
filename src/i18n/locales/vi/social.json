@@ -1,0 +1,40 @@
+{
+  "social": {
+    "continueApple": "Tiếp tục với Apple",
+    "continueFacebook": "Tiếp tục với Facebook",
+    "opening": "Đang mở trình duyệt để đăng nhập. Xong bạn sẽ được đưa về Taskly.",
+    "names": {
+      "APPLE": "Apple",
+      "FACEBOOK": "Facebook"
+    },
+    "linkRequired": "Email này đã có tài khoản Taskly. Hãy đăng nhập bằng mật khẩu để liên kết {{provider}}; nếu quên mật khẩu, chọn \"Quên mật khẩu?\" bên dưới.",
+    "linkedTitle": "Đã liên kết {{provider}}",
+    "linkedMessage": "Từ lần sau bạn có thể đăng nhập bằng {{provider}}.",
+    "linkFailedTitle": "Chưa liên kết được {{provider}}",
+    "errors": {
+      "notConfigured": "Bản app này chưa được cấu hình đăng nhập {{provider}}",
+      "openFailed": "Không mở được trình duyệt để đăng nhập {{provider}}",
+      "failed": "Đăng nhập {{provider}} không thành công, vui lòng thử lại",
+      "emailProblem": "Tài khoản {{provider}} này không cung cấp email đã xác minh nên chưa dùng để đăng nhập được. Hãy cho phép chia sẻ email hoặc đăng ký bằng email.",
+      "stateMismatch": "Phiên đăng nhập {{provider}} đã hết hiệu lực hoặc không do app này mở. Vui lòng thử lại.",
+      "linkConflict": "Không liên kết được: tài khoản {{provider}} này đã gắn với một tài khoản Taskly khác, hoặc tài khoản của bạn đã liên kết một tài khoản {{provider}} khác",
+      "linkRejected": "Không liên kết được {{provider}}: yêu cầu đã hết hạn hoặc không khớp tài khoản này. Vui lòng thử lại."
+    },
+    "settings": {
+      "title": "Liên kết {{provider}}",
+      "linked": "Đã liên kết với {{provider}}",
+      "notLinked": "Chưa liên kết",
+      "link": "Liên kết {{provider}}",
+      "unlink": "Bỏ liên kết",
+      "opening": "Đang mở trình duyệt. Xong bạn sẽ được đưa về màn Tài khoản.",
+      "linkSuccess": "Đã liên kết {{provider}}",
+      "unlinkSuccess": "Đã bỏ liên kết {{provider}}",
+      "needPassword": "Tài khoản chưa có mật khẩu. Hãy đặt mật khẩu bằng \"Quên mật khẩu?\" ở màn đăng nhập trước khi bỏ liên kết {{provider}}."
+    },
+    "callback": {
+      "working": "Đang hoàn tất đăng nhập…",
+      "toLogin": "Về màn đăng nhập",
+      "toAccount": "Về màn Tài khoản"
+    }
+  }
+}

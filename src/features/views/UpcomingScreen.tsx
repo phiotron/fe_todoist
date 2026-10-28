@@ -18,6 +18,9 @@ import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { DisplaySheet } from '../display/DisplaySheet';
 import { UPCOMING_VIEW_KEY } from '../display/displayRules';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
+import { CalendarEventRows } from '../calendar/CalendarEventRows';
+import { clampWindowEnd, eventsOnDay } from '../calendar/calendarEvents';
+import { EVENTS_MAX_SPAN_DAYS, useCalendarEvents } from '../calendar/useCalendar';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { NO_DUE } from '../schedule/dueValue';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
@@ -66,6 +69,8 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
   const reschedule = useOverdueReschedule();
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = upcoming.query;
   const { loadedThrough } = upcoming;
+  // M13b: read-only events of the connected calendar for the days loaded so far (window of at most 31 days).
+  const calendarEvents = useCalendarEvents(today, clampWindowEnd(today, loadedThrough, EVENTS_MAX_SPAN_DAYS)).events;
 
   const rows = useMemo(() => {
     const byDay = groupByDueDate(upcoming.tasks);
@@ -92,7 +97,12 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
     }
     for (const day of dayRange(today, loadedThrough)) {
       const list = byDay.get(day) ?? [];
-      result.push(sectionRow(`d-${day}`, { title: formatDayHeader(day, today), count: openCount(list) }), ...taskRows(list));
+      result.push(sectionRow(`d-${day}`, { title: formatDayHeader(day, today), count: openCount(list) }));
+      const dayEvents = eventsOnDay(calendarEvents, day);
+      if (dayEvents.length > 0) {
+        result.push(nodeRow(`ev-${day}`, <CalendarEventRows events={dayEvents} testID={`upcoming-events-${day}`} />));
+      }
+      result.push(...taskRows(list));
       result.push(
         nodeRow(
           `add-${day}`,
@@ -104,7 +114,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
     }
     return result;
     // reschedule.start only opens the sheet; overdue.query is read for hasNextPage / fetchNextPage.
-  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs, calendarEvents]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to the target day, loading more pages / windows first while it has not arrived (spec 9.2: infinite list of days, at most 2 years; jumps are limited to 3 months, so only a few windows load here).
   useEffect(() => {

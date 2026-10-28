@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { authApi, type AuthResponse, type LoginRequest, type RegisterRequest } from '../../api/auth';
 import { addSessionExpiredListener, apiFetch } from '../../api/client';
 import { ApiError } from '../../api/errors';
-import { identitiesApi } from '../../api/identities';
+import { identitiesApi, socialAuthApi, type SocialProvider } from '../../api/identities';
 import { twoFactorApi } from '../../api/twoFactor';
 import { queryPersister } from '../../lib/queryClient';
 import { tokenStore } from '../../lib/tokenStore';
@@ -26,12 +26,26 @@ export interface PendingGoogleLink {
   linkToken: string;
   /** Google email, used to prefill the login form. */
   email: string | null;
+  /** M13b: set only for Apple / Facebook (a Google link carries no provider, as before). */
+  provider?: SocialProvider;
 }
 
 /** 'twoFactorRequired': the M3 two-factor step now holds the token; navigate to /two-factor. */
 export type GoogleSignInOutcome = 'signedIn' | 'linkRequired' | 'twoFactorRequired';
 
-export type GoogleLinkOutcome = { type: 'none' } | { type: 'linked' } | { type: 'failed'; error: unknown };
+/** `provider` is present only when the finished link was Apple / Facebook (M13b). */
+export type GoogleLinkOutcome =
+  | { type: 'none' }
+  | { type: 'linked'; provider?: SocialProvider }
+  | { type: 'failed'; error: unknown; provider?: SocialProvider };
+
+export interface SocialSignInInput {
+  provider: SocialProvider;
+  /** idToken (Apple) or accessToken (Facebook) from the deep link. */
+  token: string;
+  /** Apple hands the name over only on the first consent. */
+  displayName?: string | null;
+}
 
 export interface SessionContextValue {
   status: SessionStatus;
@@ -59,6 +73,8 @@ export interface SessionContextValue {
    * 401 two-factor-required ('twoFactorRequired').
    */
   signInWithGoogle(input: { idToken: string; email: string | null }): Promise<GoogleSignInOutcome>;
+  /** M13b: the same three outcomes as signInWithGoogle, for Apple / Facebook (POST auth/apple | auth/facebook). */
+  signInWithSocial(input: SocialSignInInput): Promise<GoogleSignInOutcome>;
   cancelGoogleLink(): void;
   /** Call once the user is fully signed in (password, plus the 2FA code when asked). Never throws. */
   completeGoogleLink(): Promise<GoogleLinkOutcome>;
@@ -256,16 +272,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [applyAuth, setPendingGoogleLink],
   );
 
-  const signInWithGoogle = useCallback(
-    async ({ idToken, email }: { idToken: string; email: string | null }): Promise<GoogleSignInOutcome> => {
+  /** Shared by Google, Apple and Facebook: 200 signs in, 409 link-required keeps the link, 401 two-factor-required starts M3's step. */
+  const externalSignIn = useCallback(
+    async (
+      request: () => Promise<AuthResponse>,
+      email: string | null,
+      provider?: SocialProvider,
+    ): Promise<GoogleSignInOutcome> => {
       let response: AuthResponse;
       try {
-        response = await authApi.google({ idToken });
+        response = await request();
       } catch (error) {
         const linkToken = linkTokenOf(error);
         if (linkToken !== null) {
           // Never linked automatically: the user must sign in with the existing password first (spec 12.1).
-          setPendingGoogleLink({ linkToken, email });
+          setPendingGoogleLink(provider ? { linkToken, email, provider } : { linkToken, email });
           return 'linkRequired';
         }
         const twoFactorToken = twoFactorTokenOf(error);
@@ -284,6 +305,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [applyAuth, beginTwoFactor, setPendingGoogleLink],
   );
 
+  const signInWithGoogle = useCallback(
+    ({ idToken, email }: { idToken: string; email: string | null }) =>
+      externalSignIn(() => authApi.google({ idToken }), email),
+    [externalSignIn],
+  );
+
+  const signInWithSocial = useCallback(
+    ({ provider, token, displayName }: SocialSignInInput) =>
+      externalSignIn(() => socialAuthApi.signIn(provider, { token, displayName }), null, provider),
+    [externalSignIn],
+  );
+
   const cancelGoogleLink = useCallback(() => setPendingGoogleLink(null), [setPendingGoogleLink]);
 
   const completeGoogleLink = useCallback(async (): Promise<GoogleLinkOutcome> => {
@@ -291,13 +324,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (!pending) return { type: 'none' };
     // A link token is single-use: drop it whatever the server answers.
     setPendingGoogleLink(null);
+    const provider = pending.provider;
     try {
-      await identitiesApi.linkGoogle({ linkToken: pending.linkToken });
+      if (provider) await identitiesApi.linkSocial(provider, { linkToken: pending.linkToken });
+      else await identitiesApi.linkGoogle({ linkToken: pending.linkToken });
     } catch (error) {
-      return { type: 'failed', error };
+      return provider ? { type: 'failed', error, provider } : { type: 'failed', error };
     }
     await queryClient.invalidateQueries({ queryKey: meQueryKey });
-    return { type: 'linked' };
+    return provider ? { type: 'linked', provider } : { type: 'linked' };
   }, [queryClient, setPendingGoogleLink]);
 
   const verifyTwoFactor = useCallback(
@@ -372,6 +407,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       endLocalSession,
       pendingGoogleLink,
       signInWithGoogle,
+      signInWithSocial,
       cancelGoogleLink,
       completeGoogleLink,
     }),
@@ -387,6 +423,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       endLocalSession,
       pendingGoogleLink,
       signInWithGoogle,
+      signInWithSocial,
       cancelGoogleLink,
       completeGoogleLink,
     ],
