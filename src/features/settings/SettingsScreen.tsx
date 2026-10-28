@@ -64,6 +64,7 @@ export function SettingsScreen() {
         href="/settings/theme"
       />
       <SettingsLinkRow testID="settings-row-navigation" icon="layout" label={t('settings.pages.navigation')} href="/settings/navigation" />
+      <SettingsLinkRow testID="settings-row-quick-add" icon="plus-circle" label={t('quickAdd.settings.row')} href="/settings/quick-add" />
       <ResetDefaultsSection />
       <SignOutSection />
     </SettingsPage>

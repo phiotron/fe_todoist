@@ -29,13 +29,18 @@ export function useQuickAddReminders(hasTime: boolean) {
     setError(undefined);
   }, []);
 
-  /** After the task was created: one POST per draft (each its own Idempotency-Key), then clear the drafts. Never throws. */
+  /**
+   * After the task was created: one POST per draft (each its own Idempotency-Key), then clear the drafts. Never throws.
+   * M6b: `extra` = reminders typed with "!" in the Quick Add name (same RELATIVE-needs-time rule, duplicates dropped).
+   */
   const attach = useCallback(
-    async (taskId: string): Promise<void> => {
+    async (taskId: string, extra: readonly ReminderDraft[] = []): Promise<void> => {
       setError(undefined);
       let createdCount = 0;
       let failedCount = 0;
-      for (const draft of effective) {
+      let all = effective;
+      for (const draft of applicableDrafts(extra, hasTime)) all = addDraft(all, draft);
+      for (const draft of all) {
         try {
           await remindersApi.create(taskId, toCreateRequest(draft), newUuid());
           createdCount += 1;
@@ -47,7 +52,7 @@ export function useQuickAddReminders(hasTime: boolean) {
       if (createdCount > 0) requestReminderSync();
       if (failedCount > 0) setError(t('reminders.quickAdd.partialFailure', { count: failedCount }));
     },
-    [effective, t],
+    [effective, hasTime, t],
   );
 
   return { drafts: effective, add, remove, reset, attach, error };

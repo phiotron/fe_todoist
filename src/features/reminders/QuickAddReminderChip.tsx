@@ -12,10 +12,17 @@ interface QuickAddReminderChipProps {
   hasTime: boolean;
   /** Account time zone (the sheet already has it). */
   timeZone?: string;
+  /** M6b Quick Add "Show action labels" off: icon only while there is no reminder. */
+  iconOnly?: boolean;
 }
 
 /** "Reminders" chip of Quick Add (spec 9.2, design M-AddTask chip row): edits drafts created after the task. */
-export function QuickAddReminderChip({ reminders, hasTime, timeZone = DEFAULT_TIME_ZONE }: QuickAddReminderChipProps) {
+export function QuickAddReminderChip({
+  reminders,
+  hasTime,
+  timeZone = DEFAULT_TIME_ZONE,
+  iconOnly = false,
+}: QuickAddReminderChipProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const formats = useReminderFormats();
@@ -25,7 +32,14 @@ export function QuickAddReminderChip({ reminders, hasTime, timeZone = DEFAULT_TI
 
   return (
     <>
-      <Chip large testID="quick-add-reminder-chip" icon="bell" label={label} onPress={() => setOpen(true)} />
+      <Chip
+        large
+        testID="quick-add-reminder-chip"
+        icon="bell"
+        label={label}
+        onPress={() => setOpen(true)}
+        iconOnly={iconOnly && items.length === 0}
+      />
       <ReminderEditorModal
         visible={open}
         onClose={() => setOpen(false)}

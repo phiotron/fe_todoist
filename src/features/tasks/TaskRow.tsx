@@ -14,6 +14,7 @@ import { Checkbox } from './Checkbox';
 import { useTaskSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
 import { TaskMeta } from './TaskMeta';
+import { displayContent, isUncompletable } from './uncompletable';
 import { useDeleteTaskSwipe } from './useDeleteTaskSwipe';
 
 const INDENT = 24;
@@ -80,8 +81,12 @@ export function TaskRow({
   // Completed tasks (Completed tasks block) and read-only rows cannot be selected: batch SCHEDULE / MOVE would answer 409 task-completed.
   const selectable = selection && !readOnly && !completed ? selection : null;
 
+  const uncompletable = isUncompletable(task.content);
+
   function run(action: SwipeAction) {
-    if (action === 'COMPLETE' && !completed) onToggle(task);
+    if (action === 'COMPLETE' && !completed) {
+      if (!uncompletable) onToggle(task);
+    }
     else if (action === 'SCHEDULE') onSchedule?.(task);
     else if (action === 'REMINDERS') openTaskReminders(router, task.id);
     else if (action === 'SELECT') selection?.start(task.id);
@@ -98,17 +103,21 @@ export function TaskRow({
       onLongPress={selectable ? () => (selecting ? selectable.toggle(task.id) : selectable.start(task.id)) : undefined}
       style={[styles.row, { paddingLeft: gutter + (depth - 1) * INDENT }, selected && styles.selected]}
     >
-      <Checkbox
-        testID={`task-toggle-${task.id}`}
-        priority={task.priority}
-        checked={completed}
-        label={completed ? t('taskList.reopenTask', { name: task.content }) : t('taskList.complete', { name: task.content })}
-        disabled={readOnly || selecting || toggleDisabled || !online}
-        onPress={() => onToggle(task)}
-      />
+      {uncompletable ? (
+        <View testID={`task-note-${task.id}`} style={styles.noteGap} />
+      ) : (
+        <Checkbox
+          testID={`task-toggle-${task.id}`}
+          priority={task.priority}
+          checked={completed}
+          label={completed ? t('taskList.reopenTask', { name: task.content }) : t('taskList.complete', { name: task.content })}
+          disabled={readOnly || selecting || toggleDisabled || !online}
+          onPress={() => onToggle(task)}
+        />
+      )}
       <View style={styles.body}>
         <Text style={[type.taskTitle, styles.title, completed && styles.done]} numberOfLines={2}>
-          {task.content}
+          {displayContent(task.content)}
         </Text>
         {task.description ? (
           <Text style={styles.description} numberOfLines={1}>
@@ -169,6 +178,8 @@ function createTaskRowStyles(palette: Palette) {
     },
     selected: { backgroundColor: palette.soft },
     body: { flex: 1 },
+    /** Where the checkbox would be: keeps the name aligned with the other rows. */
+    noteGap: { width: size.touch / 2 },
     title: { color: palette.ink },
     done: { color: palette.mute, textDecorationLine: 'line-through' },
     description: { ...type.meta, color: palette.mute, marginTop: 2 },

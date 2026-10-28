@@ -27,6 +27,15 @@ export interface SettingsResponse {
   remindersEnabled?: boolean;
   /** Minutes before a timed task's due time; null = automatic reminders off. */
   autoReminderMinutes?: number | null;
+  /**
+   * M6b (contract 2 / 8.2): Quick Add chips in display order (PROJECT always present, no duplicates; absent = hidden).
+   * Optional for the same reason as the M4 fields: a cache written before M6b has none.
+   */
+  quickAddChips?: string[];
+  /** M6b "Show action labels": chips show their text, not only the icon. */
+  quickAddShowActionLabels?: boolean;
+  /** M6b "Show description": Quick Add draws the description field. */
+  quickAddShowDescription?: boolean;
 }
 
 /**

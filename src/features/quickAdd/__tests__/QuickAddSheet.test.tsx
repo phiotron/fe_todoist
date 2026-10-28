@@ -8,6 +8,7 @@ import { requestsTo, type ApiRoutes } from '../../../test/apiRoutes';
 import { jsonResponse, problem } from '../../../test/http';
 import { inboxProject, makeProject, makeSection, makeTask } from '../../../test/m1Fixtures';
 import { goOffline, goOnline } from '../../../test/network';
+import { nameText, quickAddSettingsRoute } from '../../../test/quickAddFixtures';
 import { renderSignedIn } from '../../../test/screen';
 import { lightPalette as palette } from '../../../theme';
 import { QuickAddSheet } from '../QuickAddSheet';
@@ -24,6 +25,7 @@ jest.mock('../../auth/useUserTimeZone', () => ({
 
 function routes(create: ApiRoutes[string] = () => jsonResponse(201, makeTask())): ApiRoutes {
   return {
+    ...quickAddSettingsRoute(),
     'GET /api/v1/projects': () =>
       jsonResponse(200, [inboxProject, makeProject({ id: 'p1', name: 'Công ty' })]),
     'GET /api/v1/projects/p1/sections': () =>
@@ -57,7 +59,7 @@ describe('QuickAddSheet', () => {
     // No afterId (absent = end of the block) and no client id (optional, M9): the body is exactly this.
     expect(request.body).toEqual({ projectId: 'p-inbox', content: 'Mua sữa', priority: 4 });
     expect(request.headers['Idempotency-Key']).toMatch(/^[0-9a-f-]{36}$/);
-    await waitFor(() => expect(screen.getByTestId('quick-add-name').props.value).toBe(''));
+    await waitFor(() => expect(nameText()).toBe(''));
     expect(screen.getByTestId('quick-add-notice')).toHaveTextContent(viQuickAdd.quickAdd.added.replace('{{name}}', 'Inbox'));
     expect(router.back).not.toHaveBeenCalled();
   });
@@ -86,7 +88,7 @@ describe('QuickAddSheet', () => {
     await typeName('Họp');
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/tasks')).toHaveLength(1));
-    await waitFor(() => expect(screen.getByTestId('quick-add-name').props.value).toBe(''));
+    await waitFor(() => expect(nameText()).toBe(''));
     await typeName('Họp tiếp');
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/tasks')).toHaveLength(2));
@@ -145,10 +147,10 @@ describe('QuickAddSheet', () => {
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
 
     expect(await screen.findByText(vi.errors.server.replace('{{code}}', '7f3c9a12'))).toBeOnTheScreen();
-    expect(screen.getByTestId('quick-add-name').props.value).toBe('Mua sữa');
+    expect(nameText()).toBe('Mua sữa');
 
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
-    await waitFor(() => expect(screen.getByTestId('quick-add-name').props.value).toBe(''));
+    await waitFor(() => expect(nameText()).toBe(''));
     const [first, retry] = requestsTo(fetchMock, 'POST', '/api/v1/tasks');
     expect(retry.headers['Idempotency-Key']).toBe(first.headers['Idempotency-Key']);
   });
@@ -159,7 +161,7 @@ describe('QuickAddSheet', () => {
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
 
     expect(await screen.findByText(vi.errors.limit.projectActiveTasks.replace('{{max}}', '300'))).toBeOnTheScreen();
-    expect(screen.getByTestId('quick-add-name').props.value).toBe('Việc thứ 301');
+    expect(nameText()).toBe('Việc thứ 301');
   });
 
   it('a sub-task under a parent that sits in an archived project → 409 project-archived, text kept (spec 12.3 row 4)', async () => {
@@ -171,7 +173,7 @@ describe('QuickAddSheet', () => {
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
 
     expect(await screen.findByText(vi.errors.projectArchived)).toBeOnTheScreen();
-    expect(screen.getByTestId('quick-add-name').props.value).toBe('Bước 1');
+    expect(nameText()).toBe('Bước 1');
   });
 
   it('a TARGET archived meanwhile → 422 target-archived (not 409), text kept', async () => {
@@ -180,7 +182,7 @@ describe('QuickAddSheet', () => {
     await fireEvent.press(screen.getByTestId('quick-add-submit'));
 
     expect(await screen.findByText(vi.errors.targetArchived)).toBeOnTheScreen();
-    expect(screen.getByTestId('quick-add-name').props.value).toBe('Họp');
+    expect(nameText()).toBe('Họp');
   });
 
   it('validates on the device: blank names cannot be sent, too long names show the message', async () => {
