@@ -8,6 +8,8 @@ import { AppButton } from '../../components/AppButton';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { TextField } from '../../components/TextField';
 import { useTheme } from '../../theme';
+import { useMe } from '../auth/session';
+import { googleLinkState } from '../settings/googleLinkState';
 import { twoFactorQueryKey } from './useTwoFactorStatus';
 
 /** Turn two-factor off (BR-11): a confirmation plus the password and a current code (spec 12.1 `me/2fa/disable`). */
@@ -15,6 +17,9 @@ export function DisableTwoFactor({ onDisabled }: { onDisabled: () => void }) {
   const { t } = useTranslation();
   const { palette } = useTheme();
   const queryClient = useQueryClient();
+  const me = useMe();
+  // Spec 12.1: me/2fa/disable needs the password only when the account has one (a Google-only account sends just the code).
+  const hasPassword = me.data ? googleLinkState(me.data).hasPassword : true;
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -32,7 +37,7 @@ export function DisableTwoFactor({ onDisabled }: { onDisabled: () => void }) {
   async function onConfirm() {
     if (inFlight.current) return;
     inFlight.current = true;
-    if (!password) {
+    if (hasPassword && !password) {
       setError(t('auth.validation.passwordRequired'));
       inFlight.current = false;
       return;
@@ -45,7 +50,7 @@ export function DisableTwoFactor({ onDisabled }: { onDisabled: () => void }) {
     setBusy(true);
     setError(undefined);
     try {
-      await twoFactorApi.disable({ password, code: code.trim() });
+      await twoFactorApi.disable(hasPassword ? { password, code: code.trim() } : { code: code.trim() });
       await queryClient.invalidateQueries({ queryKey: twoFactorQueryKey });
       close();
       onDisabled();
@@ -81,16 +86,18 @@ export function DisableTwoFactor({ onDisabled }: { onDisabled: () => void }) {
         onConfirm={() => void onConfirm()}
         onCancel={close}
       >
-        <TextField
-          testID="two-factor-disable-password"
-          label={t('twoFactor.settings.password')}
-          value={password}
-          onChangeText={setPassword}
-          autoCapitalize="none"
-          autoComplete="current-password"
-          autoCorrect={false}
-          secureTextEntry
-        />
+        {hasPassword ? (
+          <TextField
+            testID="two-factor-disable-password"
+            label={t('twoFactor.settings.password')}
+            value={password}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            autoComplete="current-password"
+            autoCorrect={false}
+            secureTextEntry
+          />
+        ) : null}
         <TextField
           testID="two-factor-disable-code"
           label={t('twoFactor.settings.code')}

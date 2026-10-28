@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { accountApi } from '../../api/account';
 import { apiFetch } from '../../api/client';
@@ -8,8 +9,10 @@ import { AppButton } from '../../components/AppButton';
 import { ErrorText } from '../../components/ErrorText';
 import { TextField } from '../../components/TextField';
 import { tokenStore } from '../../lib/tokenStore';
+import { useMe } from '../auth/session';
 import { newPasswordError } from '../auth/validation';
-import { SettingsSection, SuccessText } from './ui';
+import { googleLinkState } from './googleLinkState';
+import { SettingsSection, SuccessText, useSettingsStyles } from './ui';
 
 interface PasswordErrors {
   form?: string;
@@ -21,6 +24,10 @@ const EMPTY = { currentPassword: '', newPassword: '' };
 
 export function PasswordSection() {
   const { t } = useTranslation();
+  const styles = useSettingsStyles();
+  const me = useMe();
+  // Spec 12.1: me/password needs the current password; a Google-only account sets one through "Forgot your password?".
+  const hasPassword = me.data ? googleLinkState(me.data).hasPassword : true;
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState<PasswordErrors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -67,37 +74,45 @@ export function PasswordSection() {
 
   return (
     <SettingsSection testID="settings-section-password" title={t('settings.password.title')}>
-      <TextField
-        testID="password-current"
-        label={t('settings.password.current')}
-        value={values.currentPassword}
-        onChangeText={(currentPassword) => setValues((current) => ({ ...current, currentPassword }))}
-        autoCapitalize="none"
-        autoComplete="current-password"
-        autoCorrect={false}
-        secureTextEntry
-        error={errors.currentPassword}
-      />
-      <TextField
-        testID="password-new"
-        label={t('settings.password.new')}
-        value={values.newPassword}
-        onChangeText={(newPassword) => setValues((current) => ({ ...current, newPassword }))}
-        autoCapitalize="none"
-        autoComplete="new-password"
-        autoCorrect={false}
-        secureTextEntry
-        error={errors.newPassword}
-      />
-      <ErrorText testID="password-error" message={errors.form} />
-      <SuccessText testID="password-success" text={done ? t('settings.password.success') : undefined} />
-      <AppButton
-        testID="password-submit"
-        label={t('settings.password.submit')}
-        busy={submitting}
-        requiresOnline
-        onPress={() => void onSubmit()}
-      />
+      {hasPassword ? (
+        <>
+          <TextField
+            testID="password-current"
+            label={t('settings.password.current')}
+            value={values.currentPassword}
+            onChangeText={(currentPassword) => setValues((current) => ({ ...current, currentPassword }))}
+            autoCapitalize="none"
+            autoComplete="current-password"
+            autoCorrect={false}
+            secureTextEntry
+            error={errors.currentPassword}
+          />
+          <TextField
+            testID="password-new"
+            label={t('settings.password.new')}
+            value={values.newPassword}
+            onChangeText={(newPassword) => setValues((current) => ({ ...current, newPassword }))}
+            autoCapitalize="none"
+            autoComplete="new-password"
+            autoCorrect={false}
+            secureTextEntry
+            error={errors.newPassword}
+          />
+          <ErrorText testID="password-error" message={errors.form} />
+          <SuccessText testID="password-success" text={done ? t('settings.password.success') : undefined} />
+          <AppButton
+            testID="password-submit"
+            label={t('settings.password.submit')}
+            busy={submitting}
+            requiresOnline
+            onPress={() => void onSubmit()}
+          />
+        </>
+      ) : (
+        <Text testID="password-need-reset" style={styles.hint}>
+          {t('google.account.passwordNeedsReset')}
+        </Text>
+      )}
     </SettingsSection>
   );
 }
