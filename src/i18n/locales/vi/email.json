@@ -1,0 +1,22 @@
+{
+  "email": {
+    "menuProject": "Gửi email tạo công việc vào dự án này",
+    "menuInbox": "Gửi email tạo công việc vào Inbox",
+    "menuTask": "Gửi email vào công việc này",
+    "titleProject": "Gửi email tạo công việc",
+    "titleTask": "Gửi email vào công việc",
+    "hintProject": "Gửi hoặc chuyển tiếp thư tới địa chỉ này: tiêu đề thành tên công việc, nội dung thành mô tả.",
+    "hintTask": "Gửi hoặc chuyển tiếp thư tới địa chỉ này: tiêu đề và nội dung được thêm vào cuối mô tả công việc.",
+    "syntaxHint": "Trong tiêu đề có thể dùng: date tomorrow 5pm, @nhãn, p1–p3.",
+    "secretHint": "Ai biết địa chỉ này đều thêm được công việc. Hãy tạo địa chỉ mới nếu lỡ để lộ.",
+    "address": "Địa chỉ email",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép địa chỉ",
+    "regenerate": "Tạo địa chỉ mới",
+    "regenerateTitle": "Tạo địa chỉ mới?",
+    "regenerateMessage": "Địa chỉ hiện tại sẽ ngừng nhận thư ngay.",
+    "regenerateConfirm": "Tạo mới",
+    "close": "Đóng",
+    "loading": "Đang lấy địa chỉ…"
+  }
+}

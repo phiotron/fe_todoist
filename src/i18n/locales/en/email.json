@@ -1,0 +1,22 @@
+{
+  "email": {
+    "menuProject": "Email tasks to this project",
+    "menuInbox": "Email tasks to Inbox",
+    "menuTask": "Email to this task",
+    "titleProject": "Email tasks",
+    "titleTask": "Email to this task",
+    "hintProject": "Send or forward emails to this address: the subject becomes the task name and the body its description.",
+    "hintTask": "Send or forward emails to this address: the subject and body are added to the end of the task description.",
+    "syntaxHint": "In the subject you can use: date tomorrow 5pm, @label, p1–p3.",
+    "secretHint": "Anyone who knows this address can add tasks. Create a new address if it leaks.",
+    "address": "Email address",
+    "copy": "Copy",
+    "copied": "Address copied",
+    "regenerate": "New address",
+    "regenerateTitle": "Create a new address?",
+    "regenerateMessage": "The current address stops receiving emails right away.",
+    "regenerateConfirm": "Create",
+    "close": "Close",
+    "loading": "Getting the address…"
+  }
+}

@@ -21,6 +21,7 @@ import { useNow } from '../../../lib/useNow';
 import { gutter, radius, type, useTheme, useThemedStyles } from '../../../theme';
 import type { Palette } from '../../../theme/palette';
 import { useUserTimeZone } from '../../auth/useUserTimeZone';
+import { EmailAddressDialog } from '../../email/EmailAddressDialog';
 import { openQuickAdd } from '../../quickAdd/quickAddTarget';
 import { childrenOf } from '../../subtasks/tree';
 import { Checkbox } from '../Checkbox';
@@ -60,6 +61,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   const [hideCompleted, setHideCompleted] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
   const [localGone, setLocalGone] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   function leave() {
     // Refresh the lists but not this detail (it is gone), then drop it from the cache.
@@ -125,6 +127,14 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
       onPress: () => setReorderOpen(true),
     },
     {
+      // M13a: Todoist "Email to this task" (the mail is appended to the description until comments exist, M8b).
+      key: 'email',
+      label: t('email.menuTask'),
+      icon: 'mail',
+      requiresOnline: true,
+      onPress: () => setEmailOpen(true),
+    },
+    {
       key: 'delete',
       label: t('taskDetail.menuDelete'),
       icon: 'trash-2',
@@ -143,6 +153,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
     duplicate: !access.readOnly,
     'toggle-completed': true,
     'reorder-subtasks': !access.readOnly,
+    email: !access.archived,
     delete: !access.archived,
   };
   const visibleItems = items.filter((item) => allowed[item.key]);
@@ -230,6 +241,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
       </KeyboardScreen>
       {move.picker}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={visibleItems} testID="task-menu" />
+      <EmailAddressDialog visible={emailOpen} target={{ kind: 'task', id: taskId }} onClose={() => setEmailOpen(false)} testID="task-email" />
       <ConfirmDialog
         visible={deleteOpen}
         title={t('taskDetail.deleteTitle')}

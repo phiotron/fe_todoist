@@ -6,6 +6,7 @@ import enBrowse from './locales/en/browse.json';
 import enCommon from './locales/en/common.json';
 import enDates from './locales/en/dates.json';
 import enDisplay from './locales/en/display.json';
+import enEmail from './locales/en/email.json';
 import enFilters from './locales/en/filters.json';
 import enFiltersLabels from './locales/en/filtersLabels.json';
 import enGoogle from './locales/en/google.json';
@@ -30,6 +31,7 @@ import viBrowse from './locales/vi/browse.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
 import viDisplay from './locales/vi/display.json';
+import viEmail from './locales/vi/email.json';
 import viFilters from './locales/vi/filters.json';
 import viFiltersLabels from './locales/vi/filtersLabels.json';
 import viGoogle from './locales/vi/google.json';
@@ -61,6 +63,7 @@ export const viTranslation = {
   ...viCommon,
   ...viDates,
   ...viDisplay,
+  ...viEmail,
   ...viFilters,
   ...viFiltersLabels,
   ...viGoogle,
@@ -89,6 +92,7 @@ export const enTranslation = {
   ...enCommon,
   ...enDates,
   ...enDisplay,
+  ...enEmail,
   ...enFilters,
   ...enFiltersLabels,
   ...enGoogle,
