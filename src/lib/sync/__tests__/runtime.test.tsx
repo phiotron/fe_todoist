@@ -5,6 +5,7 @@ import { Alert } from 'react-native';
 import { apiFetch } from '../../../api/client';
 import { OfflineError } from '../../../api/errors';
 import { OfflineBanner } from '../../../components/OfflineBanner';
+import { onReminderSyncRequested } from '../../../features/reminders/syncSignal';
 import { confirmDiscardUnsynced } from '../../../features/sync/confirmDiscard';
 import { SyncStatusPill } from '../../../features/sync/SyncStatusPill';
 import { viTranslation as vi } from '../../../i18n';
@@ -73,11 +74,16 @@ describe('M9 runtime', () => {
       });
     });
     jest.mocked(NetInfo.fetch).mockResolvedValue({ isConnected: true } as NetInfoState);
+    const reminderResync = jest.fn();
+    const stopListening = onReminderSyncRequested(reminderResync);
     await act(async () => {
       emitNet({ isConnected: true } as NetInfoState);
     });
 
     await waitFor(() => expect(pendingSyncCount()).toBe(0));
+    // what the server accepted may change reminders / due dates: the device schedule is refreshed
+    await waitFor(() => expect(reminderResync).toHaveBeenCalled());
+    stopListening();
     const syncCalls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/v1/sync'));
     expect(syncCalls.length).toBeGreaterThanOrEqual(1);
     const sent = requestAt(fetchMock, fetchMock.mock.calls.findIndex(([url]) => String(url).endsWith('/api/v1/sync')));
@@ -95,10 +101,27 @@ describe('M9 runtime', () => {
     mockFetch();
     stop = startSync();
 
-    await expect(apiFetch('/api/v1/tasks/batch', { method: 'POST', body: { action: 'DELETE' } })).rejects.toBeInstanceOf(
+    await expect(apiFetch('/api/v1/tasks/t1/duplicate', { method: 'POST' })).rejects.toBeInstanceOf(OfflineError);
+    await expect(apiFetch('/api/v1/me/settings', { method: 'PATCH', body: { theme: 'KALE' } })).rejects.toBeInstanceOf(
       OfflineError,
     );
     expect(pendingSyncCount()).toBe(0);
+  });
+
+  it('queues a reorder / batch / favorite / reminder write offline instead of refusing it (M9 phase 2)', async () => {
+    netStartsOffline();
+    mockFetch();
+    stop = startSync();
+
+    await expect(
+      apiFetch('/api/v1/reorder', { method: 'POST', body: { type: 'TASK', id: 't1', afterId: null } }),
+    ).resolves.toMatchObject({ type: 'TASK', id: 't1' });
+    await expect(
+      apiFetch('/api/v1/tasks/batch', { method: 'POST', body: { action: 'DELETE', taskIds: ['t1'] }, idempotencyKey: 'k' }),
+    ).resolves.toEqual({ taskIds: ['t1'] });
+    await apiFetch('/api/v1/projects/p1/favorite', { method: 'PUT' });
+    await apiFetch('/api/v1/tasks/t1/reminders', { method: 'POST', body: { type: 'RELATIVE', minuteOffset: 10 } });
+    expect(pendingSyncCount()).toBe(4);
   });
 
   it('without startSync() the write path is the plain REST call of M1–M8', async () => {

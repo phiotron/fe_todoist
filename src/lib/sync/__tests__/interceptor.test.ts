@@ -69,9 +69,28 @@ describe('write interceptor', () => {
 
   it('answers OfflineError for a write that cannot be queued while offline', () => {
     const { intercept } = setup(false);
-    expect(() => intercept('/api/v1/tasks/batch', { method: 'POST', body: { action: 'DELETE' } })).toThrow(OfflineError);
-    expect(() => intercept('/api/v1/reorder', { method: 'POST', body: {} })).toThrow(OfflineError);
     expect(() => intercept('/api/v1/me/settings', { method: 'PATCH', body: {} })).toThrow(OfflineError);
+    expect(() => intercept('/api/v1/tasks/t1/duplicate', { method: 'POST' })).toThrow(OfflineError);
+  });
+
+  it('queues reorder, batch, favorites and reminders while offline (M9 phase 2) and answers like the REST call', () => {
+    const { queue, intercept, queryClient } = setup(false);
+    queryClient.setQueryData(queryKeys.labels.list(), [{ id: 'l1', name: 'a', isFavorite: false, sortOrder: 1 }]);
+
+    expect(intercept('/api/v1/reorder', { method: 'POST', body: { type: 'LABEL', id: 'l1', afterId: null } })?.value).toMatchObject({
+      type: 'LABEL',
+      id: 'l1',
+    });
+    expect(intercept('/api/v1/tasks/batch', { method: 'POST', body: { action: 'DELETE', taskIds: ['t1', 't2'] }, idempotencyKey: 'k' })?.value).toEqual({
+      taskIds: ['t1', 't2'],
+    });
+    expect(intercept('/api/v1/labels/l1/favorite', { method: 'PUT' })?.value).toMatchObject({ id: 'l1', isFavorite: true });
+    expect(intercept('/api/v1/tasks/t1/reminders', { method: 'POST', body: { type: 'RELATIVE', minuteOffset: 5 } })?.value).toMatchObject({
+      taskId: 't1',
+      type: 'RELATIVE',
+    });
+    expect(queue.peek(10).map((c) => c.type)).toEqual(['reorder', 'task_batch', 'label_favorite', 'reminder_add']);
+    expect(queue.peek(10)[3].tempId).toBe(queue.peek(10)[3].args.id);
   });
 
   it('lets read-only POSTs through offline (they fail as a plain network error, like before)', () => {
@@ -81,7 +100,13 @@ describe('write interceptor', () => {
 
   it('passes an unmappable write through while connected', () => {
     const { intercept } = setup(true);
-    expect(intercept('/api/v1/tasks/batch', { method: 'POST', body: {} })).toBeNull();
+    expect(intercept('/api/v1/tasks/t1/duplicate', { method: 'POST' })).toBeNull();
+  });
+
+  it('a connected batch with an empty queue still goes to the server (M1–M5 behaviour)', () => {
+    const { intercept, queue } = setup(true);
+    expect(intercept('/api/v1/tasks/batch', { method: 'POST', body: { action: 'CLOSE', taskIds: ['t1'] } })).toBeNull();
+    expect(queue.size()).toBe(0);
   });
 
   it('patches the caches so the offline edit shows at once', () => {

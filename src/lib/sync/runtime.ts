@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 import { rawApiFetch, setRequestInterceptor } from '../../api/client';
 import { invalidateData } from '../../api/queryKeys';
+import { requestReminderSync } from '../../features/reminders/syncSignal';
 import { queryClient } from '../queryClient';
 import { isOnlineState, setOfflineWritesEnabled } from '../useIsOnline';
 import { newUuid } from '../uuid';
@@ -28,6 +29,8 @@ export const syncEngine = createSyncEngine({
   isOnline: () => connected,
   onServerChanged: () => {
     void invalidateData(queryClient);
+    // Reminders / due dates written offline only count once the server has them: refresh the device schedule now.
+    requestReminderSync();
   },
 });
 
