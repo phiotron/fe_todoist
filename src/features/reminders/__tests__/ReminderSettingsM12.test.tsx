@@ -4,6 +4,7 @@ import vi from '../../../i18n/locales/vi/reminders.json';
 import { DEVICE_ID_STORAGE_KEY, resetDeviceIdForTests } from '../../../lib/device/deviceId';
 import { setTasklyAndroidForTests, type TasklyAndroidModule } from '../../../lib/native/tasklyAndroid';
 import { FakeReminderPlatform } from '../../../test/fakeReminderPlatform';
+import { runAsPlatform } from '../../../test/runAsPlatform';
 import { renderWithProviders } from '../../../test/render';
 import { setReminderPlatform } from '../platform';
 import { ReminderSettingsScreen, type ReminderSettingsValues } from '../ReminderSettingsScreen';
@@ -19,6 +20,7 @@ async function setup(settings: ReminderSettingsValues = BASE, extra: { onOpenPla
 }
 
 describe('ReminderSettingsScreen — M12 settings', () => {
+  runAsPlatform('android');
   let synced: jest.Mock;
   let unsubscribe: () => void;
 

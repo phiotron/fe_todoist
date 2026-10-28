@@ -19,3 +19,9 @@ export function resolveGoogleWebClientId(value: string | undefined): string | nu
 
 // Dot notation on purpose: Expo inlines EXPO_PUBLIC_* only in this form. Read by the native Google adapter (src/lib/googleSignInAdapter.ts).
 export const GOOGLE_WEB_CLIENT_ID = resolveGoogleWebClientId(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
+
+/**
+ * X5: iOS client ID of the Google OAuth "iOS" client (Bundle ID com.taskly.app); null = Google sign-in is not configured
+ * on iOS. Only the iOS build reads it; the matching URL scheme (REVERSED_CLIENT_ID) is set at build time in app.config.js.
+ */
+export const GOOGLE_IOS_CLIENT_ID = resolveGoogleWebClientId(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID);

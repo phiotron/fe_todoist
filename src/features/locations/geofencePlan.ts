@@ -2,6 +2,13 @@ import type { LocationReminderResponse, LocationTrigger } from '../../api/locati
 
 /** Android allows 100 geofences per app (spec M12, contract: the server also returns at most 100). */
 export const MAX_GEOFENCES = 100;
+/** iOS (CoreLocation) monitors at most 20 regions per app (X5). */
+export const MAX_GEOFENCES_IOS = 20;
+
+/** Region budget of the OS: 20 on iOS, 100 elsewhere. */
+export function maxGeofences(os: string): number {
+  return os === 'ios' ? MAX_GEOFENCES_IOS : MAX_GEOFENCES;
+}
 
 /** One circular region the device watches; `identifier` is the reminder id. */
 export interface GeofenceRegion {

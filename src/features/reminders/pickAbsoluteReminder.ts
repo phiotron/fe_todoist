@@ -1,4 +1,3 @@
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import {
   formatFloating,
   isFloatingInFuture,
@@ -6,6 +5,7 @@ import {
   pickerDateToWallClock,
   wallClockToPickerDate,
 } from '../../lib/reminders';
+import { openDateTimePicker } from '../../lib/dateTimePicker';
 
 export type AbsolutePick = { kind: 'picked'; at: string } | { kind: 'past'; at: string } | { kind: 'cancelled' };
 
@@ -23,7 +23,7 @@ export interface AbsolutePickOptions {
 export function pickAbsoluteReminder(options: AbsolutePickOptions): Promise<AbsolutePick> {
   return new Promise((resolve) => {
     const initial = nextWholeHour(options.now(), options.timeZone);
-    DateTimePickerAndroid.open({
+    openDateTimePicker({
       value: wallClockToPickerDate(initial),
       mode: 'date',
       onChange: (dateEvent, pickedDate) => {
@@ -32,7 +32,7 @@ export function pickAbsoluteReminder(options: AbsolutePickOptions): Promise<Abso
           return;
         }
         const day = pickerDateToWallClock(pickedDate);
-        DateTimePickerAndroid.open({
+        openDateTimePicker({
           value: wallClockToPickerDate({ ...day, hour: initial.hour, minute: initial.minute }),
           mode: 'time',
           is24Hour: options.is24Hour,

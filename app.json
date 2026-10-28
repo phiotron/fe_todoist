@@ -7,7 +7,19 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.taskly.app",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Taskly uses your location to save the place you are at.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Taskly uses your location to remind you when you arrive at or leave a saved place.",
+        "NSLocationAlwaysUsageDescription": "Taskly uses your location to remind you when you arrive at or leave a saved place.",
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "package": "com.taskly.app",
@@ -40,7 +52,8 @@
         {
           "isAndroidBackgroundLocationEnabled": true,
           "locationAlwaysAndWhenInUsePermission": "Taskly uses your location to remind you when you arrive at or leave a saved place.",
-          "locationWhenInUsePermission": "Taskly uses your location to save the place you are at."
+          "locationWhenInUsePermission": "Taskly uses your location to save the place you are at.",
+          "isIosBackgroundLocationEnabled": true
         }
       ],
       "./plugins/withTasklyAndroid",

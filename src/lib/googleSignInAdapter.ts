@@ -1,5 +1,6 @@
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
-import { GOOGLE_WEB_CLIENT_ID } from './config';
+import { Platform } from 'react-native';
+import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from './config';
 import { setGoogleSignInPlatform } from './googleSignIn';
 import type { GoogleSignInPlatform, GoogleSignInResult } from './googleSignIn';
 
@@ -29,14 +30,23 @@ function resultOfError(error: unknown): GoogleSignInResult {
  * `webClientId` is the Web application OAuth client (never the Android one): the ID token is issued for it, which is
  * what the backend verifies. null = not configured: nothing native is touched and the screens say so.
  */
-export function createGoogleSignInAdapter(webClientId: string | null): GoogleSignInPlatform {
+export interface GoogleAdapterOptions {
+  /** iOS client ID (X5); on iOS the native SDK needs it, so without it Google sign-in is "not configured" there. */
+  iosClientId?: string | null;
+  /** Defaults to 'android' (the platform the adapter was written for); the app passes Platform.OS. */
+  os?: string;
+}
+
+export function createGoogleSignInAdapter(webClientId: string | null, options: GoogleAdapterOptions = {}): GoogleSignInPlatform {
+  const { iosClientId = null, os = 'android' } = options;
   let configured = false;
   return {
     async signIn() {
       if (!webClientId) return { type: 'error', reason: 'notConfigured' };
+      if (os === 'ios' && !iosClientId) return { type: 'error', reason: 'notConfigured' };
       try {
         if (!configured) {
-          GoogleSignin.configure({ webClientId });
+          GoogleSignin.configure(os === 'ios' && iosClientId ? { webClientId, iosClientId } : { webClientId });
           configured = true;
         }
         // v16 normally rejects with PLAY_SERVICES_NOT_AVAILABLE; a plain `false` is treated the same way.
@@ -64,6 +74,10 @@ export function createGoogleSignInAdapter(webClientId: string | null): GoogleSig
 }
 
 /** Called once at startup (src/app/_layout.tsx): installs the native adapter as the app's Google sign-in platform. */
-export function installNativeGoogleSignIn(webClientId: string | null = GOOGLE_WEB_CLIENT_ID): void {
-  setGoogleSignInPlatform(createGoogleSignInAdapter(webClientId));
+export function installNativeGoogleSignIn(
+  webClientId: string | null = GOOGLE_WEB_CLIENT_ID,
+  iosClientId: string | null = GOOGLE_IOS_CLIENT_ID,
+  os: string = Platform.OS,
+): void {
+  setGoogleSignInPlatform(createGoogleSignInAdapter(webClientId, { iosClientId, os }));
 }

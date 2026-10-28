@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import { locationsApi } from '../../api/locations';
 import { useSession } from '../auth/session';
-import { planGeofences, planSignature } from './geofencePlan';
+import { maxGeofences, planGeofences, planSignature } from './geofencePlan';
 import { getGeofencePlatform, type GeofencePlatform } from './geofencePlatform';
 
 /** Under the "tasks" root, so every write (complete, delete, move, new reminder) refreshes it. */
@@ -43,7 +44,7 @@ export function useLocationReminderSync(enabled: boolean, options: UseLocationRe
           return;
         }
         if (!query.data) return; // not loaded yet (or offline): keep what is registered
-        const plan = planGeofences(query.data, true);
+        const plan = planGeofences(query.data, true, maxGeofences(Platform.OS));
         const signature = planSignature(plan);
         if (signature === lastApplied.current) return;
         if (plan.regions.length > 0) {

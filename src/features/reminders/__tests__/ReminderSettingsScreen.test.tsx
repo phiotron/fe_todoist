@@ -3,6 +3,7 @@ import { Linking } from 'react-native';
 import vi from '../../../i18n/locales/vi/reminders.json';
 import { FakeReminderPlatform, fakePermission } from '../../../test/fakeReminderPlatform';
 import { renderWithProviders } from '../../../test/render';
+import { runAsPlatform } from '../../../test/runAsPlatform';
 import { setReminderPlatform } from '../platform';
 import { ReminderSettingsScreen, type ReminderSettingsValues } from '../ReminderSettingsScreen';
 import { onReminderSyncRequested } from '../syncSignal';
@@ -21,6 +22,7 @@ async function setup(settings: ReminderSettingsValues | null = DEFAULTS, onSave 
 }
 
 describe('ReminderSettingsScreen', () => {
+  runAsPlatform('android');
   beforeEach(() => {
     platform = new FakeReminderPlatform();
     setReminderPlatform(platform);

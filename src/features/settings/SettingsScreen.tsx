@@ -5,6 +5,7 @@ import { AppButton } from '../../components/AppButton';
 import { Avatar } from '../../components/Avatar';
 import { type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { isAndroid } from '../../lib/native/platform';
 import { useMe } from '../auth/session';
 import { ResetDefaultsSection } from './ResetDefaultsSection';
 import { SettingsLinkRow } from './SettingsLinkRow';
@@ -78,7 +79,10 @@ export function SettingsScreen() {
         value={t(THEME_NAME_KEYS[settings.theme])}
         href="/settings/theme"
       />
-      <SettingsLinkRow testID="settings-row-app-icon" icon="smartphone" label={t('android.appIcon.title')} href="/settings/app-icon" />
+      {/* X5: launcher icons are an Android feature (activity-alias), so the row does not exist on iOS. */}
+      {isAndroid() ? (
+        <SettingsLinkRow testID="settings-row-app-icon" icon="smartphone" label={t('android.appIcon.title')} href="/settings/app-icon" />
+      ) : null}
       <SettingsLinkRow testID="settings-row-navigation" icon="layout" label={t('settings.pages.navigation')} href="/settings/navigation" />
       <SettingsLinkRow testID="settings-row-navigation-menu" icon="menu" label={t('navMenu.title')} href="/settings/navigation-menu" />
       <SettingsLinkRow testID="settings-row-quick-add" icon="plus-circle" label={t('quickAdd.settings.row')} href="/settings/quick-add" />

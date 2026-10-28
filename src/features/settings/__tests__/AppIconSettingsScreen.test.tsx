@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { resetDeviceSettingsForTests, setDeviceSettings, getDeviceSettings } from '../../../lib/device/deviceSettings';
 import { setTasklyAndroidForTests, type TasklyAndroidModule } from '../../../lib/native/tasklyAndroid';
 import { renderWithProviders } from '../../../test/render';
+import { runAsPlatform } from '../../../test/runAsPlatform';
 import { AppIconSettingsScreen } from '../AppIconSettingsScreen';
 import { CompletionToneSection } from '../CompletionToneSection';
 import { DynamicColorSection } from '../DynamicColorSection';
@@ -66,6 +67,7 @@ describe('Settings › App icon', () => {
 });
 
 describe('device settings rows', () => {
+  runAsPlatform('android');
   beforeEach(async () => {
     await AsyncStorage.clear();
     resetDeviceSettingsForTests();

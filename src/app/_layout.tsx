@@ -11,6 +11,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider, Stac
 import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { IosDateTimePickerHost } from '../components/IosDateTimePickerHost';
 import { SessionProvider } from '../features/auth/session';
 import { installGeofencePlatform } from '../features/locations/geofenceExpo';
 import { installReminderPlatform } from '../features/reminders/notifications';
@@ -59,6 +60,8 @@ function ThemedStack() {
     <NavigationThemeProvider value={navigationTheme}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }} />
+      {/* X5: the date / time picker on iOS (renders nothing on Android). */}
+      <IosDateTimePickerHost />
     </NavigationThemeProvider>
   );
 }

@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
+import { Platform } from 'react-native';
 import i18n from '../../i18n';
 import { handleGeofenceEvent } from './geofenceHandler';
 import type { GeofencePlan } from './geofencePlan';
@@ -18,7 +19,8 @@ async function showLocationNotification(notification: { id: string; taskId: stri
   await Notifications.scheduleNotificationAsync({
     identifier: notification.id,
     content: { title: notification.title, body: notification.body, data: { taskId: notification.taskId } },
-    trigger: { channelId: LOCATION_CHANNEL_ID },
+    // The channel is an Android concept; null = show now (iOS has no channels).
+    trigger: Platform.OS === 'android' ? { channelId: LOCATION_CHANNEL_ID } : null,
   });
 }
 

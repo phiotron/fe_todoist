@@ -132,7 +132,7 @@ describe('installNativeGoogleSignIn', () => {
   afterEach(() => setGoogleSignInPlatform(null));
 
   it('installs the adapter as the app platform, used by getGoogleIdToken()', async () => {
-    installNativeGoogleSignIn(WEB_CLIENT_ID);
+    installNativeGoogleSignIn(WEB_CLIENT_ID, null, 'android');
     await expect(getGoogleIdToken()).resolves.toEqual({
       type: 'success',
       idToken: 'google-id-token',
@@ -141,7 +141,7 @@ describe('installNativeGoogleSignIn', () => {
   });
 
   it('installs a "notConfigured" adapter when the client ID is missing', async () => {
-    installNativeGoogleSignIn(null);
+    installNativeGoogleSignIn(null, null, 'android');
     expect(getGoogleSignInPlatform()).not.toBeNull();
     await expect(getGoogleIdToken()).resolves.toEqual({ type: 'error', reason: 'notConfigured' });
   });

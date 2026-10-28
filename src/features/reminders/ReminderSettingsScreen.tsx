@@ -8,6 +8,7 @@ import { SubHeader } from '../../components/SubHeader';
 import { Toggle } from '../../components/Toggle';
 import { AUTO_REMINDER_MINUTES, DEFAULT_AUTO_REMINDER_MINUTES } from '../../lib/reminders';
 import { useDeviceId } from '../../lib/device/deviceId';
+import { isAndroid } from '../../lib/native/platform';
 import { getTasklyAndroid } from '../../lib/native/tasklyAndroid';
 import { gutter, radius, type, useTheme } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -70,7 +71,9 @@ export function ReminderSettingsScreen({
   const styles = useMemo(() => createStyles(palette), [palette]);
   const permission = useReminderPermission();
   const exactAlarm = useExactAlarmGrant();
-  const exactAlarmHint = showExactAlarmHint ?? exactAlarm.needed;
+  // X5: exact alarms and the native urgent alarm are Android-only; on iOS neither the hint nor the urgent block shows.
+  const android = isAndroid();
+  const exactAlarmHint = android && (showExactAlarmHint ?? exactAlarm.needed);
   const deviceId = useDeviceId();
 
   if (!settings) return null;
@@ -170,62 +173,67 @@ export function ReminderSettingsScreen({
           ))}
         </View>
 
-        <ListRow
-          title={t('reminders.settings.pinTitle')}
-          right={
-            <Toggle
-              testID="reminder-pin-switch"
-              label={t('reminders.settings.pinTitle')}
-              value={settings.pinReminders === true}
-              onChange={(value) => void save({ pinReminders: value })}
+        {/* X5: pinned (sticky) and urgent reminders exist only on Android. */}
+        {android ? (
+          <>
+            <ListRow
+              title={t('reminders.settings.pinTitle')}
+              right={
+                <Toggle
+                  testID="reminder-pin-switch"
+                  label={t('reminders.settings.pinTitle')}
+                  value={settings.pinReminders === true}
+                  onChange={(value) => void save({ pinReminders: value })}
+                />
+              }
             />
-          }
-        />
-        <Text style={styles.hint}>{t('reminders.settings.pinHint')}</Text>
+            <Text style={styles.hint}>{t('reminders.settings.pinHint')}</Text>
 
-        <Text accessibilityRole="header" style={styles.heading}>
-          {t('reminders.urgent.title')}
-        </Text>
-        <Text style={styles.hint}>{t('reminders.urgent.hint')}</Text>
-        <Text testID="urgent-device-status" style={styles.status}>
-          {urgentDeviceId === null
-            ? t('reminders.urgent.none')
-            : urgentHere
-              ? t('reminders.urgent.thisDevice')
-              : t('reminders.urgent.otherDevice')}
-        </Text>
-        <View style={styles.row}>
-          {urgentHere ? null : (
-            <AppButton
-              testID="urgent-use-this-device"
-              variant="outline"
-              size="sm"
-              label={t('reminders.urgent.useThisDevice')}
-              disabled={deviceId === null}
-              onPress={() => deviceId !== null && void save({ urgentDeviceId: deviceId })}
-            />
-          )}
-          {urgentDeviceId === null ? null : (
-            <AppButton
-              testID="urgent-clear"
-              variant="ghost"
-              size="sm"
-              label={t('reminders.urgent.clear')}
-              onPress={() => void save({ urgentDeviceId: null })}
-            />
-          )}
-        </View>
-        {fullScreenMissing ? (
-          <View testID="urgent-full-screen" style={styles.exact}>
-            <Text style={styles.hint}>{t('reminders.urgent.fullScreenHint')}</Text>
-            <AppButton
-              testID="urgent-full-screen-open"
-              variant="outline"
-              size="sm"
-              label={t('reminders.urgent.fullScreenOpen')}
-              onPress={() => void native?.openFullScreenIntentSettings()}
-            />
-          </View>
+            <Text accessibilityRole="header" style={styles.heading}>
+              {t('reminders.urgent.title')}
+            </Text>
+            <Text style={styles.hint}>{t('reminders.urgent.hint')}</Text>
+            <Text testID="urgent-device-status" style={styles.status}>
+              {urgentDeviceId === null
+                ? t('reminders.urgent.none')
+                : urgentHere
+                  ? t('reminders.urgent.thisDevice')
+                  : t('reminders.urgent.otherDevice')}
+            </Text>
+            <View style={styles.row}>
+              {urgentHere ? null : (
+                <AppButton
+                  testID="urgent-use-this-device"
+                  variant="outline"
+                  size="sm"
+                  label={t('reminders.urgent.useThisDevice')}
+                  disabled={deviceId === null}
+                  onPress={() => deviceId !== null && void save({ urgentDeviceId: deviceId })}
+                />
+              )}
+              {urgentDeviceId === null ? null : (
+                <AppButton
+                  testID="urgent-clear"
+                  variant="ghost"
+                  size="sm"
+                  label={t('reminders.urgent.clear')}
+                  onPress={() => void save({ urgentDeviceId: null })}
+                />
+              )}
+            </View>
+            {fullScreenMissing ? (
+              <View testID="urgent-full-screen" style={styles.exact}>
+                <Text style={styles.hint}>{t('reminders.urgent.fullScreenHint')}</Text>
+                <AppButton
+                  testID="urgent-full-screen-open"
+                  variant="outline"
+                  size="sm"
+                  label={t('reminders.urgent.fullScreenOpen')}
+                  onPress={() => void native?.openFullScreenIntentSettings()}
+                />
+              </View>
+            ) : null}
+          </>
         ) : null}
 
         {onOpenPlaces ? (

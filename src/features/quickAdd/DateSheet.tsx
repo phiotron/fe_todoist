@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -33,6 +32,7 @@ import {
 } from '../schedule/dueValue';
 import { useDateSettings } from '../settings/useDateSettings';
 import { useDayCounts } from './useDayCounts';
+import { openDateTimePicker } from '../../lib/dateTimePicker';
 
 export interface DateSheetProps {
   visible: boolean;
@@ -147,7 +147,7 @@ export function DateSheet({ visible, value, onSelect, repeat, onClose, testID = 
     const [hour, minute] = (time ?? '09:00').split(':').map(Number);
     const initial = new Date();
     initial.setHours(hour, minute, 0, 0);
-    DateTimePickerAndroid.open({
+    openDateTimePicker({
       value: initial,
       mode: 'time',
       is24Hour: getDisplayPrefs().timeFormat === 'H24',
