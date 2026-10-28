@@ -14,7 +14,7 @@ jest.mock('expo-router', () => {
   const { ScreenHeader: Header } = require('../../../components/ScreenHeader');
   const Stack = Object.assign(() => <Header title="Hôm nay" testID="screen-header" />, { Screen: () => null });
   const router = { push: jest.fn(), back: jest.fn(), replace: jest.fn() };
-  return { Stack, Redirect: () => null, router, useRouter: () => router };
+  return { Stack, Redirect: () => null, router, useRouter: () => router, usePathname: () => '/' };
 });
 
 const insetTop = 28;
