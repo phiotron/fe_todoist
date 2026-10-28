@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -221,6 +222,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
         items={[
           { key: 'display', label: t('display.open'), icon: 'sliders', onPress: () => setDisplayOpen(true) },
           { key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() },
+          { key: 'view-activity', label: t('activity.viewActivity'), icon: 'activity', requiresOnline: true, onPress: () => router.push('/activity') },
         ]}
       />
       <DisplaySheet visible={displayOpen} viewKey={UPCOMING_VIEW_KEY} onClose={() => setDisplayOpen(false)} />

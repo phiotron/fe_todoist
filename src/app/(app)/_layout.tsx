@@ -4,6 +4,7 @@ import { OfflineBanner } from '../../components/OfflineBanner';
 import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
+import { GoalCelebrationHost } from '../../features/productivity/GoalCelebrationHost';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
 import { TimeZoneBanner } from '../../features/settings/TimeZoneBanner';
 import { useTheme, useThemedStyles } from '../../theme';
@@ -31,6 +32,8 @@ export default function SignedInLayout() {
           <TimeZoneBanner />
           {/* M4: schedules the local reminders and handles the notification buttons; renders nothing. */}
           <ReminderHost />
+          {/* M10: congratulates when a daily / weekly goal is reached; renders nothing. */}
+          <GoalCelebrationHost />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />
@@ -38,6 +41,10 @@ export default function SignedInLayout() {
             <Stack.Screen name="filter/[id]" />
             <Stack.Screen name="projects/archived" />
             <Stack.Screen name="completed" />
+            <Stack.Screen name="productivity" />
+            <Stack.Screen name="karma-levels" />
+            <Stack.Screen name="activity" />
+            <Stack.Screen name="project-insights" />
             <Stack.Screen name="task/[id]" />
             <Stack.Screen name="quick-add" options={{ presentation: 'transparentModal', animation: 'fade' }} />
             <Stack.Screen name="project-form" options={{ presentation: 'modal' }} />

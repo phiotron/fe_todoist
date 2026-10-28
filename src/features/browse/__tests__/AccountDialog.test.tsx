@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { Text } from 'react-native';
 import { tokenStore } from '../../../lib/tokenStore';
 import { testUser } from '../../../test/fixtures';
@@ -6,6 +7,8 @@ import { countRequests, jsonResponse, mockFetch } from '../../../test/http';
 import { renderWithProviders } from '../../../test/render';
 import { useSession } from '../../auth/session';
 import { AccountDialog } from '../AccountDialog';
+
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn() } }));
 
 /** Mirrors the (app) guard: once signed out the app shows the login route. */
 function Guarded() {
@@ -35,6 +38,18 @@ describe('AccountDialog', () => {
     await renderWithProviders(<AccountDialog visible onClose={jest.fn()} />);
     expect(await screen.findByTestId('account-name')).toHaveTextContent(testUser.displayName);
     expect(screen.getByTestId('account-email')).toHaveTextContent(testUser.email);
+  });
+
+  it('opens Productivity (M10): closes the dialog, then pushes the route', async () => {
+    answerMeAndLogout();
+    const onClose = jest.fn();
+    await renderWithProviders(<AccountDialog visible onClose={onClose} />);
+    await screen.findByTestId('account-name');
+
+    await fireEvent.press(screen.getByTestId('account-productivity'));
+
+    expect(onClose).toHaveBeenCalled();
+    expect(router.push).toHaveBeenCalledWith('/productivity');
   });
 
   it('signs out: revokes on the server and clears the stored tokens', async () => {

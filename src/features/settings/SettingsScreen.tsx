@@ -56,6 +56,7 @@ export function SettingsScreen() {
       <SettingsLinkRow testID="settings-row-general" icon="sliders" label={t('settings.pages.general')} href="/settings/general" />
       <SettingsLinkRow testID="settings-row-date-time" icon="calendar" label={t('settings.pages.dateTime')} href="/settings/date-time" />
       <SettingsLinkRow testID="settings-row-reminders" icon="bell" label={t('reminders.settings.title')} href="/settings/reminders" />
+      <SettingsLinkRow testID="settings-row-productivity" icon="trending-up" label={t('productivity.settings.title')} href="/settings/productivity" />
       <SettingsLinkRow
         testID="settings-row-theme"
         icon="droplet"

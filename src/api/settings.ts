@@ -27,6 +27,14 @@ export interface SettingsResponse {
   remindersEnabled?: boolean;
   /** Minutes before a timed task's due time; null = automatic reminders off. */
   autoReminderMinutes?: number | null;
+  /** M10 (Settings → Productivity). Optional: a settings cache written before M10 does not have them. */
+  dailyGoal?: number;
+  weeklyGoal?: number;
+  /** ISO weekdays (1 = Monday … 7 = Sunday). */
+  daysOff?: number[];
+  vacationMode?: boolean;
+  goalCelebrations?: boolean;
+  karmaEnabled?: boolean;
 }
 
 /**

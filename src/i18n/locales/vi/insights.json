@@ -1,0 +1,14 @@
+{
+  "insights": {
+    "title": "Thống kê dự án",
+    "menu": "Thống kê",
+    "progress": "Tiến độ",
+    "progressValue": "{{percent}}% hoàn thành",
+    "total": "Tổng số việc",
+    "completed": "Đã hoàn thành",
+    "active": "Đang mở",
+    "overdue": "Quá hạn",
+    "completedByDay": "Hoàn thành theo ngày (14 ngày)",
+    "empty": "Dự án chưa có công việc nào."
+  }
+}

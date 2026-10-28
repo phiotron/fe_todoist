@@ -250,4 +250,25 @@ describe('ProjectScreen', () => {
     expect(router.back).toHaveBeenCalled();
     expect(queryClient.getQueryState(['projects', 'detail', 'p1'])).toBeUndefined();
   });
+
+  it('M10 menu: View activity of the project and Insights open their screens', async () => {
+    await open();
+
+    await menu('view-activity');
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/activity', params: { projectId: 'p1' } });
+    await menu('insights');
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/project-insights', params: { id: 'p1' } });
+  });
+
+  it('M10 menu: the Inbox has View activity but no Insights', async () => {
+    await renderSignedIn(<ProjectScreen projectId={inboxProject.id} />, routes({
+      [`GET /api/v1/projects/${inboxProject.id}`]: () => jsonResponse(200, inboxProject),
+      [`GET /api/v1/projects/${inboxProject.id}/sections`]: () => jsonResponse(200, []),
+      ...viewOptionsRoutes([`project:${inboxProject.id}`]),
+    }));
+    await fireEvent.press(await screen.findByTestId('project-menu-open'));
+
+    expect(screen.getByTestId('project-menu-view-activity')).toBeOnTheScreen();
+    expect(screen.queryByTestId('project-menu-insights')).toBeNull();
+  });
 });

@@ -156,4 +156,27 @@ describe('CompletedScreen', () => {
     await fireEvent.press(screen.getByTestId('completed-since-done'));
     expect(await screen.findByText(viViews.views.completed.emptyRange)).toBeOnTheScreen();
   });
+
+  it('M10: the Activity log tab shows the log of every project and Tasks brings the list back', async () => {
+    const { fetchMock } = await renderSignedIn(<CompletedScreen />, {
+      'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
+      'GET /api/v1/activity': () =>
+        jsonResponse(200, {
+          items: [{ id: 'a1', objectType: 'TASK', objectId: 't9', eventType: 'COMPLETED', projectId: 'p1', objectName: 'Gửi hợp đồng', projectName: 'Công ty', initiatorId: null, createdAt: '2026-10-23T02:00:00Z' }],
+          nextCursor: null,
+        }),
+      'GET /api/v1/projects': () => jsonResponse(200, []),
+    });
+    await screen.findByText('So giá đối thủ');
+    expect(screen.queryByTestId('completed-activity')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('completed-tabs-activity'));
+
+    expect(await screen.findByText('Bạn đã hoàn thành: Gửi hợp đồng')).toBeOnTheScreen();
+    expect(screen.queryByTestId('completed-list')).toBeNull();
+    expect(requestsTo(fetchMock, 'GET', '/api/v1/activity')[0].query.get('taskId')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('completed-tabs-tasks'));
+    expect(await screen.findByText('So giá đối thủ')).toBeOnTheScreen();
+  });
 });

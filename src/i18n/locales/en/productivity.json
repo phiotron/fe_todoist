@@ -1,0 +1,76 @@
+{
+  "productivity": {
+    "title": "Productivity",
+    "open": "Open Productivity",
+    "tabs": { "daily": "Daily", "weekly": "Weekly", "karma": "Karma" },
+    "daily": {
+      "goalTitle": "Daily goal progress",
+      "progress": "{{done}}/{{goal}}",
+      "reached": "You reached today's goal",
+      "remaining": "{{n}} more tasks to reach today's goal",
+      "last7": "Last 7 days",
+      "dayOff": "Day off",
+      "vacation": "On vacation"
+    },
+    "weekly": {
+      "goalTitle": "Weekly goal progress",
+      "progress": "{{done}}/{{goal}}",
+      "reached": "You reached this week's goal",
+      "remaining": "{{n}} more tasks to reach this week's goal",
+      "last4": "Last 4 weeks",
+      "weekOf": "Week of {{date}}"
+    },
+    "streak": {
+      "current": "Current streak",
+      "longest": "Longest streak",
+      "days": "{{n}} days",
+      "weeks": "{{n}} weeks"
+    },
+    "goal": {
+      "edit": "Edit goal",
+      "dailyTitle": "Daily goal",
+      "weeklyTitle": "Weekly goal",
+      "tasks": "{{n}} tasks"
+    },
+    "karma": {
+      "score": "{{n}} Karma points",
+      "level": "Level {{level}}",
+      "toNext": "{{n}} points left to reach {{level}}",
+      "maxLevel": "You reached the highest level",
+      "trend": "Karma trend (28 days)",
+      "aboutLevels": "About Karma levels",
+      "off": "Karma is off. Turn it back on in Settings → Productivity.",
+      "aboutTitle": "Karma levels",
+      "aboutIntro": "You earn Karma points by completing tasks and reaching your goals; tasks overdue by 5 days or more cost points. Reaching a threshold moves you up a level.",
+      "aboutRules": "Complete a task +5 · reach the daily goal +10 · reach the weekly goal +30 · overdue 5 days or more −2 · reopening a completed task takes its points back.",
+      "minKarma": "from {{n}} points",
+      "current": "Current level"
+    },
+    "levels": {
+      "BEGINNER": "Beginner",
+      "NOVICE": "Novice",
+      "INTERMEDIATE": "Intermediate",
+      "PROFESSIONAL": "Professional",
+      "EXPERT": "Expert",
+      "MASTER": "Master",
+      "GRAND_MASTER": "Grand Master",
+      "ENLIGHTENED": "Enlightened"
+    },
+    "celebrate": {
+      "daily": "Congratulations! You reached today's goal.",
+      "weekly": "Great job! You reached this week's goal."
+    },
+    "settings": {
+      "title": "Productivity",
+      "karma": "Karma",
+      "karmaHint": "Show your Karma points and level on the Productivity screen.",
+      "dailyGoal": "Daily goal",
+      "weeklyGoal": "Weekly goal",
+      "daysOff": "Days off",
+      "daysOffHint": "Days off do not break your goal streak.",
+      "vacation": "Vacation mode",
+      "vacationHint": "Keeps your streaks and Karma safe while you are away.",
+      "celebrations": "Goal celebrations"
+    }
+  }
+}

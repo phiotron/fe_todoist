@@ -136,6 +136,11 @@ function ProjectBody({
       items.push({ key: 'archive', label: t('projectScreen.menuArchive'), icon: 'archive', requiresOnline: true, onPress: () => archive.mutate(project.id, { onSuccess: onLeave }) });
     }
   }
+  // M10: Activity log of the project (the Inbox is a project too) and, for projects, Insights.
+  items.push({ key: 'view-activity', label: t('activity.viewActivity'), icon: 'activity', requiresOnline: true, onPress: () => router.push({ pathname: '/activity', params: { projectId: project.id } }) });
+  if (!project.isInbox) {
+    items.push({ key: 'insights', label: t('insights.menu'), icon: 'bar-chart-2', requiresOnline: true, onPress: () => router.push({ pathname: '/project-insights', params: { id: project.id } }) });
+  }
   if (!project.isInbox) {
     items.push({ key: 'delete', label: t('projectScreen.menuDelete'), icon: 'trash-2', destructive: true, requiresOnline: true, onPress: () => { remove.reset(); setDeleteOpen(true); } });
   }

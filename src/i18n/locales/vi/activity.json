@@ -1,0 +1,53 @@
+{
+  "activity": {
+    "title": "Hoạt động",
+    "tabTasks": "Công việc",
+    "tabActivity": "Nhật ký hoạt động",
+    "viewActivity": "Xem hoạt động",
+    "emptyTitle": "Chưa có hoạt động nào",
+    "emptyMessage": "Khi bạn thêm, sửa hoặc hoàn thành công việc, hoạt động sẽ hiện ở đây.",
+    "filterAll": "Tất cả sự kiện",
+    "filterProject": "Dự án",
+    "filterAllProjects": "Mọi dự án",
+    "loadMore": "Tải thêm",
+    "event": {
+      "TASK": {
+        "ADDED": "Bạn đã thêm công việc: {{name}}",
+        "UPDATED": "Bạn đã sửa công việc: {{name}}",
+        "COMPLETED": "Bạn đã hoàn thành: {{name}}",
+        "UNCOMPLETED": "Bạn đã mở lại công việc: {{name}}",
+        "DELETED": "Bạn đã xoá công việc: {{name}}",
+        "ARCHIVED": "Bạn đã lưu trữ công việc: {{name}}",
+        "UNARCHIVED": "Bạn đã khôi phục công việc: {{name}}"
+      },
+      "PROJECT": {
+        "ADDED": "Bạn đã thêm dự án: {{name}}",
+        "UPDATED": "Bạn đã sửa dự án: {{name}}",
+        "COMPLETED": "Bạn đã hoàn thành dự án: {{name}}",
+        "UNCOMPLETED": "Bạn đã mở lại dự án: {{name}}",
+        "DELETED": "Bạn đã xoá dự án: {{name}}",
+        "ARCHIVED": "Bạn đã lưu trữ dự án: {{name}}",
+        "UNARCHIVED": "Bạn đã khôi phục dự án: {{name}}"
+      },
+      "SECTION": {
+        "ADDED": "Bạn đã thêm mục: {{name}}",
+        "UPDATED": "Bạn đã sửa mục: {{name}}",
+        "COMPLETED": "Bạn đã hoàn thành mục: {{name}}",
+        "UNCOMPLETED": "Bạn đã mở lại mục: {{name}}",
+        "DELETED": "Bạn đã xoá mục: {{name}}",
+        "ARCHIVED": "Bạn đã lưu trữ mục: {{name}}",
+        "UNARCHIVED": "Bạn đã khôi phục mục: {{name}}"
+      }
+    },
+    "type": {
+      "ADDED": "Đã thêm",
+      "UPDATED": "Đã sửa",
+      "COMPLETED": "Đã hoàn thành",
+      "UNCOMPLETED": "Đã mở lại",
+      "DELETED": "Đã xoá",
+      "ARCHIVED": "Đã lưu trữ",
+      "UNARCHIVED": "Đã khôi phục"
+    },
+    "inProject": "trong {{project}}"
+  }
+}

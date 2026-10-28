@@ -1,0 +1,14 @@
+{
+  "insights": {
+    "title": "Project insights",
+    "menu": "Insights",
+    "progress": "Progress",
+    "progressValue": "{{percent}}% complete",
+    "total": "Total tasks",
+    "completed": "Completed",
+    "active": "Open",
+    "overdue": "Overdue",
+    "completedByDay": "Completed by day (14 days)",
+    "empty": "This project has no tasks yet."
+  }
+}

@@ -59,7 +59,7 @@ export const CORE_FIELDS: readonly string[] = [
  * be saved and sent like any other (only nested objects and mixed lists are not settings values). Fields M3 knows are
  * never null — they are validated one by one in normalizeSettings / normalizePatch.
  */
-export type SettingsValue = string | number | boolean | null | readonly string[];
+export type SettingsValue = string | number | boolean | null | readonly string[] | readonly number[];
 
 /** Fields to change: M3 fields (validated) plus any field later milestones add (M4 reminders, M6 Quick Add chips…). */
 export type SettingsPatch = Partial<AppSettings> & { [field: string]: SettingsValue | undefined };
@@ -114,7 +114,10 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function isSettingsValue(value: unknown): value is SettingsValue {
   if (value === null) return true;
-  if (Array.isArray(value)) return value.every((item) => typeof item === 'string');
+  // A list of strings (navTabs, quickAddChips…) or of numbers (M10 daysOff); a mixed list is not a settings value.
+  if (Array.isArray(value)) {
+    return value.every((item) => typeof item === 'string') || value.every((item) => typeof item === 'number');
+  }
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
 }
 

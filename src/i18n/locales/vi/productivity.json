@@ -1,0 +1,76 @@
+{
+  "productivity": {
+    "title": "Năng suất",
+    "open": "Mở Năng suất",
+    "tabs": { "daily": "Hằng ngày", "weekly": "Hằng tuần", "karma": "Karma" },
+    "daily": {
+      "goalTitle": "Tiến độ mục tiêu ngày",
+      "progress": "{{done}}/{{goal}}",
+      "reached": "Bạn đã đạt mục tiêu hôm nay",
+      "remaining": "Còn {{n}} việc nữa để đạt mục tiêu hôm nay",
+      "last7": "7 ngày gần nhất",
+      "dayOff": "Ngày nghỉ",
+      "vacation": "Đang nghỉ phép"
+    },
+    "weekly": {
+      "goalTitle": "Tiến độ mục tiêu tuần",
+      "progress": "{{done}}/{{goal}}",
+      "reached": "Bạn đã đạt mục tiêu tuần này",
+      "remaining": "Còn {{n}} việc nữa để đạt mục tiêu tuần này",
+      "last4": "4 tuần gần nhất",
+      "weekOf": "Tuần từ {{date}}"
+    },
+    "streak": {
+      "current": "Chuỗi hiện tại",
+      "longest": "Chuỗi dài nhất",
+      "days": "{{n}} ngày",
+      "weeks": "{{n}} tuần"
+    },
+    "goal": {
+      "edit": "Sửa mục tiêu",
+      "dailyTitle": "Mục tiêu ngày",
+      "weeklyTitle": "Mục tiêu tuần",
+      "tasks": "{{n}} việc"
+    },
+    "karma": {
+      "score": "{{n}} điểm Karma",
+      "level": "Cấp {{level}}",
+      "toNext": "Còn {{n}} điểm để lên {{level}}",
+      "maxLevel": "Bạn đã đạt cấp cao nhất",
+      "trend": "Xu hướng Karma (28 ngày)",
+      "aboutLevels": "Giới thiệu các cấp Karma",
+      "off": "Karma đang tắt. Bật lại trong Cài đặt → Năng suất.",
+      "aboutTitle": "Các cấp Karma",
+      "aboutIntro": "Bạn nhận điểm Karma khi hoàn thành công việc và đạt mục tiêu; công việc quá hạn từ 5 ngày trở lên bị trừ điểm. Karma đạt mốc sẽ lên cấp.",
+      "aboutRules": "Hoàn thành một việc +5 · đạt mục tiêu ngày +10 · đạt mục tiêu tuần +30 · quá hạn từ 5 ngày −2 · mở lại việc đã xong thì trừ lại điểm.",
+      "minKarma": "từ {{n}} điểm",
+      "current": "Cấp hiện tại"
+    },
+    "levels": {
+      "BEGINNER": "Người mới",
+      "NOVICE": "Tập sự",
+      "INTERMEDIATE": "Trung cấp",
+      "PROFESSIONAL": "Chuyên nghiệp",
+      "EXPERT": "Chuyên gia",
+      "MASTER": "Bậc thầy",
+      "GRAND_MASTER": "Đại sư",
+      "ENLIGHTENED": "Giác ngộ"
+    },
+    "celebrate": {
+      "daily": "Chúc mừng! Bạn đã đạt mục tiêu hôm nay.",
+      "weekly": "Tuyệt vời! Bạn đã đạt mục tiêu tuần này."
+    },
+    "settings": {
+      "title": "Năng suất",
+      "karma": "Karma",
+      "karmaHint": "Hiện điểm và cấp Karma trong màn Năng suất.",
+      "dailyGoal": "Mục tiêu ngày",
+      "weeklyGoal": "Mục tiêu tuần",
+      "daysOff": "Ngày nghỉ",
+      "daysOffHint": "Ngày nghỉ không làm đứt chuỗi mục tiêu.",
+      "vacation": "Chế độ nghỉ phép",
+      "vacationHint": "Giữ nguyên chuỗi và không bị trừ Karma khi bạn nghỉ.",
+      "celebrations": "Chúc mừng khi đạt mục tiêu"
+    }
+  }
+}
