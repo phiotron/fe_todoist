@@ -36,6 +36,9 @@ import { useTaskSelection } from '../tasks/selection';
 import { TaskListView } from '../tasks/TaskListView';
 import { nodeRow, sectionRow, taskRows, type TaskListRow } from '../tasks/taskRows';
 import { useTaskList } from '../tasks/useTaskList';
+import { DragProvider } from '../dnd/dnd';
+import { usePendingDrop, withoutPendingDrop, withPendingDrop } from '../dnd/usePendingDrop';
+import { OVERDUE_BLOCK, dayBlock, useDayListDnd } from './dayListDnd';
 import { openCount, overdueRows, useOverdueReschedule } from './overdue';
 import { setUpcomingDay, useUpcomingDay } from './upcomingDayStore';
 import { useUpcomingDays } from './useUpcomingDays';
@@ -78,9 +81,31 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
   // M13b: read-only events of the connected calendar for the days loaded so far (window of at most 31 days).
   const calendarEvents = useCalendarEvents(today, clampWindowEnd(today, loadedThrough, EVENTS_MAX_SPAN_DAYS)).events;
 
+  // DND: a drop shows at once (an overdue task leaves the Overdue block), until the lists are fetched again
+  const pendingDrop = usePendingDrop([upcoming.tasks, overdue.tasks]);
+  const upcomingTasks = useMemo(() => withPendingDrop(upcoming.tasks, pendingDrop.pending), [upcoming.tasks, pendingDrop.pending]);
+  const overdueTasks = useMemo(() => withoutPendingDrop(overdue.tasks, pendingDrop.pending), [overdue.tasks, pendingDrop.pending]);
+  const byDay = useMemo(() => groupByDueDate(upcomingTasks), [upcomingTasks]);
+  const blocks = useMemo(
+    () => [
+      { container: OVERDUE_BLOCK, tasks: overdueTasks },
+      ...dayRange(today, loadedThrough).map((day) => ({ container: dayBlock(day), tasks: byDay.get(day) ?? [] })),
+    ],
+    [overdueTasks, byDay, today, loadedThrough],
+  );
+  const dnd = useDayListDnd({
+    blocks,
+    todayKey: today,
+    keepTime: true,
+    moveBetweenDays: true,
+    // the day order is what the list shows only with the default sort (date ascending); Upcoming never groups
+    ordered: display.options.sortBy === 'DATE' && display.options.sortDirection !== 'DESC',
+    setPending: pendingDrop.set,
+    clearPending: pendingDrop.clear,
+  });
+
   const rows = useMemo(() => {
-    const byDay = groupByDueDate(upcoming.tasks);
-    const result: TaskListRow[] = overdueRows(overdue.tasks, {
+    const result: TaskListRow[] = overdueRows(overdueTasks, {
       collapsed: overdueCollapsed,
       onToggle: () => setOverdueCollapsed((value) => !value),
       onReschedule: reschedule.start,
@@ -103,7 +128,8 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
     }
     for (const day of dayRange(today, loadedThrough)) {
       const list = byDay.get(day) ?? [];
-      result.push(sectionRow(`d-${day}`, { title: formatDayHeader(day, today), count: openCount(list) }));
+      // DND: the day header takes drops for the top of that day
+      result.push(sectionRow(`d-${day}`, { title: formatDayHeader(day, today), count: openCount(list) }, dayBlock(day)));
       const dayEvents = eventsOnDay(calendarEvents, day);
       if (dayEvents.length > 0) {
         result.push(nodeRow(`ev-${day}`, <CalendarEventRows events={dayEvents} testID={`upcoming-events-${day}`} />));
@@ -115,6 +141,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
           <View style={styles.add}>
             <AddRow label={t('views.addTask')} onPress={() => openQuickAdd({ dueDate: day })} requiresOnline testID={`upcoming-add-${day}`} />
           </View>,
+          dayBlock(day), // DND: "Add task" takes drops for the end of that day
         ),
       );
     }
@@ -124,13 +151,13 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
     }
     return result;
     // reschedule.start only opens the sheet; overdue.query is read for hasNextPage / fetchNextPage.
-  }, [upcoming.tasks, loadedThrough, overdue.tasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs, display.options.showCompleted, calendarEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [byDay, loadedThrough, overdueTasks, overdue.query.hasNextPage, today, overdueCollapsed, t, palette, displayPrefs, display.options.showCompleted, calendarEvents]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // M7: List / Board / Calendar of Upcoming (saved with the Display). The board has one column per loaded day.
   const layout = layoutOf(display.options);
   const boardColumns = useMemo(
-    () => dayBoardColumns(dayRange(today, loadedThrough), groupByDueDate(upcoming.tasks), today),
-    [today, loadedThrough, upcoming.tasks],
+    () => dayBoardColumns(dayRange(today, loadedThrough), byDay, today),
+    [today, loadedThrough, byDay],
   );
   const calendarScope = useMemo(() => allTasksScope(), []);
 
@@ -217,6 +244,8 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
         onSelectDay={chooseDay}
         onShiftWeek={shiftWeek}
         onLongPressDay={(day) => openQuickAdd({ dueDate: day })}
+        // DND (List): a task dropped on a day of the strip moves to the end of that day
+        onDropDay={layout === 'LIST' ? (day, task) => dnd.onDrop(task, { kind: 'container', container: dayBlock(day), edge: 'end' }) : undefined}
       />
       <View style={styles.error}>
         <ErrorText message={reschedule.errorMessage} testID="upcoming-error" />
@@ -225,14 +254,15 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
   );
 
   return (
-    <View style={styles.fill}>
+    // DND: one provider for the week strip and the list, so a task can be dropped on a day of the strip
+    <DragProvider style={styles.fill}>
       {header}
       {layout === 'BOARD' ? (
         <BoardView columns={boardColumns} query={upcoming.query} showProject autoLoadAll={false} testID="upcoming-board" />
       ) : layout === 'CALENDAR' ? (
         <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} testID="upcoming-calendar" />
       ) : (
-        <TaskListView rows={rows} query={upcoming.query} showProject testID="upcoming-list" listRef={listRef} initialNumToRender={100} />
+        <TaskListView rows={rows} query={upcoming.query} showProject testID="upcoming-list" listRef={listRef} initialNumToRender={100} dnd={dnd} />
       )}
       {reschedule.sheet}
       <ScheduleSheet
@@ -260,7 +290,7 @@ function UpcomingBody({ display }: { display: ViewDisplay }) {
         ]}
       />
       <DisplaySheet visible={displayOpen} viewKey={UPCOMING_VIEW_KEY} onClose={() => setDisplayOpen(false)} />
-    </View>
+    </DragProvider>
   );
 }
 

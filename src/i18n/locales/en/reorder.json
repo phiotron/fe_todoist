@@ -4,6 +4,9 @@
     "drag": "Hold to drag {{name}}",
     "moveUp": "Move {{name}} up",
     "moveDown": "Move {{name}} down",
-    "done": "Done"
+    "done": "Done",
+    "list": {
+      "movedTo": "Moved to {{date}}"
+    }
   }
 }

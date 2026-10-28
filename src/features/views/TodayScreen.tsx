@@ -34,7 +34,9 @@ import { useTaskSelection } from '../tasks/selection';
 import { TaskListView } from '../tasks/TaskListView';
 import { nodeRow, sectionRow, type TaskListRow } from '../tasks/taskRows';
 import { useTaskList } from '../tasks/useTaskList';
+import { usePendingDrop, withPendingDrop } from '../dnd/usePendingDrop';
 import { openCount, overdueRows, useOverdueReschedule } from './overdue';
+import { TODAY_BLOCK, useTodayDnd } from './dayListDnd';
 
 function TodayBody({ display }: { display: ViewDisplay }) {
   const styles = useThemedStyles(createTodayScreenStyles);
@@ -46,9 +48,22 @@ function TodayBody({ display }: { display: ViewDisplay }) {
   const timeZone = useUserTimeZone();
   const today = dateKeyInZone(now, timeZone);
   const selection = useTaskSelection();
-  const { query, tasks } = useTaskList({ view: 'today', today, ...display.params });
+  const { query, tasks: serverTasks } = useTaskList({ view: 'today', today, ...display.params });
+  // DND: a drop shows at once, until the list is fetched again
+  const pendingDrop = usePendingDrop([serverTasks]);
+  const tasks = useMemo(() => withPendingDrop(serverTasks, pendingDrop.pending), [serverTasks, pendingDrop.pending]);
   const groupBy = display.options.groupBy;
   const ctx = useGroupContext(groupBy);
+  const groups = useMemo(() => groupTodayView(tasks, now, timeZone), [tasks, now, timeZone]);
+  const dnd = useTodayDnd({
+    overdue: groups.overdue,
+    today: groups.today,
+    todayKey: today,
+    // the day order is what the list shows only with the default sort (date ascending) and no grouping
+    ordered: display.options.sortBy === 'DATE' && display.options.sortDirection !== 'DESC' && groupBy === 'NONE',
+    setPending: pendingDrop.set,
+    clearPending: pendingDrop.clear,
+  });
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
@@ -58,7 +73,6 @@ function TodayBody({ display }: { display: ViewDisplay }) {
   const todayEvents = useMemo(() => eventsOnDay(calendar.events, today), [calendar.events, today]);
 
   const rows = useMemo(() => {
-    const groups = groupTodayView(tasks, now, timeZone);
     const result: TaskListRow[] = [];
     if (todayEvents.length > 0) {
       result.push(nodeRow('calendar-events', <CalendarEventRows events={todayEvents} testID="today-calendar-events" showTitle />));
@@ -72,7 +86,8 @@ function TodayBody({ display }: { display: ViewDisplay }) {
     );
     if (groups.today.length > 0) {
       // Counts follow the Overdue block: a task completed a moment ago keeps its (struck) row until the refetch but is not counted.
-      result.push(sectionRow('today', { title: formatDayHeader(today, today), count: openCount(groups.today) }), ...displayRows(groups.today, groupBy, ctx));
+      // DND: the header takes drops for the top of today
+      result.push(sectionRow('today', { title: formatDayHeader(today, today), count: openCount(groups.today) }, TODAY_BLOCK), ...displayRows(groups.today, groupBy, ctx));
     }
     // M7: Display → Completed tasks also shows what was completed today.
     if (display.options.showCompleted === true) {
@@ -85,12 +100,13 @@ function TodayBody({ display }: { display: ViewDisplay }) {
           <View style={styles.add}>
             <AddRow label={t('views.addTask')} onPress={() => openQuickAdd({ dueDate: today })} requiresOnline testID="today-add" />
           </View>,
+          TODAY_BLOCK, // DND: "Add task" takes drops for the end of today
         ),
       );
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t, palette, displayPrefs, display.options.showCompleted, todayEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [groups, collapsed, today, groupBy, ctx, t, palette, displayPrefs, display.options.showCompleted, todayEvents]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // M7: List / Board / Calendar of Today (saved with the Display).
   const layout = layoutOf(display.options);
@@ -124,6 +140,7 @@ function TodayBody({ display }: { display: ViewDisplay }) {
           query={query}
           showProject
           testID="today-list"
+          dnd={dnd}
           empty={
             <StateView
               tone="ok"

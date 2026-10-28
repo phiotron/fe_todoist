@@ -279,7 +279,7 @@ function ProjectBody({
       ) : layout === 'CALENDAR' ? (
         <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} readOnly={readOnly} testID="project-calendar" />
       ) : (
-        <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" />
+        <TaskListView rows={rows} query={body.query} readOnly={readOnly} testID="project-list" dnd={body.dnd} />
       )}
       {!tab && !readOnly && !selection?.active ? <Fab label={t('views.addTask')} onPress={() => openQuickAdd({ projectId: project.id })} placement={addButtonPlacement} testID="project-fab" /> : null}
       {body.dialogs}
