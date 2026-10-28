@@ -13,6 +13,10 @@ import { useNow } from '../../lib/useNow';
 import { gutter, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
+import { DragProvider, DropZone, useDragApi, useDragState } from '../dnd/dnd';
+import { InsertLine } from '../dnd/InsertLine';
+import { rowHalf, type ListDropTarget } from '../dnd/listDrop';
+import { useListAutoScroll, type ViewRef } from '../dnd/useListAutoScroll';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
 import { NO_DUE, dueValueOf, type DueValue } from '../schedule/dueValue';
 import type { TaskListRow } from './taskRows';
@@ -35,6 +39,14 @@ export interface TaskListViewProps {
   listRef?: Ref<FlatList<TaskListRow>>;
   /** Rows drawn on the first render (FlatList default 10); Upcoming draws a whole day window at once. */
   initialNumToRender?: number;
+  /** DND in the list: which tasks can be lifted and what a drop does (absent = no dragging, long press = select). */
+  dnd?: ListDnd;
+}
+
+/** DND of one list screen: the screen turns a drop target into API calls (features/dnd/listDrop.ts). */
+export interface ListDnd {
+  canDrag: (task: Task) => boolean;
+  onDrop: (task: Task, target: ListDropTarget) => void;
 }
 
 /** scrollToIndex retries after onScrollToIndexFailed, and the gap after which a new failure counts as a new jump. */
@@ -46,7 +58,20 @@ const SCROLL_RETRY_WINDOW_MS = 500;
  * and with a footer button (spec 5.10), skeleton / offline / error placeholder when nothing is cached, swipe
  * "Schedule" through the shared ScheduleSheet (PATCH with the task's version).
  */
-export function TaskListView({
+export function TaskListView(props: TaskListViewProps) {
+  const outer = useDragApi();
+  // A screen that also drops outside the list (Upcoming week strip) wraps header + list in its own DragProvider.
+  if (props.dnd && !props.readOnly && !outer) {
+    return (
+      <DragProvider>
+        <TaskListBody {...props} />
+      </DragProvider>
+    );
+  }
+  return <TaskListBody {...props} />;
+}
+
+function TaskListBody({
   rows,
   query,
   empty = null,
@@ -57,7 +82,10 @@ export function TaskListView({
   showCompletedTime = false,
   listRef,
   initialNumToRender,
+  dnd: dndProp,
 }: TaskListViewProps) {
+  const dnd = readOnly ? undefined : dndProp;
+  const { dragging } = useDragState();
   const styles = useThemedStyles(createTaskListViewStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
@@ -71,6 +99,8 @@ export function TaskListView({
   const retryAttempts = useRef({ index: -1, count: 0, at: 0 });
   const retryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(retryTimer.current), []);
+  const wrapperRef = useRef<ViewRef>(null);
+  const scroll = useListAutoScroll(innerRef, wrapperRef, dnd !== undefined);
   const setListRef = useCallback(
     (list: FlatList<TaskListRow> | null) => {
       innerRef.current = list;
@@ -111,26 +141,67 @@ export function TaskListView({
 
   function renderRow({ item }: { item: TaskListRow }) {
     if (item.type === 'section') {
-      return (
+      const headerView = (
         <View style={styles.section}>
           <SectionHeader {...item.props} testID={`section-header-${item.key}`} />
         </View>
       );
+      if (!dnd || item.drop === undefined) return headerView;
+      const container = item.drop;
+      return (
+        <DropZone
+          id={`start:${container}`}
+          testID={`drop-start-${container}`}
+          onDrop={(payload) => dnd.onDrop(payload.task, { kind: 'container', container, edge: 'start' })}
+          overStyle={styles.zoneOver}
+        >
+          {headerView}
+        </DropZone>
+      );
     }
-    if (item.type === 'node') return <>{item.node}</>;
-    return (
+    if (item.type === 'node') {
+      if (!dnd || item.drop === undefined) return <>{item.node}</>;
+      const container = item.drop;
+      return (
+        <DropZone
+          id={`end:${container}`}
+          testID={`drop-end-${container}`}
+          onDrop={(payload) => dnd.onDrop(payload.task, { kind: 'container', container, edge: 'end' })}
+          overStyle={styles.zoneOver}
+        >
+          {item.node}
+        </DropZone>
+      );
+    }
+    const task = item.task;
+    const row = (
       <TaskRow
-        task={item.task}
+        task={task}
         depth={item.depth}
         now={now}
         timeZone={timeZone}
         showProject={showProject}
         onToggle={toggle}
         onSchedule={setScheduling}
-        toggleDisabled={pendingId === item.task.id}
+        toggleDisabled={pendingId === task.id}
         readOnly={readOnly}
         showCompletedTime={showCompletedTime}
+        draggable={dnd ? dnd.canDrag(task) : false}
       />
+    );
+    if (!dnd) return row;
+    const zoneId = `task:${task.id}`;
+    return (
+      <DropZone
+        id={zoneId}
+        testID={`drop-task-${task.id}`}
+        onDrop={(payload, point) =>
+          dnd.onDrop(payload.task, { kind: 'task', taskId: task.id, after: rowHalf(point.y, point.height ?? 0) })
+        }
+      >
+        {row}
+        <InsertLine zoneId={zoneId} />
+      </DropZone>
     );
   }
 
@@ -147,7 +218,7 @@ export function TaskListView({
 
   const message = errorMessage ?? (update.error ? describeError(update.error).message : undefined);
   return (
-    <View style={styles.fill}>
+    <View style={styles.fill} ref={wrapperRef} collapsable={false}>
       {message ? (
         <View style={styles.error}>
           <ErrorText message={message} testID={`${testID}-error`} />
@@ -156,6 +227,12 @@ export function TaskListView({
       <FlatList
         ref={setListRef}
         {...(initialNumToRender === undefined ? {} : { initialNumToRender })}
+        // DND: the finger moves the ghost, not the list (auto-scroll near the edges moves it instead)
+        scrollEnabled={!dragging}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={16}
+        onContentSizeChange={scroll.onContentSizeChange}
+        onLayout={scroll.onLayout}
         testID={testID}
         data={rows}
         keyExtractor={(row) => row.key}
@@ -196,6 +273,8 @@ function createTaskListViewStyles(palette: Palette) {
     section: { paddingHorizontal: gutter },
     error: { paddingHorizontal: gutter },
     footer: { padding: 16, alignItems: 'center' },
+    /** A header / "Add task" row under a dragged task. */
+    zoneOver: { backgroundColor: palette.soft },
     /** Room for the FAB and the Undo toast above the tab bar. */
     content: { paddingBottom: FAB_CLEARANCE },
   });

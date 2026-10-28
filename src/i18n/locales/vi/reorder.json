@@ -4,6 +4,9 @@
     "drag": "Giữ để kéo {{name}}",
     "moveUp": "Đưa {{name}} lên",
     "moveDown": "Đưa {{name}} xuống",
-    "done": "Xong"
+    "done": "Xong",
+    "list": {
+      "movedTo": "Đã dời sang {{date}}"
+    }
   }
 }

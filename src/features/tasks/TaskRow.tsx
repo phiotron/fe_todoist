@@ -11,6 +11,7 @@ import { openTaskReminders } from '../reminders/openTaskReminders';
 import { useIsOnline } from '../../lib/useIsOnline';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { Draggable, useDragState } from '../dnd/dnd';
 import { Checkbox } from './Checkbox';
 import { useTaskSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
@@ -36,6 +37,11 @@ export interface TaskRowProps {
   readOnly?: boolean;
   /** Completed screen: show the completion time in the meta line. */
   showCompletedTime?: boolean;
+  /**
+   * DND in lists: the row can be lifted and dragged (Todoist): hold then move = drag, hold then release = multi-select.
+   * Needs an enclosing DragProvider (TaskListView adds it). Off in the multi-select mode.
+   */
+  draggable?: boolean;
 }
 
 interface SwipeLook {
@@ -67,6 +73,7 @@ export function TaskRow({
   toggleDisabled = false,
   readOnly = false,
   showCompletedTime = false,
+  draggable = false,
 }: TaskRowProps) {
   const styles = useThemedStyles(createTaskRowStyles);
   const { palette } = useTheme();
@@ -89,6 +96,9 @@ export function TaskRow({
   const swipeLeft = completeOnly && swipe.left !== 'COMPLETE' ? 'NONE' : swipe.left;
 
   const uncompletable = isUncompletable(task.content);
+  const drag = useDragState();
+  const dragging = drag.dragging;
+  const beingDragged = drag.payload?.task.id === task.id;
 
   function run(action: SwipeAction) {
     if (action === 'COMPLETE' && !completed) {
@@ -101,19 +111,15 @@ export function TaskRow({
     else if (action === 'DELETE') requestDelete({ id: task.id, content: task.content, subtaskCount: task.subtaskCount });
   }
 
-  const row = (
-    <Pressable
-      testID={`task-row-${task.id}`}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={() => (selecting ? selectable?.toggle(task.id, selectOptions) : router.push(`/task/${task.id}`))}
-      onLongPress={
-        selectable
-          ? () => (selecting ? selectable.toggle(task.id, selectOptions) : selectable.start(task.id, selectOptions))
-          : undefined
-      }
-      style={[styles.row, { paddingLeft: gutter + (depth - 1) * INDENT }, selected && styles.selected]}
-    >
+  const onPress = () => (selecting ? selectable?.toggle(task.id, selectOptions) : router.push(`/task/${task.id}`));
+  const onLongPress = selectable
+    ? () => (selecting ? selectable.toggle(task.id, selectOptions) : selectable.start(task.id, selectOptions))
+    : undefined;
+  const rowStyle = [styles.row, { paddingLeft: gutter + (depth - 1) * INDENT }, selected && styles.selected, beingDragged && styles.lifted];
+  // PERM × DND: a Member / Guest of a team project cannot move or reschedule its tasks → no drag (hold still selects, Complete only).
+  const canDrag = draggable && capabilities.canEditTasks && !readOnly && !completed && !selecting;
+  const content = (
+    <>
       {uncompletable ? (
         <View testID={`task-note-${task.id}`} style={styles.noteGap} />
       ) : (
@@ -137,6 +143,30 @@ export function TaskRow({
         ) : null}
         <TaskMeta task={task} now={now} timeZone={timeZone} showProject={showProject} showCompletedTime={showCompletedTime} />
       </View>
+    </>
+  );
+  const row = canDrag ? (
+    <Draggable
+      testID={`task-row-${task.id}`}
+      accessibilityState={{ selected }}
+      enabled
+      payload={() => ({ taskIds: [task.id], task })}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={rowStyle}
+    >
+      {content}
+    </Draggable>
+  ) : (
+    <Pressable
+      testID={`task-row-${task.id}`}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={rowStyle}
+    >
+      {content}
     </Pressable>
   );
 
@@ -154,6 +184,8 @@ export function TaskRow({
     <Swipeable
       ref={swipeRef}
       testID={`task-swipe-${task.id}`}
+      // a drag in progress must not turn into a swipe (same tree either way, so the lifted row keeps its touch)
+      enabled={!dragging}
       friction={2}
       leftThreshold={80}
       rightThreshold={80}
@@ -188,6 +220,8 @@ function createTaskRowStyles(palette: Palette) {
       borderBottomColor: palette.line,
     },
     selected: { backgroundColor: palette.soft },
+    /** The row being dragged stays in place, faded, while its ghost follows the finger. */
+    lifted: { opacity: 0.4 },
     body: { flex: 1 },
     /** Where the checkbox would be: keeps the name aligned with the other rows. */
     noteGap: { width: size.touch / 2 },

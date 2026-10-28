@@ -13,6 +13,7 @@ import {
 import {
   Animated,
   StyleSheet,
+  type AccessibilityState,
   Text,
   View,
   type GestureResponderEvent,
@@ -45,6 +46,9 @@ export interface DragPayload {
 export interface DropPoint {
   x: number;
   y: number;
+  /** Size of the zone (list rows: which half the finger is on). */
+  width?: number;
+  height?: number;
 }
 
 export interface Rect {
@@ -58,6 +62,21 @@ interface ZoneEntry {
   ref: RefObject<ViewRef | null>;
   onDrop: (payload: DragPayload, point: DropPoint) => void;
   accepts?: (payload: DragPayload) => boolean;
+}
+
+/** Height of the band at the top / bottom of a list where a drag scrolls it, and the fastest step (px per tick). */
+export const AUTO_SCROLL_EDGE = 64;
+export const AUTO_SCROLL_MAX = 24;
+
+/**
+ * DND in lists: pixels to scroll per tick while the finger is at `y` over a list spanning [top, bottom] (window
+ * coordinates): negative = up, 0 = outside the edge bands; faster closer to (or past) the edge. Pure (unit-tested).
+ */
+export function autoScrollStep(y: number, top: number, bottom: number): number {
+  const strength = (depth: number) => Math.round(AUTO_SCROLL_MAX * Math.min(1, depth / AUTO_SCROLL_EDGE));
+  if (y < top + AUTO_SCROLL_EDGE) return -Math.max(1, strength(top + AUTO_SCROLL_EDGE - y));
+  if (y > bottom - AUTO_SCROLL_EDGE) return Math.max(1, strength(y - (bottom - AUTO_SCROLL_EDGE)));
+  return 0;
 }
 
 /** The id of the smallest rect containing (x, y), or null. Pure (unit-tested). */
@@ -78,17 +97,27 @@ export function hitTest(rects: ReadonlyMap<string, Rect>, x: number, y: number):
 interface DragState {
   payload: DragPayload | null;
   overId: string | null;
+  /** The finger is on the lower half of the zone under it (list rows: drop after that row). */
+  overAfter: boolean;
 }
 
-interface DragApi {
+/** What a monitor hears: every finger move of a drag, then its end (dropped or cancelled). */
+export type DragEvent = { type: 'move'; x: number; y: number } | { type: 'end' };
+
+export interface DragApi {
   register: (id: string, entry: ZoneEntry) => () => void;
   start: (payload: DragPayload, pageX: number, pageY: number) => void;
   move: (pageX: number, pageY: number) => void;
   end: (pageX: number, pageY: number) => void;
   cancel: () => void;
+  /** Measure every zone again (a list scrolled under the finger), then hit-test the finger again. */
+  remeasure: () => void;
+  /** Listen to the drag (auto-scroll of lists); returns the unsubscribe. */
+  monitor: (listener: (event: DragEvent) => void) => () => void;
 }
 
-const DragStateContext = createContext<DragState>({ payload: null, overId: null });
+const IDLE: DragState = { payload: null, overId: null, overAfter: false };
+const DragStateContext = createContext<DragState>(IDLE);
 const DragApiContext = createContext<DragApi | null>(null);
 
 function measure(ref: RefObject<ViewRef | null>): Promise<Rect | null> {
@@ -110,9 +139,11 @@ export function DragProvider({ children, style }: { children: ReactNode; style?:
   const rootRef = useRef<ViewRef>(null);
   const origin = useRef({ x: 0, y: 0 });
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-  const [state, setState] = useState<DragState>({ payload: null, overId: null });
+  const [state, setState] = useState<DragState>(IDLE);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const lastPoint = useRef({ x: 0, y: 0 });
+  const monitors = useRef(new Set<(event: DragEvent) => void>());
 
   const register = useCallback((id: string, entry: ZoneEntry) => {
     zones.current.set(id, entry);
@@ -122,56 +153,100 @@ export function DragProvider({ children, style }: { children: ReactNode; style?:
     };
   }, []);
 
+  const monitor = useCallback((listener: (event: DragEvent) => void) => {
+    monitors.current.add(listener);
+    return () => {
+      monitors.current.delete(listener);
+    };
+  }, []);
+  const emit = useCallback((event: DragEvent) => {
+    for (const listener of [...monitors.current]) listener(event);
+  }, []);
+
   const place = useCallback(
     (pageX: number, pageY: number) => position.setValue({ x: pageX - origin.current.x, y: pageY - origin.current.y }),
     [position],
   );
 
+  /** Zone under the point and which half of it; the state only changes when one of them does. */
+  const hover = useCallback((pageX: number, pageY: number) => {
+    const overId = hitTest(rects.current, pageX, pageY);
+    const rect = overId ? rects.current.get(overId) : undefined;
+    const overAfter = rect ? pageY - rect.y > rect.height / 2 : false;
+    const current = stateRef.current;
+    if (current.payload && (overId !== current.overId || overAfter !== current.overAfter)) {
+      setState((previous) => ({ ...previous, overId, overAfter }));
+    }
+  }, []);
+
+  const measureZones = useCallback(() => {
+    const pending: Promise<void>[] = [];
+    for (const [id, entry] of zones.current) {
+      pending.push(
+        measure(entry.ref).then((rect) => {
+          if (rect) rects.current.set(id, rect);
+        }),
+      );
+    }
+    return Promise.all(pending);
+  }, []);
+
   const start = useCallback(
     (payload: DragPayload, pageX: number, pageY: number) => {
       rects.current.clear();
+      lastPoint.current = { x: pageX, y: pageY };
       void measure(rootRef).then((rect) => {
         if (rect) origin.current = { x: rect.x, y: rect.y };
         place(pageX, pageY);
       });
-      for (const [id, entry] of zones.current) {
-        void measure(entry.ref).then((rect) => {
-          if (rect) rects.current.set(id, rect);
-        });
-      }
+      void measureZones();
       place(pageX, pageY);
-      setState({ payload, overId: null });
+      setState({ payload, overId: null, overAfter: false });
     },
-    [place],
+    [place, measureZones],
   );
 
   const move = useCallback(
     (pageX: number, pageY: number) => {
       if (!stateRef.current.payload) return;
+      lastPoint.current = { x: pageX, y: pageY };
       place(pageX, pageY);
-      const overId = hitTest(rects.current, pageX, pageY);
-      if (overId !== stateRef.current.overId) setState((current) => ({ ...current, overId }));
+      hover(pageX, pageY);
+      emit({ type: 'move', x: pageX, y: pageY });
     },
-    [place],
+    [place, hover, emit],
   );
 
-  const cancel = useCallback(() => setState({ payload: null, overId: null }), []);
+  const remeasure = useCallback(() => {
+    if (!stateRef.current.payload) return;
+    rects.current.clear();
+    void measureZones().then(() => hover(lastPoint.current.x, lastPoint.current.y));
+  }, [measureZones, hover]);
+
+  const cancel = useCallback(() => {
+    setState(IDLE);
+    emit({ type: 'end' });
+  }, [emit]);
 
   const end = useCallback(
     (pageX: number, pageY: number) => {
       const payload = stateRef.current.payload;
-      setState({ payload: null, overId: null });
+      setState(IDLE);
+      emit({ type: 'end' });
       if (!payload) return;
       const id = hitTest(rects.current, pageX, pageY);
       const entry = id ? zones.current.get(id) : undefined;
       const rect = id ? rects.current.get(id) : undefined;
       if (!entry || !rect || (entry.accepts && !entry.accepts(payload))) return;
-      entry.onDrop(payload, { x: pageX - rect.x, y: pageY - rect.y });
+      entry.onDrop(payload, { x: pageX - rect.x, y: pageY - rect.y, width: rect.width, height: rect.height });
     },
-    [],
+    [emit],
   );
 
-  const api = useMemo<DragApi>(() => ({ register, start, move, end, cancel }), [register, start, move, end, cancel]);
+  const api = useMemo<DragApi>(
+    () => ({ register, start, move, end, cancel, remeasure, monitor }),
+    [register, start, move, end, cancel, remeasure, monitor],
+  );
   const extra = state.payload ? state.payload.taskIds.length - 1 : 0;
 
   return (
@@ -201,9 +276,14 @@ export function DragProvider({ children, style }: { children: ReactNode; style?:
 }
 
 /** `dragging` = a drag is in progress (turn scrolling off); `overId` = the zone under the finger. */
-export function useDragState(): { dragging: boolean; overId: string | null; payload: DragPayload | null } {
+export function useDragState(): { dragging: boolean; overId: string | null; overAfter: boolean; payload: DragPayload | null } {
   const state = useContext(DragStateContext);
-  return { dragging: state.payload !== null, overId: state.overId, payload: state.payload };
+  return { dragging: state.payload !== null, overId: state.overId, overAfter: state.overAfter, payload: state.payload };
+}
+
+/** The drag API of the enclosing DragProvider (null outside one): lists use it for auto-scroll. */
+export function useDragApi(): DragApi | null {
+  return useContext(DragApiContext);
 }
 
 interface DropZoneProps {
@@ -212,8 +292,8 @@ interface DropZoneProps {
   /** false = the zone ignores this payload (no highlight, no drop). */
   accepts?: (payload: DragPayload) => boolean;
   style?: StyleProp<ViewStyle>;
-  /** Style added while a draggable is over this zone. */
-  overStyle?: StyleProp<ViewStyle>;
+  /** Style added while a draggable is over this zone; a function gets whether the finger is on the lower half. */
+  overStyle?: StyleProp<ViewStyle> | ((after: boolean) => StyleProp<ViewStyle>);
   children?: ReactNode;
   testID?: string;
 }
@@ -224,7 +304,7 @@ interface DropZoneProps {
  */
 export function DropZone({ id, onDrop, accepts, style, overStyle, children, testID }: DropZoneProps) {
   const api = useContext(DragApiContext);
-  const { overId, payload } = useContext(DragStateContext);
+  const { overId, overAfter, payload } = useContext(DragStateContext);
   const ref = useRef<ViewRef>(null);
   const onDropRef = useRef(onDrop);
   onDropRef.current = onDrop;
@@ -242,7 +322,12 @@ export function DropZone({ id, onDrop, accepts, style, overStyle, children, test
 
   const over = overId === id && payload !== null && (!accepts || accepts(payload));
   return (
-    <View ref={ref} collapsable={false} style={[style, over && overStyle]} testID={testID}>
+    <View
+      ref={ref}
+      collapsable={false}
+      style={[style, over && (typeof overStyle === 'function' ? overStyle(overAfter) : overStyle)]}
+      testID={testID}
+    >
       {children}
     </View>
   );
@@ -254,20 +339,41 @@ interface DraggableProps {
   /** false = a tap still works, a long press does nothing (sub-tasks, completed tasks, read-only). */
   enabled: boolean;
   onPress?: () => void;
+  /**
+   * Lists (Todoist): held then released WITHOUT moving = a long press (enter the multi-select), even though the task
+   * was lifted for a drag; held then moved = a drag. Not draggable: a hold of LONG_PRESS_MS released in place.
+   */
+  onLongPress?: () => void;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
+  accessibilityState?: AccessibilityState;
   children: ReactNode;
   testID?: string;
 }
 
 /** A long-press-to-drag wrapper (tap = onPress). Inner Pressables (the checkbox) keep their own touches. */
-export function Draggable({ payload, enabled, onPress, style, accessibilityLabel, children, testID }: DraggableProps) {
+export function Draggable({
+  payload,
+  enabled,
+  onPress,
+  onLongPress,
+  style,
+  accessibilityLabel,
+  accessibilityState,
+  children,
+  testID,
+}: DraggableProps) {
   const api = useContext(DragApiContext);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startPoint = useRef({ x: 0, y: 0 });
   const last = useRef({ x: 0, y: 0 });
   const active = useRef(false);
   const moved = useRef(false);
+  /** The hold reached LONG_PRESS_MS (lifted, or a plain long press when not draggable). */
+  const held = useRef(false);
+  /** Where the task was lifted, and whether the finger left the slop since. */
+  const liftPoint = useRef({ x: 0, y: 0 });
+  const dragMoved = useRef(false);
 
   const clearTimer = () => {
     if (timer.current) clearTimeout(timer.current);
@@ -283,6 +389,7 @@ export function Draggable({ payload, enabled, onPress, style, accessibilityLabel
       style={style}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={accessibilityState}
       onStartShouldSetResponder={() => true}
       onMoveShouldSetResponder={() => active.current}
       onResponderTerminationRequest={() => !active.current}
@@ -292,21 +399,30 @@ export function Draggable({ payload, enabled, onPress, style, accessibilityLabel
         last.current = start;
         active.current = false;
         moved.current = false;
+        held.current = false;
+        dragMoved.current = false;
         clearTimer();
-        if (enabled && api) {
+        const canDrag = enabled && api !== null;
+        if (canDrag || onLongPress) {
           timer.current = setTimeout(() => {
             timer.current = null;
-            active.current = true;
-            api.start(payload(), last.current.x, last.current.y);
+            held.current = true;
+            if (canDrag) {
+              active.current = true;
+              liftPoint.current = last.current;
+              api.start(payload(), last.current.x, last.current.y);
+            }
           }, LONG_PRESS_MS);
         }
       }}
       onResponderMove={(event) => {
         const now = point(event);
         last.current = now;
+        const beyond = (from: { x: number; y: number }) => Math.abs(now.x - from.x) > SLOP || Math.abs(now.y - from.y) > SLOP;
         if (active.current) {
+          if (!dragMoved.current && beyond(liftPoint.current)) dragMoved.current = true;
           api?.move(now.x, now.y);
-        } else if (Math.abs(now.x - startPoint.current.x) > SLOP || Math.abs(now.y - startPoint.current.y) > SLOP) {
+        } else if (beyond(startPoint.current)) {
           moved.current = true;
           clearTimer();
         }
@@ -314,16 +430,27 @@ export function Draggable({ payload, enabled, onPress, style, accessibilityLabel
       onResponderRelease={(event) => {
         const end = point(event);
         const wasActive = active.current;
-        const pending = timer.current !== null || !enabled;
+        const wasHeld = held.current;
         clearTimer();
         active.current = false;
-        if (wasActive) api?.end(end.x, end.y);
-        else if (pending && !moved.current) onPress?.();
+        held.current = false;
+        if (wasActive && !dragMoved.current && onLongPress) {
+          // lifted but never dragged: a long press (Todoist: hold = select)
+          api?.cancel();
+          onLongPress();
+        } else if (wasActive) {
+          api?.end(end.x, end.y);
+        } else if (wasHeld) {
+          if (!moved.current) onLongPress?.();
+        } else if (!moved.current) {
+          onPress?.();
+        }
       }}
       onResponderTerminate={() => {
         clearTimer();
         if (active.current) api?.cancel();
         active.current = false;
+        held.current = false;
       }}
     >
       {children}

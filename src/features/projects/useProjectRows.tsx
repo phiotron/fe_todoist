@@ -26,7 +26,14 @@ import {
 } from '../sections/useSections';
 import { nodeRow, sectionRow, type TaskListRow } from '../tasks/taskRows';
 import { useSectionTransferMenu } from '../templates/useSectionTransferMenu';
-import { useReorderTask } from '../tasks/useTaskActions';
+import { useMoveTask, useReorderTask } from '../tasks/useTaskActions';
+import { useSnackbar } from '../../components/Snackbar';
+import { placeDrop, type ListEntry } from '../dnd/listDrop';
+import { anchorOf, usePendingDrop, withPendingDrop } from '../dnd/usePendingDrop';
+import type { ListDnd } from '../tasks/TaskListView';
+
+/** DND container key of the tasks outside any section. */
+const NO_SECTION = 'none';
 import { useTaskList } from '../tasks/useTaskList';
 import { groupProjectTasks } from './projectGroups';
 
@@ -56,11 +63,16 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
   const { palette } = useTheme();
   const { t } = useTranslation();
   const copyLink = useCopyLink();
-  const { query, tasks } = useTaskList({ projectId, ...(display?.params ?? {}) });
+  const { query, tasks: serverTasks } = useTaskList({ projectId, ...(display?.params ?? {}) });
+  // DND: a drop shows at once, until the list is fetched again
+  const pendingDrop = usePendingDrop([serverTasks]);
+  const tasks = useMemo(() => withPendingDrop(serverTasks, pendingDrop.pending), [serverTasks, pendingDrop.pending]);
   const groupBy = display?.options.groupBy ?? 'NONE';
   const ctx = useGroupContext(groupBy);
   /** Manual task order ("Sắp xếp công việc") only makes sense while the list shows sort_order. */
   const manualOrder = !display || (display.options.sortBy === 'MANUAL' && groupBy === 'NONE');
+  /** DND in the list: only on the manual order shown top-down (Todoist turns dragging off when sorted). */
+  const dragOrder = manualOrder && display?.options.sortDirection !== 'DESC' && !readOnly;
   const { sections, archived } = useSections(projectId);
   const groups = useMemo(() => groupProjectTasks(tasks, sections), [tasks, sections]);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -70,7 +82,47 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
   const remove = useDeleteSection(projectId);
   const reorderSection = useReorderSection();
   const reorderTask = useReorderTask();
+  const dropReorder = useReorderTask();
+  const dropMove = useMoveTask();
+  const snackbar = useSnackbar();
   const close = () => setDialog({ kind: 'none' });
+
+  // DND: the visible tasks as drop entries (collapsed sections have none: their header still takes drops)
+  const entries = useMemo<ListEntry[]>(
+    () =>
+      groups.flatMap((group) =>
+        group.rows.map(({ task }) => ({ id: task.id, parentId: task.parentId, container: group.section?.id ?? NO_SECTION })),
+      ),
+    [groups],
+  );
+  const runDropReorder = dropReorder.mutateAsync;
+  const runDropMove = dropMove.mutateAsync;
+  const { set: setPendingDrop, clear: clearPendingDrop } = pendingDrop;
+  const dnd = useMemo<ListDnd | undefined>(() => {
+    if (!dragOrder || groupBy !== 'NONE') return undefined;
+    return {
+      canDrag: (task) => task.completedAt === null,
+      onDrop: (task, target) => {
+        const placement = placeDrop(entries, task.id, target);
+        if (!placement) return;
+        const from = task.sectionId ?? NO_SECTION;
+        const sectionId = placement.container === NO_SECTION ? null : placement.container;
+        setPendingDrop({
+          task,
+          anchor: anchorOf(entries, task.id, task.parentId, placement),
+          ...(placement.container === from ? {} : { patch: { sectionId } }),
+        });
+        const write =
+          placement.container === from
+            ? runDropReorder({ id: task.id, afterId: placement.afterId })
+            : runDropMove({ taskId: task.id, body: { projectId, sectionId, parentId: null, afterId: placement.afterId } });
+        write.catch((error: unknown) => {
+          clearPendingDrop();
+          snackbar.show({ message: describeError(error).message, tone: 'error' });
+        });
+      },
+    };
+  }, [dragOrder, groupBy, entries, projectId, runDropReorder, runDropMove, setPendingDrop, clearPendingDrop, snackbar]);
   // M11: Reorder · Move · Duplicate in the section menu
   const transfer = useSectionTransferMenu({
     projectId,
@@ -99,20 +151,24 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
         const isCollapsed = section !== null && collapsed.has(section.id);
         if (section) {
           result.push(
-            sectionRow(`s-${section.id}`, {
-              title: section.name,
-              count: section.activeTaskCount,
-              collapsed: isCollapsed,
-              onToggle: () => toggle(section.id),
-              right: readOnly ? undefined : (
-                <IconButton
-                  icon="more-horizontal"
-                  label={t('projectScreen.section.menu', { name: section.name })}
-                  onPress={() => setDialog({ kind: 'menu', section })}
-                  testID={`section-menu-open-${section.id}`}
-                />
-              ),
-            }),
+            sectionRow(
+              `s-${section.id}`,
+              {
+                title: section.name,
+                count: section.activeTaskCount,
+                collapsed: isCollapsed,
+                onToggle: () => toggle(section.id),
+                right: readOnly ? undefined : (
+                  <IconButton
+                    icon="more-horizontal"
+                    label={t('projectScreen.section.menu', { name: section.name })}
+                    onPress={() => setDialog({ kind: 'menu', section })}
+                    testID={`section-menu-open-${section.id}`}
+                  />
+                ),
+              },
+              section.id, // DND: drop on the header = top of this section
+            ),
           );
           if (section.description && !isCollapsed) {
             result.push(nodeRow(`sd-${section.id}`, <Text style={styles.description}>{section.description}</Text>));
@@ -132,6 +188,7 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
                   testID={`project-add-${key}`}
                 />
               </View>,
+              section?.id ?? NO_SECTION, // DND: drop on "Add task" = end of this block
             ),
           );
         }
@@ -316,6 +373,8 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
     groups,
     sections,
     manualOrder,
+    /** DND in the list (undefined = off: sorted / grouped / read-only). */
+    dnd,
     dialogs,
     actions: {
       addSection: () => setDialog({ kind: 'form' }),

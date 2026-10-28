@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { projectsApi, type ProjectCapabilities, type ProjectCapabilityFields } from '../../api/projects';
 import { queryKeys } from '../../api/queryKeys';
 
@@ -46,10 +47,27 @@ export function isCompleteOnly(project: Capable): boolean {
  * cached yet → everything allowed; the server still refuses with 403 team-admin-only.
  */
 export function useProjectCapabilities(projectId: string | undefined): ProjectCapabilities {
+  const data = useCachedActiveProjects();
+  return capabilitiesOf(projectId ? data?.find((project) => project.id === projectId) : undefined);
+}
+
+/**
+ * Same passive read, for list-level logic over many tasks (drag & drop of Today / Upcoming): `canEdit(projectId)` is
+ * false for a task of a team project where I am a Member / Guest — it may not be moved or rescheduled by a drop.
+ */
+export function useCanEditTasksOf(): (projectId: string | undefined) => boolean {
+  const data = useCachedActiveProjects();
+  return useCallback(
+    (projectId: string | undefined) => canEditTasks(projectId ? data?.find((project) => project.id === projectId) : undefined),
+    [data],
+  );
+}
+
+function useCachedActiveProjects() {
   const { data } = useQuery({
     queryKey: queryKeys.projects.list(false),
     queryFn: () => projectsApi.list(false),
     enabled: false,
   });
-  return capabilitiesOf(projectId ? data?.find((project) => project.id === projectId) : undefined);
+  return data;
 }
