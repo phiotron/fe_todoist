@@ -8,6 +8,8 @@ import enInsights from './locales/en/insights.json';
 import enProductivity from './locales/en/productivity.json';
 import enBrowse from './locales/en/browse.json';
 import enCalendar from './locales/en/calendar.json';
+import enAvatar from './locales/en/avatar.json';
+import enComments from './locales/en/comments.json';
 import enCommon from './locales/en/common.json';
 import enDates from './locales/en/dates.json';
 import enDisplay from './locales/en/display.json';
@@ -18,6 +20,7 @@ import enGoogle from './locales/en/google.json';
 import enLabels from './locales/en/labels.json';
 import enNav from './locales/en/nav.json';
 import enNavMenu from './locales/en/navMenu.json';
+import enNotifications from './locales/en/notifications.json';
 import enPasswordReset from './locales/en/passwordReset.json';
 import enProjectScreen from './locales/en/projectScreen.json';
 import enProjects from './locales/en/projects.json';
@@ -46,6 +49,8 @@ import viInsights from './locales/vi/insights.json';
 import viProductivity from './locales/vi/productivity.json';
 import viBrowse from './locales/vi/browse.json';
 import viCalendar from './locales/vi/calendar.json';
+import viAvatar from './locales/vi/avatar.json';
+import viComments from './locales/vi/comments.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
 import viDisplay from './locales/vi/display.json';
@@ -56,6 +61,7 @@ import viGoogle from './locales/vi/google.json';
 import viLabels from './locales/vi/labels.json';
 import viNav from './locales/vi/nav.json';
 import viNavMenu from './locales/vi/navMenu.json';
+import viNotifications from './locales/vi/notifications.json';
 import viPasswordReset from './locales/vi/passwordReset.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
@@ -91,6 +97,8 @@ export const viTranslation = {
   ...viProductivity,
   ...viBrowse,
   ...viCalendar,
+  ...viAvatar,
+  ...viComments,
   ...viCommon,
   ...viDates,
   ...viDisplay,
@@ -101,6 +109,7 @@ export const viTranslation = {
   ...viLabels,
   ...viNav,
   ...viNavMenu,
+  ...viNotifications,
   ...viPasswordReset,
   ...viProjectScreen,
   ...viProjects,
@@ -133,6 +142,8 @@ export const enTranslation = {
   ...enProductivity,
   ...enBrowse,
   ...enCalendar,
+  ...enAvatar,
+  ...enComments,
   ...enCommon,
   ...enDates,
   ...enDisplay,
@@ -143,6 +154,7 @@ export const enTranslation = {
   ...enLabels,
   ...enNav,
   ...enNavMenu,
+  ...enNotifications,
   ...enPasswordReset,
   ...enProjectScreen,
   ...enProjects,

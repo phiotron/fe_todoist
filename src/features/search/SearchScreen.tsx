@@ -264,6 +264,22 @@ function SearchObjectsBlock({ objects, onOpen }: { objects: SearchObjects | unde
           ))}
         </>
       ) : null}
+      {objects?.comments && objects.comments.length > 0 ? (
+        <>
+          <GroupTitle title={t('comments.searchGroup')} />
+          {objects.comments.map((comment) => (
+            <ListRow
+              key={comment.id}
+              testID={`search-comment-${comment.id}`}
+              title={comment.content}
+              icon="message-circle"
+              iconColor={palette.ink2}
+              right={comment.taskContent ?? comment.projectName}
+              onPress={() => open(comment.taskId ? `/task/${comment.taskId}` : `/project-comments/${comment.projectId}`)}
+            />
+          ))}
+        </>
+      ) : null}
       <GroupTitle title={t('search.groups.tasks')} />
     </View>
   );

@@ -24,6 +24,7 @@ import { useUserTimeZone } from '../../auth/useUserTimeZone';
 import { EmailAddressDialog } from '../../email/EmailAddressDialog';
 import { openQuickAdd } from '../../quickAdd/quickAddTarget';
 import { childrenOf } from '../../subtasks/tree';
+import { CommentThread } from '../../comments/CommentThread';
 import { Checkbox } from '../Checkbox';
 import { useCompleteWithUndo, useDeleteTask, useDuplicateTask, useReopenTask } from '../useTaskActions';
 import { Breadcrumb } from './Breadcrumb';
@@ -264,6 +265,8 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
           onReorderClose={() => setReorderOpen(false)}
           readOnly={access.readOnly}
         />
+        {/* M8b: a completed task can still be commented; only an archived project / section hides the composer. */}
+        <CommentThread target={{ kind: 'task', id: taskId }} readOnly={access.archived} showTitle />
       </KeyboardScreen>
       {move.picker}
       <ActionMenu visible={menuOpen} onClose={() => setMenuOpen(false)} items={visibleItems} testID="task-menu" />

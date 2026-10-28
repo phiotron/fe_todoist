@@ -1,0 +1,33 @@
+{
+  "comments": {
+    "title": "Comment",
+    "sectionTitle": "Comment ({{n}})",
+    "projectTitle": "Comment của dự án",
+    "projectMenu": "Comment",
+    "empty": "Chưa có comment",
+    "placeholder": "Viết comment…",
+    "send": "Gửi",
+    "attach": "Đính kèm file",
+    "removeAttachment": "Bỏ file đính kèm",
+    "uploading": "Đang tải file lên…",
+    "mention": "Nhắc đến ai đó",
+    "mentionTitle": "Nhắc đến",
+    "mentionNone": "Không có ai để nhắc",
+    "tooLong": "Comment tối đa {{n}} ký tự",
+    "fileTooLarge": "File vượt quá 100 MB",
+    "you": "Bạn",
+    "deletedAuthor": "Người dùng đã xoá tài khoản",
+    "delete": "Xoá comment",
+    "deleteTitle": "Xoá comment?",
+    "deleteMessage": "Comment này sẽ bị xoá vĩnh viễn cùng file đính kèm.",
+    "count": "{{n}} comment",
+    "react": "Thả cảm xúc",
+    "reactionLabel": "{{emoji}}, {{count}} người",
+    "openFile": "Mở file {{name}}",
+    "openFileFailed": "Không mở được file, thử lại sau",
+    "searchGroup": "Comment",
+    "searchOnTask": "Trong {{task}}",
+    "searchOnProject": "Comment của dự án {{project}}",
+    "loadError": "Không tải được comment"
+  }
+}

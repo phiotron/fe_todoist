@@ -1,0 +1,34 @@
+{
+  "notifications": {
+    "title": "Thông báo",
+    "open": "Thông báo",
+    "openWithUnread": "Thông báo, {{n}} chưa đọc",
+    "tabAll": "Tất cả",
+    "tabUnread": "Chưa đọc",
+    "tabUnreadCount": "Chưa đọc · {{n}}",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "emptyAll": "Chưa có thông báo nào",
+    "emptyUnread": "Bạn đã đọc hết thông báo",
+    "someone": "Ai đó",
+    "mention": "{{name}} đã nhắc đến bạn trong một comment",
+    "inProject": "Dự án {{project}}",
+    "onTask": "{{task}} · {{project}}",
+    "unreadDot": "Chưa đọc",
+    "settings": {
+      "title": "Thông báo",
+      "hint": "Chọn loại thông báo bạn muốn nhận trong hộp thông báo.",
+      "projectTitle": "Thông báo dự án",
+      "workspaceTitle": "Thông báo workspace",
+      "saveFailed": "Không lưu được cài đặt",
+      "events": {
+        "COMMENT_MENTION": "Có người nhắc đến tôi trong comment",
+        "COMMENT_ADDED": "Có comment mới trong task của tôi",
+        "TASK_ASSIGNED": "Tôi được giao một task",
+        "TASK_COMPLETED": "Task tôi giao được hoàn thành",
+        "MEMBER_JOINED": "Có thành viên mới tham gia",
+        "INVITATION_ACCEPTED": "Lời mời của tôi được chấp nhận"
+      },
+      "notYet": "Chưa có hiệu lực"
+    }
+  }
+}

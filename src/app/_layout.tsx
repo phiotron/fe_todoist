@@ -15,6 +15,7 @@ import { SessionProvider } from '../features/auth/session';
 import { installReminderPlatform } from '../features/reminders/notifications';
 import { SettingsProvider } from '../features/settings/SettingsProvider';
 import { SettingsThemeProvider } from '../features/settings/SettingsThemeProvider';
+import { installNativeFilePicker } from '../lib/filePickerAdapter';
 import { installNativeGoogleSignIn } from '../lib/googleSignInAdapter';
 import { persistOptions, queryClient } from '../lib/queryClient';
 import { useTheme } from '../theme';
@@ -23,6 +24,8 @@ import { useTheme } from '../theme';
 installNativeGoogleSignIn();
 // Startup, once, before any screen renders: reminders talk to the OS only through the ReminderPlatform port.
 installReminderPlatform();
+// M8b: the system file picker (comment attachment, avatar) behind the FilePickerPlatform port.
+installNativeFilePicker();
 
 /**
  * Status bar icons and every header / tab / sheet background of the navigators follow the active theme (the navigation

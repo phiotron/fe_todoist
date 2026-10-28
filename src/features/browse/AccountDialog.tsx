@@ -38,7 +38,7 @@ export function AccountDialog({ visible, onClose }: { visible: boolean; onClose:
     <DialogFrame visible={visible} title={t('browse.account')} onRequestClose={onClose} testID="account-dialog">
       {me.data ? (
         <View style={styles.who}>
-          <Avatar name={me.data.displayName} seed={me.data.id} size="xl" />
+          <Avatar name={me.data.displayName} seed={me.data.id} size="xl" uri={me.data.avatarUrl} />
           <Text testID="account-name" style={styles.name}>
             {me.data.displayName}
           </Text>

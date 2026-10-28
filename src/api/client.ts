@@ -14,6 +14,10 @@ export interface ApiRequestOptions {
   auth?: boolean;
   /** Sent as the Idempotency-Key header; the retry after a refresh reuses it. */
   idempotencyKey?: string;
+  /** M8b: multipart upload (comment file, avatar). Sent as is, without a JSON Content-Type (fetch adds the boundary). */
+  formData?: FormData;
+  /** M8b: overrides the client timeout for this request (a 100 MB upload cannot finish in 15 s). */
+  timeoutMs?: number;
 }
 
 export interface ApiClientConfig {
@@ -67,20 +71,20 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
   const sessionChanged = () => new ApiError({ status: 401, title: SESSION_CHANGED });
 
   async function send(path: string, options: ApiRequestOptions, accessToken: string | null): Promise<Response> {
-    const body = options.getBody ? await options.getBody() : options.body;
+    const body = options.formData ?? (options.getBody ? await options.getBody() : options.body);
     const headers: Record<string, string> = { Accept: 'application/json' };
     const language = config.language?.();
     if (language) headers['Accept-Language'] = language;
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    if (body !== undefined && !options.formData) headers['Content-Type'] = 'application/json';
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), config.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? config.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     try {
       return await fetch(`${config.baseUrl}${path}`, {
         method: options.method ?? 'GET',
         headers,
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : options.formData ? options.formData : JSON.stringify(body),
         signal: controller.signal,
       });
     } catch {
