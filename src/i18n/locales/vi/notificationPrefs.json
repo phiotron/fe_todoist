@@ -1,0 +1,23 @@
+{
+  "notificationPrefs": {
+    "title": "Thông báo",
+    "emailSection": "Email",
+    "morningOverview": "Tổng quan buổi sáng",
+    "morningOverviewHint": "Email lúc 07:00 gồm việc hôm nay và việc quá hạn.",
+    "eveningReview": "Tổng kết buổi tối",
+    "eveningReviewHint": "Email lúc 20:00 tóm tắt những việc bạn đã làm trong ngày.",
+    "subscribedEmails": "Email tin tức",
+    "subscribedEmailsHint": "Mẹo dùng và tin mới về Taskly.",
+    "timeZoneNote": "Giờ gửi theo múi giờ của tài khoản.",
+    "remindersSection": "Nhắc việc qua",
+    "reminderPush": "Thông báo đẩy từ máy chủ",
+    "reminderPushHint": "Dành cho các thiết bị khác của bạn; điện thoại này đã tự nhắc.",
+    "reminderEmail": "Email",
+    "reminderEmailHint": "Gửi email khi tới giờ nhắc.",
+    "testSection": "Thông báo đẩy thử",
+    "testHint": "Gửi một thông báo thử tới mọi thiết bị đã đăng ký của bạn.",
+    "testButton": "Gửi thông báo thử",
+    "testSent": "Đã gửi thông báo thử tới {{devices}} thiết bị.",
+    "testNoDevice": "Chưa có thiết bị nào đăng ký nhận thông báo đẩy (chưa cấp quyền thông báo hoặc ứng dụng chưa cấu hình Firebase)."
+  }
+}

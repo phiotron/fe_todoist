@@ -1,0 +1,14 @@
+{
+  "integrations": {
+    "title": "Tích hợp",
+    "sectionTitle": "Ứng dụng đã cấp quyền",
+    "description": "Các ứng dụng bên ngoài bạn đã cho phép truy cập tài khoản Taskly.",
+    "empty": "Chưa có ứng dụng nào được cấp quyền",
+    "authorizedOn": "Cấp quyền ngày {{date}}",
+    "revoke": "Thu hồi",
+    "revokeA11y": "Thu hồi quyền của {{name}}",
+    "revokeTitle": "Thu hồi quyền của {{name}}?",
+    "revokeMessage": "Ứng dụng sẽ không truy cập được tài khoản của bạn nữa cho tới khi bạn cấp quyền lại.",
+    "revoked": "Đã thu hồi quyền của {{name}}"
+  }
+}

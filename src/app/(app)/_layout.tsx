@@ -4,6 +4,7 @@ import { OfflineBanner } from '../../components/OfflineBanner';
 import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
+import { PushTokenHost } from '../../features/push/PushTokenHost';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
 import { TimeZoneBanner } from '../../features/settings/TimeZoneBanner';
 import { useTheme, useThemedStyles } from '../../theme';
@@ -31,6 +32,8 @@ export default function SignedInLayout() {
           <TimeZoneBanner />
           {/* M4: schedules the local reminders and handles the notification buttons; renders nothing. */}
           <ReminderHost />
+          {/* M13c: registers this device's push token with the server; renders nothing. */}
+          <PushTokenHost />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />

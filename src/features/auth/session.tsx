@@ -15,6 +15,7 @@ import {
   twoFactorTokenOf,
 } from '../two-factor/twoFactorToken';
 import { cancelAllReminders } from '../reminders/platform';
+import { unregisterPushTokenOnSignOut } from '../push/registerPushToken';
 import { linkTokenOf } from './googleErrors';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'signedIn';
@@ -350,6 +351,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [clearTwoFactor, setPendingGoogleLink, queryClient, nextGeneration]);
 
   const signOut = useCallback(async () => {
+    // M13c F6: sent first (still with this session), never awaited: signing out never waits for it.
+    void unregisterPushTokenOnSignOut();
     try {
       const refreshToken = await tokenStore.getRefreshToken();
       if (refreshToken) await authApi.logout();

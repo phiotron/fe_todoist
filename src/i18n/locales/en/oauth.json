@@ -1,0 +1,22 @@
+{
+  "oauth": {
+    "title": "Authorize app",
+    "heading": "{{app}} wants to access your Taskly account",
+    "scopesTitle": "This app will be able to:",
+    "redirectNote": "After you choose, you will be sent back to {{uri}}",
+    "allow": "Allow",
+    "deny": "Deny",
+    "invalidTitle": "Invalid request",
+    "invalidLink": "The authorization link is incomplete or malformed.",
+    "invalidServer": "The app, its return address or the requested permissions are not valid.",
+    "goHome": "Go to home",
+    "openFailed": "Could not open the app that asked for access.",
+    "scopes": {
+      "taskAdd": "Add new tasks",
+      "dataRead": "View your tasks, projects, labels and filters",
+      "dataReadWrite": "View and edit your tasks, projects, labels and filters",
+      "dataDelete": "View, edit and delete your data",
+      "projectDelete": "Delete projects"
+    }
+  }
+}
