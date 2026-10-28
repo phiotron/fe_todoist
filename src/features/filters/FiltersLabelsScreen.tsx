@@ -15,7 +15,7 @@ import { QueryStateView } from '../../components/QueryStateView';
 import { ReorderModal } from '../../components/ReorderModal';
 import { SectionHeader } from '../../components/SectionHeader';
 import { SubHeader } from '../../components/SubHeader';
-import { type, useTheme } from '../../theme';
+import { gutter, layout, size, space, type, useTheme } from '../../theme';
 import { SwipeToFavorite } from '../browse/SwipeToFavorite';
 import { LabelFormSheet } from '../labels/LabelFormSheet';
 import { useDeleteLabel, useLabels, useReorderLabel, useSetLabelFavorite } from '../labels/useLabels';
@@ -119,21 +119,24 @@ export function FiltersLabelsScreen() {
         onToggle={() => toggleFavorite(target)}
         testID={`${prefix}-swipe`}
       >
-        <ListRow
-          testID={prefix}
-          title={item.name}
-          icon={target.kind === 'label' ? 'tag' : 'filter'}
-          iconColor={projectColorHex(item.color)}
-          right={
-            item.isFavorite ? (
-              <View testID={`${prefix}-favorite`} accessibilityLabel={t('filtersLabels.favoriteMark')}>
-                <Feather name="heart" size={16} color={palette.mute} />
-              </View>
-            ) : undefined
-          }
-          onPress={() => router.push(target.kind === 'label' ? `/label/${item.id}` : `/filter/${item.id}`)}
-          onLongPress={() => setMenuTarget(target)}
-        />
+        {/* The swipe's heart action lies under the row (absoluteFill): the row must be opaque or it shows through. */}
+        <View style={[styles.pad, { backgroundColor: palette.bg }]}>
+          <ListRow
+            testID={prefix}
+            title={item.name}
+            icon={target.kind === 'label' ? 'tag' : 'filter'}
+            iconColor={projectColorHex(item.color)}
+            right={
+              item.isFavorite ? (
+                <View testID={`${prefix}-favorite`} accessibilityLabel={t('filtersLabels.favoriteMark')}>
+                  <Feather name="heart" size={16} color={palette.mute} />
+                </View>
+              ) : undefined
+            }
+            onPress={() => router.push(target.kind === 'label' ? `/label/${item.id}` : `/filter/${item.id}`)}
+            onLongPress={() => setMenuTarget(target)}
+          />
+        </View>
       </SwipeToFavorite>
     );
   }
@@ -147,7 +150,12 @@ export function FiltersLabelsScreen() {
     const id = isLabel ? 'fl-labels' : 'fl-filters';
     let body;
     if (targets.length > 0) body = targets.map(row);
-    else if (query.isPending || query.isError) body = <QueryStateView query={query} testID={`${id}-state`} />;
+    else if (query.isPending || query.isError)
+      body = (
+        <View style={styles.pad}>
+          <QueryStateView query={query} testID={`${id}-state`} />
+        </View>
+      );
     else
       body = (
         <Text testID={`${id}-empty`} style={[styles.empty, { color: palette.mute }]}>
@@ -155,20 +163,22 @@ export function FiltersLabelsScreen() {
         </Text>
       );
     return (
-      <View style={styles.block}>
-        <SectionHeader
-          title={isLabel ? t('filtersLabels.labelsTitle') : t('filtersLabels.filtersTitle')}
-          testID={`${id}-header`}
-          right={
-            <IconButton
-              icon="plus"
-              label={isLabel ? t('filtersLabels.addLabel') : t('filtersLabels.addFilter')}
-              onPress={() => (isLabel ? setLabelForm({}) : setFilterForm({}))}
-              requiresOnline
-              testID={`${id}-add`}
-            />
-          }
-        />
+      <View testID={id} style={isLabel ? styles.laterBlock : undefined}>
+        <View style={styles.pad}>
+          <SectionHeader
+            title={isLabel ? t('filtersLabels.labelsTitle') : t('filtersLabels.filtersTitle')}
+            testID={`${id}-header`}
+            right={
+              <IconButton
+                icon="plus"
+                label={isLabel ? t('filtersLabels.addLabel') : t('filtersLabels.addFilter')}
+                onPress={() => (isLabel ? setLabelForm({}) : setFilterForm({}))}
+                requiresOnline
+                testID={`${id}-add`}
+              />
+            }
+          />
+        </View>
         {body}
       </View>
     );
@@ -181,7 +191,7 @@ export function FiltersLabelsScreen() {
         onBack={() => (router.canGoBack() ? router.back() : router.navigate('/browse'))}
       />
       <ErrorText message={actionError ? describeError(actionError).message : undefined} testID="fl-error" />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView testID="fl-scroll" contentContainerStyle={styles.content}>
         {block('filter')}
         {block('label')}
       </ScrollView>
@@ -219,9 +229,18 @@ export function FiltersLabelsScreen() {
   );
 }
 
+/**
+ * The tab layout's + floats `layout.fabBottom` above the screen bottom (left / centre / right, M3x): the list ends this
+ * far below its last row so that row can scroll clear of the button whatever the tab bar / navigation bar height.
+ */
+const FAB_CLEARANCE = layout.fabBottom + size.fab + space.m;
+
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingBottom: 24 },
-  block: { marginBottom: 8 },
-  empty: { ...type.meta, paddingVertical: 12 },
+  // No side padding here: rows pad themselves so the swipe action spans the full width (as Browse → Favorites).
+  content: { paddingBottom: FAB_CLEARANCE },
+  pad: { paddingHorizontal: gutter },
+  /** Design M-Filters: 24 above the Labels heading. */
+  laterBlock: { marginTop: space.xl },
+  empty: { ...type.meta, paddingVertical: 12, paddingHorizontal: gutter },
 });
