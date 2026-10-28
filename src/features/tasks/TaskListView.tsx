@@ -7,6 +7,7 @@ import { AppButton } from '../../components/AppButton';
 import { ErrorText } from '../../components/ErrorText';
 import { QueryStateView } from '../../components/QueryStateView';
 import { SectionHeader } from '../../components/SectionHeader';
+import { FAB_CLEARANCE } from '../../components/tabBarMetrics';
 import type { PagedQuery } from '../../lib/usePagedList';
 import { useNow } from '../../lib/useNow';
 import { gutter, useTheme, useThemedStyles } from '../../theme';
@@ -196,6 +197,6 @@ function createTaskListViewStyles(palette: Palette) {
     error: { paddingHorizontal: gutter },
     footer: { padding: 16, alignItems: 'center' },
     /** Room for the FAB and the Undo toast above the tab bar. */
-    content: { paddingBottom: 168 },
+    content: { paddingBottom: FAB_CLEARANCE },
   });
 }

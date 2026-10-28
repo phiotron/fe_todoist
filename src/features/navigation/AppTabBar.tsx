@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TAB_BAR_BORDER, TAB_BAR_PADDING_TOP } from '../../components/tabBarMetrics';
 import { layout, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useTabBarItems } from './useTabBarItems';
@@ -62,9 +63,9 @@ function createAppTabBarStyles(palette: Palette) {
   return StyleSheet.create({
     bar: {
       flexDirection: 'row',
-      paddingTop: 6,
+      paddingTop: TAB_BAR_PADDING_TOP, // tabBarHeight() places the + from these numbers
       paddingHorizontal: 8,
-      borderTopWidth: 1,
+      borderTopWidth: TAB_BAR_BORDER,
       borderTopColor: palette.line,
       backgroundColor: palette.bg,
     },

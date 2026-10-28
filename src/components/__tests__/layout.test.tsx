@@ -57,6 +57,15 @@ describe('layout pieces and states', () => {
     expect(onAction).toHaveBeenCalledTimes(1);
   });
 
+  it('SectionHeader: a long title shrinks to one line so the count and the side action keep their place', async () => {
+    const long = 'Những việc cần xử lý ngay trong tuần này cho khách hàng lớn';
+    await render(<SectionHeader title={long} count={12} right={<AddRow label="+" onPress={jest.fn()} />} />);
+    const title = screen.getByText(long);
+    expect(title.props.numberOfLines).toBe(1);
+    expect(StyleSheet.flatten(title.props.style)).toMatchObject({ flexShrink: 1 });
+    expect(StyleSheet.flatten(screen.getByText('12').props.style).flexShrink ?? 0).toBe(0);
+  });
+
   it('Fab is the 56pt round accent button 20 from the right and 100 from the bottom', async () => {
     const onPress = jest.fn();
     await render(<Fab label="Thêm công việc" onPress={onPress} testID="fab" />);
