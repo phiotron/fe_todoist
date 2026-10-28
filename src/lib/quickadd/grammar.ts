@@ -8,6 +8,7 @@ import {
   matchEveryVi,
   matchRepeatModifierVi,
   matchTimeVi,
+  prevWord,
   withDayPart,
 } from './grammar.vi';
 import {
@@ -111,8 +112,27 @@ const RE = {
   forCount: sticky(`for\\s+(\\d{1,3})\\s+(days?|weeks?|months?|years?)${END}`),
 };
 
-/** One English date-only phrase at `index` (no time, no repeat). */
-function matchDateEn(text: string, index: number, ctx: ParseContext): Phrase | null {
+/**
+ * 3-letter weekday abbreviations collide with Vietnamese words ("Thu tiền", unaccented "món" / "sát"): alone they are
+ * text. They count after these English words, next to a time ("thu 9am", "9am thu"), inside {…} / !…, or as the
+ * whole text (the typed date field). Full names ("thursday") are not affected. Default, chờ duyệt.
+ */
+const SHORT_WEEKDAYS = new Set(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
+const ENGLISH_CONTEXT = new Set(['on', 'next', 'this', 'every', 'other', 'starting', 'from', 'until', 'ending', 'by']);
+
+function shortWeekdayAllowed(text: string, index: number, end: number, explicit: boolean): boolean {
+  if (explicit || ENGLISH_CONTEXT.has(prevWord(text, index))) return true;
+  if (text.slice(0, index).replace(/^\*\s/, '').trim() === '' && text.slice(end).trim() === '') return true;
+  let next = end;
+  while (isSpace(text[next])) next += 1;
+  return next > end && matchTime(text, next) !== null;
+}
+
+/**
+ * One English date-only phrase at `index` (no time, no repeat). `explicit` = a date context is already clear (a time
+ * before it in the group, {…}, !…): short weekday names count there.
+ */
+function matchDateEn(text: string, index: number, ctx: ParseContext, explicit: boolean): Phrase | null {
   const { today } = ctx;
   let m: RegExpExecArray | null;
   const end = (match: RegExpExecArray) => index + match[0].length;
@@ -126,7 +146,11 @@ function matchDateEn(text: string, index: number, ctx: ParseContext): Phrase | n
     const target = WEEKDAYS[m[1]];
     return { end: end(m), date: addDays(start, (target - ctx.dateSettings.startDay + 7) % 7) };
   }
-  if ((m = at(RE.weekday, text, index))) return { end: end(m), date: nextWeekday(today, WEEKDAYS[m[1]]) };
+  if ((m = at(RE.weekday, text, index))) {
+    const prefixed = /^(?:on|this)\s/.test(m[0]);
+    if (SHORT_WEEKDAYS.has(m[1]) && !prefixed && !shortWeekdayAllowed(text, index, end(m), explicit)) return null;
+    return { end: end(m), date: nextWeekday(today, WEEKDAYS[m[1]]) };
+  }
   if ((m = at(RE.inUnits, text, index))) {
     const count = Number(m[1]);
     return count > 0 ? { end: end(m), date: addUnits(today, count, m[2]) } : null;
@@ -155,9 +179,18 @@ function matchDateEn(text: string, index: number, ctx: ParseContext): Phrase | n
   return null;
 }
 
-/** One date-only phrase at `index`, Vietnamese or English. `source` = original-case text (capitalised names). */
-export function matchDate(text: string, index: number, ctx: ParseContext, source?: string): Phrase | null {
-  return matchDateVi(text, index, ctx, source) ?? matchDateEn(text, index, ctx);
+/**
+ * One date-only phrase at `index`, Vietnamese or English. `source` = original-case text (capitalised names);
+ * `explicit` = the date context is already clear (see matchDateEn).
+ */
+export function matchDate(
+  text: string,
+  index: number,
+  ctx: ParseContext,
+  source?: string,
+  explicit = false,
+): Phrase | null {
+  return matchDateVi(text, index, ctx, source) ?? matchDateEn(text, index, ctx, explicit);
 }
 
 /** One English time phrase (with an optional range = duration) at `index`. */
@@ -308,6 +341,8 @@ export interface GroupOptions {
   times: boolean;
   /** The original-case text (same offsets): a capitalised "Mai" inside the text is a name. */
   source?: string;
+  /** Inside {…} or after "!": the text is a date anyway, so short weekday names ("thu") count. */
+  explicit?: boolean;
 }
 
 function isSpace(char: string | undefined): boolean {
@@ -329,7 +364,9 @@ export function matchGroup(text: string, index: number, ctx: ParseContext, optio
     if (!phrase && options.repeats && !value.recurrence && !value.date) phrase = matchEvery(text, position);
     if (!phrase && options.times && !value.time) phrase = matchTime(text, position);
     if (!phrase && options.times && !value.time && !value.dayPart) phrase = matchDayPartVi(text, position);
-    if (!phrase && !value.date && !value.recurrence) phrase = matchDate(text, position, ctx, options.source);
+    if (!phrase && !value.date && !value.recurrence) {
+      phrase = matchDate(text, position, ctx, options.source, Boolean(options.explicit) || value.time !== undefined);
+    }
     if (!phrase && options.times && value.time && value.duration === undefined) {
       phrase = matchDurationVi(text, position) ?? matchDurationEn(text, position);
     }

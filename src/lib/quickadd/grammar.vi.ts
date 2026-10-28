@@ -70,7 +70,8 @@ function words(...list: string[]): ReadonlySet<string> {
 
 const PUNCTUATION = /[,.;:!?()[\]{}"']/g;
 
-function prevWord(text: string, index: number): string {
+/** The word right before `index` (punctuation stripped), "" at the start. */
+export function prevWord(text: string, index: number): string {
   let stop = index;
   while (stop > 0 && /\s/.test(text[stop - 1])) stop -= 1;
   let start = stop;
@@ -155,7 +156,8 @@ const D = {
   today: sticky(`${VAO}${any('hôm nay', 'bữa nay')}${END}`),
   tomorrow: sticky(`${VAO}${ph('ngày mai')}${END}`),
   dayAfter: sticky(`${VAO}${any('ngày mốt', 'ngày kia')}${END}`),
-  yesterday: sticky(`${VAO}${ph('hôm qua')}${END}`),
+  // "hôm trước" = yesterday too; "bữa trước" is NOT (vague: "the other day").
+  yesterday: sticky(`${VAO}${any('hôm qua', 'hôm trước')}${END}`),
   weekday: sticky(
     `${VAO}${WEEKDAY}(?:\\s+(${w('tuần')}\\s+(?:sau|tới|toi))|\\s+(?:${w('tuần')}\\s+)?(?:${w('này')}|tới))?${END}`,
   ),

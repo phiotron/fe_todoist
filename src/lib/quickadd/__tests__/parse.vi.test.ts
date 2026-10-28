@@ -398,6 +398,30 @@ describe('VIQA — reminders, deadline, priority, mixed with English', () => {
   });
 });
 
+describe('VIQA — cases typed by the user: "hôm trước"; "HH;MM" is NOT a time', () => {
+  it.each([
+    // ";" is not accepted in a time (user decision): only "hôm nay" is recognised, "10;00" stays in the name.
+    ['Họp 10;00 hôm nay', 'Họp 10;00', '2026-10-27', null],
+    ['10;00 hôm nay họp', '10;00 họp', '2026-10-27', null],
+    ['Họp hom nay 9;30', 'Họp 9;30', '2026-10-27', null],
+    ['Gọi lại 4h15 hôm trước', 'Gọi lại', '2026-10-26', '04:15'],
+    ['4h15 hôm trước gọi lại', 'gọi lại', '2026-10-26', '04:15'],
+    ['Gọi lại 4h15 hom truoc', 'Gọi lại', '2026-10-26', '04:15'],
+    ['hom truoc 4h15 gọi lại', 'gọi lại', '2026-10-26', '04:15'],
+    ['Gọi lại hôm trước', 'Gọi lại', '2026-10-26', null],
+  ])('%s', (text, content, date, time) => {
+    const result = parse(text);
+    expect(result.due).toEqual({ date, time, durationMinutes: null });
+    expect(result.content).toBe(content);
+  });
+
+  it.each(['Phòng 25;00', 'Ghi 10;60', 'Như bữa trước', 'a;b'])('"%s" has no date or time', (text) => {
+    const result = parse(text);
+    expect(result.due).toBeUndefined();
+    expect(result.content).toBe(text);
+  });
+});
+
 describe('VIQA — ordinary words are NOT dates (negative cases)', () => {
   it.each([
     'Gọi chị Mai',

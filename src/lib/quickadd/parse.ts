@@ -162,7 +162,12 @@ function reminderAt(text: string, lower: string, index: number, ctx: ParseContex
     return { kind: 'reminder', end: relativeVi.end, apply: (r) => r.reminders.push(reminder) };
   }
   // Absolute: "!5pm", "!at 17:00", "!nov 5 at 9am", "!mai 9h" — a time is required.
-  const group = matchGroup(lower, index + 1, { ...ctx, smartDate: true }, { repeats: false, times: true, source: text });
+  const group = matchGroup(lower, index + 1, { ...ctx, smartDate: true }, {
+    repeats: false,
+    times: true,
+    source: text,
+    explicit: true,
+  });
   const time = group?.time ?? matchTime(lower, index + 1)?.time;
   if (!group || !time) return null;
   const reminder: ParsedReminder = { type: 'ABSOLUTE', date: group.date ?? null, time };
@@ -174,7 +179,7 @@ function deadlineAt(text: string, lower: string, index: number, ctx: ParseContex
   if (close < 0 || !WORD_END.test(lower.slice(close + 1, close + 2))) return null;
   const inner = lower.slice(index + 1, close).trim();
   const source = text.slice(index + 1, close).trim();
-  const group = matchGroup(inner, 0, ctx, { repeats: false, times: false, source });
+  const group = matchGroup(inner, 0, ctx, { repeats: false, times: false, source, explicit: true });
   if (!group?.date || group.end !== inner.length) return null;
   const date = group.date;
   return { kind: 'deadline', end: close + 1, apply: (r) => (r.deadline = date) };
