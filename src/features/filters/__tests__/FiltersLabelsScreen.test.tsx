@@ -1,10 +1,33 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { StyleSheet } from 'react-native';
 import { requestsTo, type ApiRoutes } from '../../../test/apiRoutes';
 import { jsonResponse } from '../../../test/http';
 import { makeFilter, makeLabel } from '../../../test/m2Fixtures';
 import { renderSignedIn } from '../../../test/screen';
+import { ThemeProvider, layout, lightPalette, paletteFor, size } from '../../../theme';
 import { FiltersLabelsScreen } from '../FiltersLabelsScreen';
+
+/** RNTL 14 host element (host views only: View, Text, ScrollView…). */
+type HostNode = ReturnType<typeof screen.getByTestId>;
+
+function flatStyle(node: HostNode) {
+  return StyleSheet.flatten(node.props.style) ?? {};
+}
+
+/** First background colour on the views from the row up to (not including) the swipe wrapper. */
+function rowBackground(row: HostNode, swipe: HostNode): unknown {
+  let node: HostNode | null = row;
+  while (node && node !== swipe) {
+    if (flatStyle(node).backgroundColor) return flatStyle(node).backgroundColor;
+    node = node.parent;
+  }
+  return undefined;
+}
+
+function descendants(node: HostNode): HostNode[] {
+  return node.children.flatMap((child) => (typeof child === 'string' ? [] : [child, ...descendants(child)]));
+}
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), navigate: jest.fn(), canGoBack: jest.fn(() => true) },
@@ -93,5 +116,62 @@ describe('FiltersLabelsScreen (M-Filters)', () => {
     await fireEvent.press(screen.getByTestId('fl-reorder-down-l-1'));
     await waitFor(() => expect(requestsTo(fetchMock, 'POST', '/api/v1/reorder')).toHaveLength(1));
     expect(requestsTo(fetchMock, 'POST', '/api/v1/reorder')[0].body).toEqual({ type: 'LABEL', id: 'l-1', afterId: 'l-2' });
+  });
+});
+
+describe('FiltersLabelsScreen layout (no overlapping on a phone)', () => {
+  // The swipe's heart action is drawn with absoluteFill under the row; a see-through row shows it on top of the icon + name.
+  it('paints every row opaque over the swipe action (light)', async () => {
+    await open();
+    for (const prefix of ['fl-filter-f-1', 'fl-label-l-1', 'fl-label-l-2']) {
+      const row = await screen.findByTestId(prefix);
+      expect(rowBackground(row, screen.getByTestId(`${prefix}-swipe`))).toBe(lightPalette.bg);
+    }
+  });
+
+  it('paints the rows with the dark background in dark mode', async () => {
+    await renderSignedIn(
+      <ThemeProvider theme="TASKLY" appearance="DARK">
+        <FiltersLabelsScreen />
+      </ThemeProvider>,
+      {
+        'GET /api/v1/labels': () => jsonResponse(200, labels),
+        'GET /api/v1/filters': () => jsonResponse(200, filters),
+      },
+    );
+    const row = await screen.findByTestId('fl-label-l-1');
+    expect(rowBackground(row, screen.getByTestId('fl-label-l-1-swipe'))).toBe(paletteFor('TASKLY', 'dark').bg);
+  });
+
+  it('leaves room under the last row for the floating + button (any placement)', async () => {
+    await open();
+    await screen.findByTestId('fl-label-l-2');
+    const content = StyleSheet.flatten(screen.getByTestId('fl-scroll').props.contentContainerStyle);
+    expect(content.paddingBottom).toBeGreaterThanOrEqual(layout.fabBottom + size.fab);
+  });
+
+  it('positions nothing absolutely inside the list', async () => {
+    await open();
+    await screen.findByTestId('fl-label-l-2');
+    const nodes = descendants(screen.getByTestId('fl-scroll'));
+    expect(nodes.length).toBeGreaterThan(5);
+    expect(nodes.filter((node) => flatStyle(node).position === 'absolute')).toHaveLength(0);
+  });
+
+  it('cuts a long name to one line instead of pushing the favourite mark off the row', async () => {
+    const long = 'Việc cần làm gấp cho khách hàng lớn ở Thành phố Hồ Chí Minh tuần này';
+    await open({}, { labels: [makeLabel({ id: 'l-9', name: long, isFavorite: true })], filters });
+    const text = await screen.findByText(long);
+    expect(text.props.numberOfLines).toBe(1);
+    const style = flatStyle(text);
+    expect(style.flex === 1 || style.flexShrink === 1).toBe(true);
+    expect(screen.getByTestId('fl-label-l-9-favorite')).toBeTruthy();
+  });
+
+  it('separates the Labels block from the Filters block (design: 24 above Labels)', async () => {
+    await open();
+    await screen.findByTestId('fl-labels-header');
+    const block = screen.getByTestId('fl-labels');
+    expect(flatStyle(block).marginTop ?? 0).toBeGreaterThanOrEqual(16);
   });
 });
