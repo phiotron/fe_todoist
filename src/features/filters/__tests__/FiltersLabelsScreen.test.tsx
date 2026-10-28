@@ -148,16 +148,30 @@ describe('FiltersLabelsScreen task counts (design M-Filters, as Todoist)', () =>
     expect(screen.queryByTestId('fl-filter-f-1-count')).toBeNull();
   });
 
-  it('refreshes the counts after a write (task / label / filter change)', async () => {
+  // PERF × FL: useDataMutation refreshes only the roots a write can change (lib/sync/invalidation.ts). The counts live
+  // under ['tasks'], so a write touching tasks (task, label delete / rename, filter edit) refreshes them; a favorite
+  // cannot change any count and leaves them alone.
+  it('refreshes the counts after a write that can change them (label delete), not after a favorite', async () => {
     const { fetchMock } = await open({
       ...counts,
       'PUT /api/v1/labels/l-1/favorite': () => jsonResponse(200, { ...labels[0], isFavorite: true }),
+      'DELETE /api/v1/labels/l-1': () => jsonResponse(204),
     });
     await screen.findByTestId('fl-label-l-1-count');
-    const before = requestsTo(fetchMock, 'GET', '/api/v1/labels/counts').length;
+    const countRequests = () => requestsTo(fetchMock, 'GET', '/api/v1/labels/counts').length;
+    const before = countRequests();
+
     await fireEvent(screen.getByTestId('fl-label-l-1'), 'longPress');
     await fireEvent.press(screen.getByTestId('fl-actions-favorite'));
-    await waitFor(() => expect(requestsTo(fetchMock, 'GET', '/api/v1/labels/counts').length).toBeGreaterThan(before));
+    await waitFor(() => expect(requestsTo(fetchMock, 'PUT', '/api/v1/labels/l-1/favorite')).toHaveLength(1));
+    await waitFor(() => expect(requestsTo(fetchMock, 'GET', '/api/v1/labels')).not.toHaveLength(1)); // labels refetched
+    expect(countRequests()).toBe(before);
+
+    await fireEvent(screen.getByTestId('fl-label-l-1'), 'longPress');
+    await fireEvent.press(screen.getByTestId('fl-actions-delete'));
+    await fireEvent.press(screen.getByTestId('fl-delete-confirm'));
+    await waitFor(() => expect(requestsTo(fetchMock, 'DELETE', '/api/v1/labels/l-1')).toHaveLength(1));
+    await waitFor(() => expect(countRequests()).toBeGreaterThan(before));
   });
 });
 
