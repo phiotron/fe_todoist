@@ -23,13 +23,17 @@ import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
 import { isValidInviteEmail } from '../sharing/sharingRules';
 import { useRevokeInvitation } from '../sharing/useSharing';
-import { ASSIGNABLE_ROLES, canManageTeam } from './teamRules';
+import { checkRequiredText } from '../../lib/limits';
+import { ASSIGNABLE_ROLES, TEAM_NAME_MAX, canManageTeam } from './teamRules';
+import { teamErrorMessage } from './teamErrors';
 import {
   useChangeMemberRole,
+  useDeleteWorkspace,
   useDisableWorkspaceInviteLink,
   useInviteToWorkspace,
   useLeaveWorkspace,
   useRemoveWorkspaceMember,
+  useRenameWorkspace,
   useResetWorkspaceInviteLink,
   useWorkspaceInvitations,
   useWorkspaceInviteLink,
@@ -59,6 +63,8 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
   const leave = useLeaveWorkspace();
   const resetLink = useResetWorkspaceInviteLink();
   const disableLink = useDisableWorkspaceInviteLink();
+  const rename = useRenameWorkspace();
+  const deleteTeam = useDeleteWorkspace();
   const [email, setEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER');
   const [emailError, setEmailError] = useState<string>();
@@ -66,6 +72,10 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
   const [menuFor, setMenuFor] = useState<WorkspaceMemberResponse | null>(null);
   const [removing, setRemoving] = useState<WorkspaceMemberResponse | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [teamName, setTeamName] = useState<string>();
+  const [nameError, setNameError] = useState<string>();
+  const [deleting, setDeleting] = useState(false);
+  const nameValue = teamName ?? workspace?.name ?? '';
 
   const actionError = [changeRole.error, remove.error, revoke.error, resetLink.error, disableLink.error].find(Boolean);
 
@@ -100,6 +110,24 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
     }
   }
 
+  async function saveName() {
+    const value = nameValue.trim();
+    if (checkRequiredText(value, TEAM_NAME_MAX)) {
+      setNameError(t('team.peopleScreen.nameInvalid'));
+      return;
+    }
+    if (value === workspace?.name) return;
+    try {
+      await rename.mutateAsync({ workspaceId, name: value });
+      setTeamName(undefined);
+      setNameError(undefined);
+      snackbar.show({ message: t('team.peopleScreen.renamed') });
+    } catch (failure) {
+      const view = describeError(failure);
+      setNameError(view.fields.name ?? teamErrorMessage(failure));
+    }
+  }
+
   const menuItems: ActionMenuItem[] = menuFor
     ? [
         ...ASSIGNABLE_ROLES.filter((role) => role !== menuFor.role).map((role: WorkspaceRole) => ({
@@ -126,7 +154,7 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
         >
           {members.data.map((person) => (
             <View key={person.userId} testID={`team-member-${person.userId}`} style={styles.person}>
-              <Avatar name={person.displayName} seed={person.userId} />
+              <Avatar name={person.displayName} seed={person.userId} uri={person.avatarUrl} testID={`team-avatar-${person.userId}`} />
               <View style={styles.personTexts}>
                 <Text style={[type.bodyStrong, styles.name]} numberOfLines={1}>
                   {person.displayName}
@@ -198,10 +226,42 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
             </>
           ) : null}
 
+          {isAdmin ? (
+            <>
+              <Text accessibilityRole="header" style={styles.section}>
+                {t('team.peopleScreen.settingsTitle')}
+              </Text>
+              <TextField
+                testID="team-rename-input"
+                label={t('team.peopleScreen.nameLabel')}
+                value={nameValue}
+                onChangeText={(value) => {
+                  setTeamName(value);
+                  setNameError(undefined);
+                }}
+                maxCount={TEAM_NAME_MAX}
+                error={nameError}
+              />
+              <AppButton
+                label={t('team.peopleScreen.renameSubmit')}
+                full
+                variant="outline"
+                requiresOnline
+                disabled={nameValue.trim() === (workspace?.name ?? '')}
+                busy={rename.isPending}
+                onPress={() => void saveName()}
+                testID="team-rename-submit"
+              />
+              <View style={styles.leave}>
+                <AppButton variant="outline" label={t('team.peopleScreen.delete')} requiresOnline onPress={() => { deleteTeam.reset(); setDeleting(true); }} testID="team-delete" />
+              </View>
+            </>
+          ) : null}
+
           <View style={styles.leave}>
             <AppButton variant="outline" label={t('team.peopleScreen.leave')} requiresOnline onPress={() => { leave.reset(); setLeaving(true); }} testID="team-leave" />
           </View>
-          <ErrorText message={formError ?? (actionError ? describeError(actionError).message : undefined)} testID="team-people-error" />
+          <ErrorText message={formError ?? (actionError ? teamErrorMessage(actionError) : undefined)} testID="team-people-error" />
         </ScrollView>
       )}
       <ActionMenu visible={menuFor !== null} onClose={() => setMenuFor(null)} items={menuItems} title={menuFor?.displayName} testID="team-member-menu" />
@@ -212,10 +272,22 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
         confirmLabel={t('team.peopleScreen.removeConfirm')}
         destructive
         busy={remove.isPending}
-        error={remove.error ? describeError(remove.error).message : undefined}
+        error={remove.error ? teamErrorMessage(remove.error) : undefined}
         onCancel={() => setRemoving(null)}
         onConfirm={() => removing && remove.mutate({ workspaceId, userId: removing.userId }, { onSuccess: () => setRemoving(null) })}
         testID="team-remove-dialog"
+      />
+      <ConfirmDialog
+        visible={deleting}
+        title={t('team.peopleScreen.deleteTitle', { name: workspace?.name ?? '' })}
+        message={t('team.peopleScreen.deleteMessage')}
+        confirmLabel={t('common.delete')}
+        destructive
+        busy={deleteTeam.isPending}
+        error={deleteTeam.error ? teamErrorMessage(deleteTeam.error) : undefined}
+        onCancel={() => setDeleting(false)}
+        onConfirm={() => deleteTeam.mutate(workspaceId, { onSuccess: () => { setDeleting(false); router.replace('/browse'); } })}
+        testID="team-delete-dialog"
       />
       <ConfirmDialog
         visible={leaving}
@@ -224,7 +296,7 @@ export function TeamPeopleScreen({ workspaceId }: { workspaceId: string }) {
         confirmLabel={t('team.peopleScreen.leaveConfirm')}
         destructive
         busy={leave.isPending}
-        error={leave.error ? describeError(leave.error).message : undefined}
+        error={leave.error ? teamErrorMessage(leave.error) : undefined}
         onCancel={() => setLeaving(false)}
         onConfirm={() => leave.mutate(workspaceId, { onSuccess: () => { setLeaving(false); router.replace('/browse'); } })}
         testID="team-leave-dialog"

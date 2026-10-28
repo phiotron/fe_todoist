@@ -24,6 +24,7 @@ import { useProjects } from '../projects/useProjects';
 import { sharingOf } from '../sharing/sharingRules';
 import { useJoinProject } from '../sharing/useSharing';
 import {
+  TEAM_NAME_MAX,
   TEAM_TABS,
   canBrowseTeam,
   canCreateInTeam,
@@ -31,7 +32,7 @@ import {
   groupByFolder,
   type TeamTab,
 } from './teamRules';
-import { useCreateFolder, useDeleteFolder, useTeamFolders, useTeamProjects, useWorkspaces } from './useTeam';
+import { useCreateFolder, useDeleteFolder, useRenameFolder, useTeamFolders, useTeamProjects, useWorkspaces } from './useTeam';
 
 /**
  * Team tab (spec 3.2 M8a): Team Discovery with Active / Joined / "Projects I haven't joined", folders as headings, the
@@ -98,6 +99,9 @@ function Discovery({ workspaceId, canCreate }: { workspaceId: string; canCreate:
   const join = useJoinProject();
   const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder();
+  const renameFolder = useRenameFolder();
+  /** null = the dialog creates a folder, an id = it renames that folder. */
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const [folderDialog, setFolderDialog] = useState(false);
   const [folderName, setFolderName] = useState('');
   const [folderError, setFolderError] = useState<string>();
@@ -108,14 +112,22 @@ function Discovery({ workspaceId, canCreate }: { workspaceId: string; canCreate:
     [projects.data, folders.data, tab],
   );
 
-  async function addFolder() {
+  function openFolderDialog(folder?: { id: string; name: string }) {
+    setRenamingId(folder?.id ?? null);
+    setFolderName(folder?.name ?? '');
+    setFolderError(undefined);
+    setFolderDialog(true);
+  }
+
+  async function saveFolder() {
     const name = folderName.trim();
     if (!name) {
       setFolderError(t('team.folderNameRequired'));
       return;
     }
     try {
-      await createFolder.mutateAsync({ workspaceId, name });
+      if (renamingId) await renameFolder.mutateAsync({ folderId: renamingId, name });
+      else await createFolder.mutateAsync({ workspaceId, name });
       setFolderDialog(false);
       setFolderName('');
       setFolderError(undefined);
@@ -143,7 +155,7 @@ function Discovery({ workspaceId, canCreate }: { workspaceId: string; canCreate:
         {canCreate ? (
           <View style={styles.actions}>
             <AppButton size="sm" variant="outline" icon="plus" label={t('team.newProject')} requiresOnline testID="team-new-project" onPress={() => router.push({ pathname: '/project-form', params: { workspaceId } })} />
-            <AppButton size="sm" variant="ghost" icon="folder-plus" label={t('team.newFolder')} requiresOnline testID="team-new-folder" onPress={() => setFolderDialog(true)} />
+            <AppButton size="sm" variant="ghost" icon="folder-plus" label={t('team.newFolder')} requiresOnline testID="team-new-folder" onPress={() => openFolderDialog()} />
           </View>
         ) : null}
         {groups.length === 0 ? (
@@ -157,7 +169,10 @@ function Discovery({ workspaceId, canCreate }: { workspaceId: string; canCreate:
                   count={group.projects.length}
                   right={
                     canCreate ? (
-                      <IconButton icon="trash-2" label={t('team.deleteFolder', { name: group.folder.name })} requiresOnline testID={`team-folder-delete-${group.folder.id}`} onPress={() => { deleteFolder.reset(); setDeleting({ id: group.folder!.id, name: group.folder!.name }); }} />
+                      <View style={styles.folderActions}>
+                        <IconButton icon="edit-2" label={t('team.renameFolder', { name: group.folder.name })} requiresOnline testID={`team-folder-rename-${group.folder.id}`} onPress={() => openFolderDialog({ id: group.folder!.id, name: group.folder!.name })} />
+                        <IconButton icon="trash-2" label={t('team.deleteFolder', { name: group.folder.name })} requiresOnline testID={`team-folder-delete-${group.folder.id}`} onPress={() => { deleteFolder.reset(); setDeleting({ id: group.folder!.id, name: group.folder!.name }); }} />
+                      </View>
                     ) : undefined
                   }
                 />
@@ -172,9 +187,9 @@ function Discovery({ workspaceId, canCreate }: { workspaceId: string; canCreate:
         )}
         <ErrorText message={join.error ? describeError(join.error).message : undefined} testID="team-error" />
       </ScrollView>
-      <DialogFrame visible={folderDialog} title={t('team.newFolder')} onRequestClose={() => setFolderDialog(false)} testID="team-folder-dialog">
-        <TextField testID="team-folder-name" label={t('team.folderName')} value={folderName} onChangeText={(value) => { setFolderName(value); setFolderError(undefined); }} error={folderError} autoFocus />
-        <AppButton label={t('team.folderCreate')} full requiresOnline busy={createFolder.isPending} onPress={() => void addFolder()} testID="team-folder-submit" />
+      <DialogFrame visible={folderDialog} title={renamingId ? t('team.renameFolderTitle') : t('team.newFolder')} onRequestClose={() => setFolderDialog(false)} testID="team-folder-dialog">
+        <TextField testID="team-folder-name" label={t('team.folderName')} value={folderName} onChangeText={(value) => { setFolderName(value); setFolderError(undefined); }} error={folderError} maxCount={TEAM_NAME_MAX} autoFocus />
+        <AppButton label={renamingId ? t('team.folderRename') : t('team.folderCreate')} full requiresOnline busy={createFolder.isPending || renameFolder.isPending} onPress={() => void saveFolder()} testID="team-folder-submit" />
       </DialogFrame>
       <ConfirmDialog
         visible={deleting !== null}
@@ -241,6 +256,7 @@ function createTeamStyles(palette: Palette) {
     switcher: { paddingHorizontal: gutter, gap: 8, paddingBottom: 8 },
     tabs: { paddingHorizontal: gutter, paddingBottom: 8 },
     content: { paddingHorizontal: gutter, paddingBottom: 120 },
+    folderActions: { flexDirection: 'row' },
     actions: { flexDirection: 'row', gap: 8, marginBottom: 8, flexWrap: 'wrap' },
     projectRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     projectMain: { flex: 1 },

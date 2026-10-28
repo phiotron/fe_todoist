@@ -27,7 +27,10 @@
     "tasks": "{{n}} tasks",
     "restricted": "Restricted",
     "project": {
-      "restricted": "Restricted (invited people only)"
+      "restricted": "Restricted (invited people only)",
+      "folder": "Folder",
+      "noFolder": "No folder",
+      "folderTitle": "Choose a folder"
     },
     "create": {
       "entry": "Create a team",
@@ -65,12 +68,24 @@
       "resetLink": "Reset link",
       "disableLink": "Turn off link",
       "linkHint": "People who join with the link become members.",
-      "revoke": "Withdraw invitation to {{email}}"
+      "revoke": "Withdraw invitation to {{email}}",
+      "settingsTitle": "Team settings",
+      "nameLabel": "Team name",
+      "nameInvalid": "The team name needs 1 to 100 characters",
+      "renameSubmit": "Rename team",
+      "renamed": "Team renamed",
+      "delete": "Delete team",
+      "deleteTitle": "Delete the team \"{{name}}\"?",
+      "deleteMessage": "Every project and task of the team is deleted for good and cannot be restored."
     },
     "browse": {
       "title": "Teams",
       "invitations": "Invitations",
       "join": "Join with a link or code"
-    }
+    },
+    "lastAdmin": "A team must keep at least one admin",
+    "renameFolder": "Rename folder {{name}}",
+    "renameFolderTitle": "Rename folder",
+    "folderRename": "Save"
   }
 }

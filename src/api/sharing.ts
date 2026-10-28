@@ -32,6 +32,8 @@ export interface ProjectMemberResponse {
   email: string;
   displayName: string;
   isOwner: boolean;
+  /** Not sent by the backend yet (X2): read when it is; the initials show otherwise. API path of the profile picture. */
+  avatarUrl?: string | null;
 }
 
 /** DTO InvitationResponse (never carries the token). */

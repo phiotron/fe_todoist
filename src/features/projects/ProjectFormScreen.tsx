@@ -20,6 +20,7 @@ import { gutter, radius, size, type, useTheme, useThemedStyles } from '../../the
 import type { Palette } from '../../theme/palette';
 import type { ProjectSharingFields } from '../../api/sharing';
 import { sharingOf } from '../sharing/sharingRules';
+import { ProjectFolderField } from '../team/ProjectFolderField';
 import { asProjectColor, projectColorHex, projectDisplayName } from './appearance';
 import { projectColorName } from './colorNames';
 import { ProjectIcon } from './ProjectIcon';
@@ -50,6 +51,7 @@ export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectF
   const [parent, setParent] = useState<string | null>(parentId ?? null);
   const [favorite, setFavorite] = useState(false);
   const [restricted, setRestricted] = useState(false);
+  const [folderId, setFolderId] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string>();
   const [formError, setFormError] = useState<string>();
   const [parentOpen, setParentOpen] = useState(false);
@@ -68,6 +70,7 @@ export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectF
     setParent(existing.parentId);
     setFavorite(existing.isFavorite);
     setRestricted((existing as ProjectSharingFields).access === 'RESTRICTED');
+    setFolderId((existing as ProjectSharingFields).folderId ?? null);
     // Keyed on the id: a background refetch of the same project must not wipe what the user is typing.
   }, [existing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -75,6 +78,7 @@ export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectF
   const existingSharing = existing ? sharingOf(existing) : undefined;
   const teamMode = workspaceId !== undefined || existingSharing?.isTeamProject === true;
   const canSetAccess = workspaceId !== undefined || existingSharing?.canManage === true;
+  const teamWorkspaceId = workspaceId ?? (existing as ProjectSharingFields | undefined)?.workspaceId;
   const choices = parentChoices(all, projectId);
   const parentProject = all.find((project) => project.id === parent);
 
@@ -92,7 +96,9 @@ export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectF
       try {
         if (editing && existing) {
           const access = teamMode && canSetAccess ? { access: restricted ? 'RESTRICTED' : 'TEAM' } : {};
-          await update.mutateAsync({ projectId: existing.id, body: { name: name.trim(), color, description, ...access } });
+          // X2: null takes the project out of its folder, absent keeps it (only sent when changed).
+          const folder = teamMode && canSetAccess && folderId !== ((existing as ProjectSharingFields).folderId ?? null) ? { folderId } : {};
+          await update.mutateAsync({ projectId: existing.id, body: { name: name.trim(), color, description, ...access, ...folder } });
           if (!teamMode && parent !== existing.parentId) await move.mutateAsync({ projectId: existing.id, body: { parentId: parent } });
           if (favorite !== existing.isFavorite) await setProjectFavorite.mutateAsync({ projectId: existing.id, favorite });
         } else {
@@ -101,7 +107,7 @@ export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectF
             color,
             ...(description.trim() ? { description: description.trim() } : {}),
             ...(parent && !teamMode ? { parentId: parent } : {}),
-            ...(workspaceId ? { workspaceId, access: restricted ? 'RESTRICTED' : 'TEAM' } : {}),
+            ...(workspaceId ? { workspaceId, access: restricted ? 'RESTRICTED' : 'TEAM', ...(folderId ? { folderId } : {}) } : {}),
           };
           // A retry after a later failure replays the same Idempotency-Key: the project is not created twice.
           const created = await create.mutateAsync({ body, idempotencyKey: keys.keyFor(body) });
@@ -199,6 +205,9 @@ export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectF
             <Text style={[type.body, styles.parentText]}>{t('team.project.restricted')}</Text>
             <Toggle value={restricted} onChange={setRestricted} label={t('team.project.restricted')} testID="project-form-restricted" />
           </View>
+        ) : null}
+        {teamMode && canSetAccess && teamWorkspaceId ? (
+          <ProjectFolderField workspaceId={teamWorkspaceId} value={folderId} onChange={setFolderId} />
         ) : null}
         <View style={styles.favorite}>
           <Text style={[type.body, styles.parentText]}>{t('projects.form.favorite')}</Text>

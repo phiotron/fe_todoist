@@ -48,6 +48,38 @@
       "ARCHIVED": "Archived",
       "UNARCHIVED": "Restored"
     },
-    "inProject": "in {{project}}"
+    "inProject": "in {{project}}",
+    "filterPerson": "Person",
+    "filterAllPeople": "Everyone",
+    "eventBy": {
+      "TASK": {
+        "ADDED": "{{who}} added the task: {{name}}",
+        "UPDATED": "{{who}} edited the task: {{name}}",
+        "COMPLETED": "{{who}} completed: {{name}}",
+        "UNCOMPLETED": "{{who}} reopened the task: {{name}}",
+        "DELETED": "{{who}} deleted the task: {{name}}",
+        "ARCHIVED": "{{who}} archived the task: {{name}}",
+        "UNARCHIVED": "{{who}} restored the task: {{name}}"
+      },
+      "PROJECT": {
+        "ADDED": "{{who}} added the project: {{name}}",
+        "UPDATED": "{{who}} edited the project: {{name}}",
+        "COMPLETED": "{{who}} completed the project: {{name}}",
+        "UNCOMPLETED": "{{who}} reopened the project: {{name}}",
+        "DELETED": "{{who}} deleted the project: {{name}}",
+        "ARCHIVED": "{{who}} archived the project: {{name}}",
+        "UNARCHIVED": "{{who}} restored the project: {{name}}"
+      },
+      "SECTION": {
+        "ADDED": "{{who}} added the section: {{name}}",
+        "UPDATED": "{{who}} edited the section: {{name}}",
+        "COMPLETED": "{{who}} completed the section: {{name}}",
+        "UNCOMPLETED": "{{who}} reopened the section: {{name}}",
+        "DELETED": "{{who}} deleted the section: {{name}}",
+        "ARCHIVED": "{{who}} archived the section: {{name}}",
+        "UNARCHIVED": "{{who}} restored the section: {{name}}"
+      }
+    },
+    "someone": "A deleted account"
   }
 }

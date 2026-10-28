@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { describeError, isNotFound } from '../../api/describeError';
 import type { Project } from '../../api/models';
+import type { ProjectAccess } from '../../api/sharing';
 import { invalidateData, queryKeys } from '../../api/queryKeys';
 import { ActionMenu, type ActionMenuItem } from '../../components/ActionMenu';
 import { useCopyLink } from '../links/useCopyLink';
@@ -33,8 +34,8 @@ import { useAddButtonPlacement } from '../navMenu/useNavigationSettings';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { useSnackbar } from '../../components/Snackbar';
 import { MoveToTeamSheet } from '../sharing/MoveToTeamSheet';
-import { canMoveToTeam, sharingOf } from '../sharing/sharingRules';
-import { useJoinProject, useLeaveProject } from '../sharing/useSharing';
+import { canChangeAccess, canMoveToTeam, otherAccess, sharingOf } from '../sharing/sharingRules';
+import { useChangeProjectAccess, useJoinProject, useLeaveProject } from '../sharing/useSharing';
 import { useHasTeam } from '../team/useTeam';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
@@ -90,6 +91,7 @@ function ProjectBody({
   const copyLink = useCopyLink();
   const joinProject = useJoinProject();
   const leaveProject = useLeaveProject();
+  const changeAccess = useChangeProjectAccess();
   const hasTeam = useHasTeam();
   const snackbar = useSnackbar();
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -140,6 +142,20 @@ function ProjectBody({
   }
   if (sharing.canShare) {
     items.push({ key: 'share', label: t('sharing.menu.share'), icon: 'user-plus', onPress: () => router.push({ pathname: '/project-share/[id]', params: { id: project.id } }) });
+  }
+  if (canChangeAccess(project)) {
+    const next = otherAccess((project as { access?: ProjectAccess | null }).access);
+    items.push({
+      key: 'change-access',
+      label: next === 'RESTRICTED' ? t('sharing.menu.makeRestricted') : t('sharing.menu.makeTeam'),
+      icon: next === 'RESTRICTED' ? 'lock' : 'users',
+      requiresOnline: true,
+      onPress: () =>
+        changeAccess.mutate(
+          { projectId: project.id, access: next },
+          { onSuccess: () => snackbar.show({ message: next === 'RESTRICTED' ? t('sharing.accessNowRestricted') : t('sharing.accessNowTeam') }) },
+        ),
+    });
   }
   if (sharing.canJoin) {
     items.push({ key: 'join', label: t('sharing.menu.join'), icon: 'log-in', requiresOnline: true, onPress: () => joinProject.mutate(project.id) });
@@ -214,7 +230,7 @@ function ProjectBody({
     items.push({ key: 'delete', label: t('projectScreen.menuDelete'), icon: 'trash-2', destructive: true, requiresOnline: true, onPress: () => { remove.reset(); setDeleteOpen(true); } });
   }
 
-  const actionError = [favorite.error, archive.error, unarchive.error, joinProject.error].find(Boolean);
+  const actionError = [favorite.error, archive.error, unarchive.error, joinProject.error, changeAccess.error].find(Boolean);
   const header = (
     <>
       {sharing.preview && !archived ? (

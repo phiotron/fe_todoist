@@ -6,6 +6,7 @@ import { AppButton } from '../../components/AppButton';
 import { DialogFrame } from '../../components/DialogFrame';
 import { TextField } from '../../components/TextField';
 import { checkRequiredText } from '../../lib/limits';
+import { TEAM_NAME_MAX } from './teamRules';
 import { useCreateWorkspace } from './useTeam';
 
 /** "Create a team": a name (1–100 characters); the creator becomes its Admin and lands on the Team tab. */
@@ -50,6 +51,3 @@ export function CreateTeamDialog({ visible, onClose }: { visible: boolean; onClo
     </DialogFrame>
   );
 }
-
-/** Workspace name limit of the server (WorkspaceNameRequest). */
-const TEAM_NAME_MAX = 100;

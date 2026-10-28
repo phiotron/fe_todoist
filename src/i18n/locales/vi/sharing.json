@@ -35,7 +35,9 @@
       "share": "Chia sẻ",
       "leave": "Rời dự án",
       "join": "Tham gia dự án",
-      "moveToTeam": "Chuyển vào nhóm"
+      "moveToTeam": "Chuyển vào nhóm",
+      "makeRestricted": "Chuyển sang riêng tư",
+      "makeTeam": "Chuyển sang cả nhóm"
     },
     "leave": {
       "title": "Rời dự án \"{{name}}\"?",
@@ -76,6 +78,10 @@
       "accessRestricted": "Chỉ người được mời",
       "confirm": "Chuyển",
       "moved": "Đã chuyển dự án vào nhóm"
-    }
+    },
+    "accessNowRestricted": "Chỉ người được mời mới thấy dự án này",
+    "accessNowTeam": "Mọi người trong nhóm đều thấy dự án này",
+    "accessTeamValue": "Mọi người trong nhóm",
+    "accessRestrictedValue": "Chỉ người được mời"
   }
 }

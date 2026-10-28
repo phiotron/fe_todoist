@@ -35,7 +35,9 @@
       "share": "Share",
       "leave": "Leave project",
       "join": "Join project",
-      "moveToTeam": "Move to a team"
+      "moveToTeam": "Move to a team",
+      "makeRestricted": "Make restricted",
+      "makeTeam": "Make visible to the team"
     },
     "leave": {
       "title": "Leave \"{{name}}\"?",
@@ -76,6 +78,10 @@
       "accessRestricted": "Only invited people",
       "confirm": "Move",
       "moved": "Project moved to the team"
-    }
+    },
+    "accessNowRestricted": "Only invited people can see this project",
+    "accessNowTeam": "Everyone in the team can see this project",
+    "accessTeamValue": "Everyone in the team",
+    "accessRestrictedValue": "Invited people only"
   }
 }

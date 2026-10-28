@@ -15,9 +15,12 @@ import { formatDateKey, weekdayName } from '../../lib/dates/format';
 import { useNow } from '../../lib/useNow';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { useMe } from '../auth/session';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { projectDisplayName } from '../projects/appearance';
 import { useProjects } from '../projects/useProjects';
+import { sharingOf } from '../sharing/sharingRules';
+import { useProjectMembers } from '../sharing/useSharing';
 import { ChoiceList } from '../settings/ui';
 import { groupByDay } from './activityModel';
 import { useActivity } from './useActivity';
@@ -49,10 +52,24 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
   const [eventType, setEventType] = useState<ActivityEventType | undefined>();
   const [projectId, setProjectId] = useState<string | undefined>();
   const [projectSheet, setProjectSheet] = useState(false);
+  const [personSheet, setPersonSheet] = useState(false);
+  // X2: the person filter belongs to ONE project, so it is forgotten when the project changes.
+  const [chosenPerson, setChosenPerson] = useState<{ projectId: string | undefined; id: string } | undefined>();
+  const me = useMe();
+
+  const effectiveProjectId = scope.projectId ?? projectId;
+  const effectiveProject = projects.find((project) => project.id === effectiveProjectId);
+  const effectiveSharing = effectiveProject ? sharingOf(effectiveProject) : undefined;
+  // A shared project (team project or one with collaborators) that I have joined: its members can be told apart.
+  const sharedProjectId = effectiveSharing && (effectiveSharing.isTeamProject || effectiveSharing.memberCount > 1) && effectiveSharing.joined ? effectiveProjectId : undefined;
+  const members = useProjectMembers(sharedProjectId);
+  const people = sharedProjectId ? (members.data ?? []) : [];
+  const personId = chosenPerson && chosenPerson.projectId === effectiveProjectId ? chosenPerson.id : undefined;
+  const chosenMember = people.find((person) => person.userId === personId);
 
   const params = useMemo<ActivityParams>(
-    () => ({ ...scope, ...(scope.projectId ? {} : { projectId }), eventType }),
-    [scope, projectId, eventType],
+    () => ({ ...scope, ...(scope.projectId ? {} : { projectId }), eventType, ...(personId ? { initiatorId: personId } : {}) }),
+    [scope, projectId, eventType, personId],
   );
   const { query, items } = useActivity(params);
 
@@ -96,16 +113,28 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
           />
         ))}
       </ScrollView>
-      {scope.projectId ? null : (
+      {scope.projectId && people.length === 0 ? null : (
         <View style={styles.projectRow}>
-          <Chip
-            large
-            icon="folder"
-            testID={`${testID}-project-chip`}
-            label={chosenProject ? projectDisplayName(chosenProject) : t('activity.filterProject')}
-            selected={projectId !== undefined}
-            onPress={() => setProjectSheet(true)}
-          />
+          {scope.projectId ? null : (
+            <Chip
+              large
+              icon="folder"
+              testID={`${testID}-project-chip`}
+              label={chosenProject ? projectDisplayName(chosenProject) : t('activity.filterProject')}
+              selected={projectId !== undefined}
+              onPress={() => setProjectSheet(true)}
+            />
+          )}
+          {people.length > 0 ? (
+            <Chip
+              large
+              icon="user"
+              testID={`${testID}-person-chip`}
+              label={chosenMember ? chosenMember.displayName : t('activity.filterPerson')}
+              selected={personId !== undefined}
+              onPress={() => setPersonSheet(true)}
+            />
+          ) : null}
         </View>
       )}
     </View>
@@ -121,6 +150,9 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
     }
     const { item } = row;
     const openable = item.objectType === 'TASK' && item.eventType !== 'DELETED';
+    // In a shared project the line names who did it ("Bạn" only for my own events).
+    const byOther = people.length > 0 && me.data !== undefined && item.initiatorId !== me.data.id;
+    const who = byOther ? (people.find((person) => person.userId === item.initiatorId)?.displayName ?? t('activity.someone')) : undefined;
     return (
       <Pressable
         testID={`${testID}-item-${item.id}`}
@@ -132,7 +164,9 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
         <Feather name={iconFor(item.eventType)} size={size.icon} color={palette.acc} />
         <View style={styles.itemTexts}>
           <Text style={styles.itemTitle}>
-            {t(`activity.event.${item.objectType}.${item.eventType}`, { name: item.objectName })}
+            {who !== undefined
+              ? t(`activity.eventBy.${item.objectType}.${item.eventType}`, { who, name: item.objectName })
+              : t(`activity.event.${item.objectType}.${item.eventType}`, { name: item.objectName })}
           </Text>
           {item.projectName && item.objectType !== 'PROJECT' ? (
             <Text style={styles.itemMeta}>{t('activity.inProject', { project: item.projectName })}</Text>
@@ -184,6 +218,20 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
           }
         />
       )}
+      <BottomSheet visible={personSheet} onClose={() => setPersonSheet(false)} title={t('activity.filterPerson')} testID={`${testID}-person-sheet`}>
+        <ChoiceList
+          testIDPrefix={`${testID}-person`}
+          choices={[
+            { value: ALL, label: t('activity.filterAllPeople') },
+            ...people.map((person) => ({ value: person.userId, label: person.displayName })),
+          ]}
+          selected={personId ?? ALL}
+          onSelect={(value) => {
+            setPersonSheet(false);
+            setChosenPerson(value === ALL ? undefined : { projectId: effectiveProjectId, id: value });
+          }}
+        />
+      </BottomSheet>
       <BottomSheet visible={projectSheet} onClose={() => setProjectSheet(false)} title={t('activity.filterProject')} testID={`${testID}-project-sheet`}>
         <ChoiceList
           testIDPrefix={`${testID}-project`}
@@ -226,7 +274,7 @@ function createStyles(palette: Palette) {
     fill: { flex: 1, backgroundColor: palette.bg },
     content: { paddingBottom: 40, flexGrow: 1 },
     chips: { gap: 8, paddingHorizontal: gutter, paddingVertical: 8 },
-    projectRow: { paddingHorizontal: gutter, paddingBottom: 8, flexDirection: 'row' },
+    projectRow: { paddingHorizontal: gutter, paddingBottom: 8, flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
     section: { paddingHorizontal: gutter },
     item: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingHorizontal: gutter, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: palette.line },
     itemTexts: { flex: 1, gap: 2 },

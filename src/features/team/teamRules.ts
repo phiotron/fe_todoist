@@ -43,6 +43,9 @@ export function canCreateInTeam(role: WorkspaceRole): boolean {
   return role !== 'GUEST';
 }
 
+/** Workspace / folder name limit of the server (WorkspaceNameRequest, FolderRequest). */
+export const TEAM_NAME_MAX = 100;
+
 export function canManageTeam(role: WorkspaceRole): boolean {
   return role === 'ADMIN';
 }
