@@ -1,7 +1,9 @@
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { PROJECT_COLORS, type ProjectColor } from '../api/models';
 import { projectColorHex } from '../features/projects/appearance';
+import { projectColorName } from '../features/projects/colorNames';
 import { useTheme } from '../theme';
 
 interface ColorSwatchesProps {
@@ -13,6 +15,7 @@ interface ColorSwatchesProps {
 /** The 20 colour keys of projects, labels and filters (spec 10.1): round swatches, a tick on the chosen one. */
 export function ColorSwatches({ value, onChange, testID = 'color-swatches' }: ColorSwatchesProps) {
   const { palette } = useTheme();
+  const { t } = useTranslation();
   return (
     <View style={styles.grid} accessibilityRole="radiogroup">
       {PROJECT_COLORS.map((color) => {
@@ -22,7 +25,7 @@ export function ColorSwatches({ value, onChange, testID = 'color-swatches' }: Co
             key={color}
             testID={`${testID}-${color}`}
             accessibilityRole="radio"
-            accessibilityLabel={color}
+            accessibilityLabel={t('projects.form.colorOption', { name: projectColorName(color) })}
             accessibilityState={{ selected }}
             hitSlop={4}
             onPress={() => onChange(color)}

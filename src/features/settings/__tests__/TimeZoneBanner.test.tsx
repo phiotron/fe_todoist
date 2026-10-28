@@ -1,7 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { viTranslation as vi } from '../../../i18n';
 import { tokenStore } from '../../../lib/tokenStore';
+import { goOffline, goOnline } from '../../../test/network';
 import { countRequests, mockFetch, problem } from '../../../test/http';
 import { renderWithSettings } from '../../../test/renderSettings';
 import { serveSettings } from '../../../test/settingsFixtures';
@@ -66,5 +68,39 @@ describe('TimeZoneBanner', () => {
 
     expect((await screen.findByTestId('tz-banner-error')).props.children).toBe('Múi giờ không hợp lệ');
     expect(screen.getByTestId('tz-banner')).toBeTruthy();
+  });
+
+  describe('safe area (status bar)', () => {
+    const insetTop = 28;
+    const mockInsets = (top: number) =>
+      jest.mocked(useSafeAreaInsets).mockReturnValue({ top, bottom: 0, left: 0, right: 0 });
+    const paddingTopOf = () => {
+      const style = StyleSheet.flatten(screen.getByTestId('tz-banner').props.style);
+      return (style.paddingTop ?? style.paddingVertical ?? style.padding ?? 0) as number;
+    };
+
+    afterEach(() => {
+      goOnline();
+      mockInsets(0);
+    });
+
+    it('leaves the status-bar inset above its text so it does not draw under the clock and wifi icons', async () => {
+      mockInsets(insetTop);
+      serveSettings(mockFetch());
+      await renderWithSettings(<TimeZoneBanner />, { deviceTimeZone: 'Asia/Tokyo' });
+      await screen.findByText(mismatchText);
+
+      expect(paddingTopOf()).toBeGreaterThanOrEqual(insetTop);
+    });
+
+    it('does not add the inset a second time while the offline banner above it already covers the status bar', async () => {
+      mockInsets(insetTop);
+      goOffline();
+      serveSettings(mockFetch());
+      await renderWithSettings(<TimeZoneBanner />, { deviceTimeZone: 'Asia/Tokyo' });
+      await screen.findByText(mismatchText);
+
+      expect(paddingTopOf()).toBeLessThan(insetTop);
+    });
   });
 });
