@@ -1,4 +1,5 @@
 import { parseQuickAdd, type ParseContext } from '..';
+import viQuickAdd from '../../../i18n/locales/vi/quickAdd.json';
 
 /**
  * Vietnamese Quick Add (VIQA): recognised side by side with English, no setting. "Today" is fixed: Tuesday 2026-10-27.
@@ -470,5 +471,23 @@ describe('VIQA — ordinary words are NOT dates (negative cases)', () => {
   it('"!30 phút" without "trước" is not a reminder', () => {
     const result = parse('Họp !30 phút');
     expect(result.reminders).toEqual([]);
+  });
+});
+
+describe('VIQA — the examples of the Vietnamese Date sheet hint all parse', () => {
+  const examples = viQuickAdd.quickAdd.dateSheet.inputPlaceholder.replace(/^vd\s+/, '').split(/,\s*/);
+
+  it('the hint shows the three Vietnamese examples', () => {
+    expect(examples).toEqual(['mai 9h', 'mỗi thứ hai 9h', 'thứ sáu tuần sau 15h']);
+  });
+
+  it.each([
+    ['mai 9h', '2026-10-28', '09:00'],
+    ['mỗi thứ hai 9h', '2026-11-02', '09:00'],
+    ['thứ sáu tuần sau 15h', '2026-11-06', '15:00'],
+  ])('"%s"', (text, date, time) => {
+    const result = parse(text);
+    expect(result.due).toEqual({ date, time, durationMinutes: null });
+    expect(result.content).toBe('');
   });
 });

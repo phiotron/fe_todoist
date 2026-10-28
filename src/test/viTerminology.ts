@@ -55,13 +55,13 @@ const FORBIDDEN_PATTERN = new RegExp(`(^|[^\\p{L}-])(${FORBIDDEN_EN.join('|')})(
 const PROPER_NAMES = ['Google Calendar', 'Apple Calendar', 'Google Play Services', 'iCal'];
 
 /**
- * Keys whose text shows typing syntax the parsers only read in English (Quick Add, filter queries, email subjects):
- * the keywords are code, not words. The language picker shows "English" in English.
+ * Keys whose text shows typing syntax the parsers only read in English (filter queries, email subjects): the keywords
+ * are code, not words. The language picker shows "English" in English. Quick Add reads Vietnamese (VIQA), so its
+ * hint is in Vietnamese and is checked like any other text.
  */
 export const SYNTAX_KEYS = new Set([
   'email.syntaxHint',
   'filters.form.queryPlaceholder',
-  'quickAdd.dateSheet.inputPlaceholder',
   'settings.language.en',
 ]);
 

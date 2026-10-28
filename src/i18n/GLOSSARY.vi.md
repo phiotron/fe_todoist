@@ -60,8 +60,9 @@ thông báo, lỗi). Bản `en` giữ nguyên tiếng Anh. Kiểm tự động: 
   Google Play Services, Firebase; định dạng tệp (PNG, JPEG), đơn vị (MB, byte), mã QR.
 - **P1–P4** (mức ưu tiên), **Email** (từ đã Việt hoá phổ biến).
 - Tên do người dùng đặt (dự án, mục, nhãn, bộ lọc, công việc).
-- Cú pháp gõ mà bộ phân tích chỉ đọc tiếng Anh (Thêm nhanh: `next friday 3pm`; truy vấn bộ lọc: `today | overdue`;
-  tiêu đề email: `date tomorrow 5pm`). Các chuỗi này nằm trong `SYNTAX_KEYS` của bài kiểm.
+- Cú pháp gõ mà bộ phân tích chỉ đọc tiếng Anh (truy vấn bộ lọc: `today | overdue`; tiêu đề email:
+  `date tomorrow 5pm`). Các chuỗi này nằm trong `SYNTAX_KEYS` của bài kiểm. Thêm nhanh đã hiểu tiếng Việt nên gợi ý
+  dùng ví dụ tiếng Việt (`mai 9h`, `mỗi thứ hai 9h`, `thứ sáu tuần sau 15h`); bản en giữ `next friday 3pm`.
 - Tên ngôn ngữ trong bộ chọn ngôn ngữ ("English").
 
 ## Dữ liệu từ máy chủ

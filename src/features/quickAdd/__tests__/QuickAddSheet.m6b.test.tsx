@@ -210,7 +210,10 @@ describe('Quick Add — chips (M6b)', () => {
 
   it('the Deadline chip picks a day and sends deadlineDate', async () => {
     const { fetchMock } = await open();
-    await fireEvent.press(screen.getByTestId('quick-add-deadline'));
+    // Deadline is not a default chip: it shows only once GET me/settings (quickAddChips) has answered, which can come
+    // after the projects that open() waits for — wait for that request and its chip instead of reading it at once.
+    await waitFor(() => expect(requestsTo(fetchMock, 'GET', '/api/v1/me/settings').length).toBeGreaterThan(0));
+    await fireEvent.press(await screen.findByTestId('quick-add-deadline'));
     await fireEvent.press(await screen.findByTestId('quick-add-deadline-sheet-day-2026-10-28'));
     await fireEvent.press(screen.getByTestId('quick-add-deadline-sheet-done'));
     await type('Report');

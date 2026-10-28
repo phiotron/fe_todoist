@@ -71,7 +71,7 @@
       "title": "Ngày",
       "save": "Lưu",
       "inputLabel": "Gõ ngày",
-      "inputPlaceholder": "vd next friday 3pm",
+      "inputPlaceholder": "vd mai 9h, mỗi thứ hai 9h, thứ sáu tuần sau 15h",
       "notRecognised": "Taskly chưa hiểu ngày này",
       "today": "Hôm nay",
       "tomorrow": "Ngày mai",
