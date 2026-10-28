@@ -3,6 +3,9 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enCore from './locales/en.json';
 import enBoard from './locales/en/board.json';
+import enActivity from './locales/en/activity.json';
+import enInsights from './locales/en/insights.json';
+import enProductivity from './locales/en/productivity.json';
 import enBrowse from './locales/en/browse.json';
 import enCalendar from './locales/en/calendar.json';
 import enCommon from './locales/en/common.json';
@@ -38,6 +41,9 @@ import enNotificationPrefs from './locales/en/notificationPrefs.json';
 import enOauth from './locales/en/oauth.json';
 import viCore from './locales/vi.json';
 import viBoard from './locales/vi/board.json';
+import viActivity from './locales/vi/activity.json';
+import viInsights from './locales/vi/insights.json';
+import viProductivity from './locales/vi/productivity.json';
 import viBrowse from './locales/vi/browse.json';
 import viCalendar from './locales/vi/calendar.json';
 import viCommon from './locales/vi/common.json';
@@ -80,6 +86,9 @@ import viOauth from './locales/vi/oauth.json';
 export const viTranslation = {
   ...viCore,
   ...viBoard,
+  ...viActivity,
+  ...viInsights,
+  ...viProductivity,
   ...viBrowse,
   ...viCalendar,
   ...viCommon,
@@ -119,6 +128,9 @@ export const viTranslation = {
 export const enTranslation = {
   ...enCore,
   ...enBoard,
+  ...enActivity,
+  ...enInsights,
+  ...enProductivity,
   ...enBrowse,
   ...enCalendar,
   ...enCommon,

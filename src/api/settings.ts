@@ -38,6 +38,14 @@ export interface SettingsResponse {
   quickAddShowActionLabels?: boolean;
   /** M6b "Show description": Quick Add draws the description field. */
   quickAddShowDescription?: boolean;
+  /** M10 (Settings → Productivity). Optional: a settings cache written before M10 does not have them. */
+  dailyGoal?: number;
+  weeklyGoal?: number;
+  /** ISO weekdays (1 = Monday … 7 = Sunday). */
+  daysOff?: number[];
+  vacationMode?: boolean;
+  goalCelebrations?: boolean;
+  karmaEnabled?: boolean;
 }
 
 /**

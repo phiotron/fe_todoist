@@ -5,6 +5,7 @@ import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
 import { PushTokenHost } from '../../features/push/PushTokenHost';
+import { GoalCelebrationHost } from '../../features/productivity/GoalCelebrationHost';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
 import { SyncHost } from '../../features/sync/SyncHost';
 import { SyncStatusPill } from '../../features/sync/SyncStatusPill';
@@ -39,6 +40,8 @@ export default function SignedInLayout() {
           <SyncStatusPill />
           {/* M13c: registers this device's push token with the server; renders nothing. */}
           <PushTokenHost />
+          {/* M10: congratulates when a daily / weekly goal is reached; renders nothing. */}
+          <GoalCelebrationHost />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />
@@ -48,6 +51,10 @@ export default function SignedInLayout() {
             <Stack.Screen name="completed" />
             <Stack.Screen name="templates/index" />
             <Stack.Screen name="templates/[id]" />
+            <Stack.Screen name="productivity" />
+            <Stack.Screen name="karma-levels" />
+            <Stack.Screen name="activity" />
+            <Stack.Screen name="project-insights" />
             <Stack.Screen name="task/[id]" />
             <Stack.Screen name="quick-add" options={{ presentation: 'transparentModal', animation: 'fade' }} />
             <Stack.Screen name="project-form" options={{ presentation: 'modal' }} />

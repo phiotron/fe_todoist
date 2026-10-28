@@ -52,6 +52,19 @@ export const queryKeys = {
   },
   /** M13c: OAuth consent screen, per request of the third-party app. */
   oauthPreview: (params: { clientId: string; redirectUri: string; scope: string }) => ['oauthPreview', params] as const,
+  /** M10: Productivity (Daily / Weekly / Karma), Activity log and project Insights; refreshed by every data write. */
+  productivity: {
+    all: ['productivity'] as const,
+    get: () => ['productivity', 'get'] as const,
+  },
+  activity: {
+    all: ['activity'] as const,
+    list: (params: object) => ['activity', 'list', params] as const,
+  },
+  insights: {
+    all: ['insights'] as const,
+    project: (projectId: string) => ['insights', 'project', projectId] as const,
+  },
 };
 
 /** Query roots touched by writes (M2 added 'labels', 'filters', 'search', 'viewOptions'). */
@@ -66,6 +79,9 @@ export const DATA_ROOTS: ReadonlySet<string> = new Set([
   'viewOptions',
   // M11: Save as template / delete template (keys in api/templates.ts)
   'templates',
+  'productivity',
+  'activity',
+  'insights',
 ]);
 
 export interface InvalidateOptions {

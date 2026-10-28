@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import type { Task, TaskListParams } from '../../api/models';
 import { Chip } from '../../components/Chip';
+import { Segmented } from '../../components/Segmented';
 import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
 import { addDays, dateKeyInZone, nowLocal } from '../../lib/dates';
@@ -13,6 +14,7 @@ import { parseInstant } from '../../lib/dates/instant';
 import { useNow } from '../../lib/useNow';
 import { gutter, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { ActivityLogView } from '../activity/ActivityLogView';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { NO_DUE, type DueValue } from '../schedule/dueValue';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
@@ -24,7 +26,7 @@ import { useTaskList } from '../tasks/useTaskList';
  * Completed (M-Completed, tab "Tasks"): `GET tasks?view=completed[&since&until]` — completed tasks of every project
  * (one row per task, sub-tasks included; archived projects left out) grouped by the day they were completed in the
  * ACCOUNT time zone, newest first; the filled circle reopens a task. `since` / `until` = whole days of the account zone,
- * both ends included; the screen never sends since > until (400). The Activity log tab is M10.
+ * both ends included; the screen never sends since > until (400). The second tab (M10) is the Activity log.
  */
 export function CompletedScreen() {
   const styles = useThemedStyles(createCompletedScreenStyles);
@@ -34,6 +36,7 @@ export function CompletedScreen() {
   const now = useNow();
   const timeZone = useUserTimeZone();
   const today = dateKeyInZone(now, timeZone);
+  const [tab, setTab] = useState<'tasks' | 'activity'>('tasks');
   const [since, setSince] = useState<string>();
   const [until, setUntil] = useState<string>();
   const [picker, setPicker] = useState<'since' | 'until' | null>(null);
@@ -72,6 +75,22 @@ export function CompletedScreen() {
   return (
     <View style={styles.fill}>
       <SubHeader title={t('views.completed.title')} onBack={() => router.back()} testID="completed-header" />
+      {/* M10: second tab = Activity log of every project. */}
+      <View style={styles.tabs}>
+        <Segmented
+          testID="completed-tabs"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { key: 'tasks', label: t('activity.tabTasks') },
+            { key: 'activity', label: t('activity.tabActivity') },
+          ]}
+        />
+      </View>
+      {tab === 'activity' ? (
+        <ActivityLogView testID="completed-activity" />
+      ) : (
+        <>
       <View style={styles.range}>
         <Chip
           large
@@ -126,6 +145,8 @@ export function CompletedScreen() {
         onClose={() => setPicker(null)}
         testID="completed-until"
       />
+        </>
+      )}
     </View>
   );
 }
@@ -134,5 +155,6 @@ function createCompletedScreenStyles(palette: Palette) {
   return StyleSheet.create({
     fill: { flex: 1, backgroundColor: palette.bg },
     range: { flexDirection: 'row', gap: 8, paddingHorizontal: gutter, paddingVertical: 8 },
+    tabs: { paddingHorizontal: gutter, paddingVertical: 4 },
   });
 }

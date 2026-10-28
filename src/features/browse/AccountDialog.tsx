@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -46,6 +47,17 @@ export function AccountDialog({ visible, onClose }: { visible: boolean; onClose:
           </Text>
         </View>
       ) : null}
+      {/* M10: the avatar of Browse leads to Productivity (Daily / Weekly / Karma). */}
+      <AppButton
+        variant="outline"
+        label={t('productivity.open')}
+        onPress={() => {
+          onClose();
+          router.push('/productivity');
+        }}
+        disabled={signingOut}
+        testID="account-productivity"
+      />
       <View style={styles.actions}>
         <AppButton variant="outline" label={t('browse.accountClose')} onPress={onClose} disabled={signingOut} testID="account-close" />
         <AppButton variant="danger" label={t('browse.signOut')} onPress={() => void onSignOut()} busy={signingOut} testID="account-sign-out" />

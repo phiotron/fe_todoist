@@ -64,6 +64,7 @@ export function SettingsScreen() {
         href="/settings/notifications"
       />
       <SettingsLinkRow testID="settings-row-integrations" icon="link" label={t('integrations.title')} href="/settings/integrations" />
+      <SettingsLinkRow testID="settings-row-productivity" icon="trending-up" label={t('productivity.settings.title')} href="/settings/productivity" />
       <SettingsLinkRow
         testID="settings-row-theme"
         icon="droplet"

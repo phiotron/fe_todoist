@@ -1,0 +1,53 @@
+{
+  "activity": {
+    "title": "Activity",
+    "tabTasks": "Tasks",
+    "tabActivity": "Activity log",
+    "viewActivity": "View activity",
+    "emptyTitle": "No activity yet",
+    "emptyMessage": "When you add, edit or complete tasks, the activity shows up here.",
+    "filterAll": "All events",
+    "filterProject": "Project",
+    "filterAllProjects": "All projects",
+    "loadMore": "Load more",
+    "event": {
+      "TASK": {
+        "ADDED": "You added a task: {{name}}",
+        "UPDATED": "You updated a task: {{name}}",
+        "COMPLETED": "You completed: {{name}}",
+        "UNCOMPLETED": "You reopened a task: {{name}}",
+        "DELETED": "You deleted a task: {{name}}",
+        "ARCHIVED": "You archived a task: {{name}}",
+        "UNARCHIVED": "You restored a task: {{name}}"
+      },
+      "PROJECT": {
+        "ADDED": "You added a project: {{name}}",
+        "UPDATED": "You updated a project: {{name}}",
+        "COMPLETED": "You completed a project: {{name}}",
+        "UNCOMPLETED": "You reopened a project: {{name}}",
+        "DELETED": "You deleted a project: {{name}}",
+        "ARCHIVED": "You archived a project: {{name}}",
+        "UNARCHIVED": "You restored a project: {{name}}"
+      },
+      "SECTION": {
+        "ADDED": "You added a section: {{name}}",
+        "UPDATED": "You updated a section: {{name}}",
+        "COMPLETED": "You completed a section: {{name}}",
+        "UNCOMPLETED": "You reopened a section: {{name}}",
+        "DELETED": "You deleted a section: {{name}}",
+        "ARCHIVED": "You archived a section: {{name}}",
+        "UNARCHIVED": "You restored a section: {{name}}"
+      }
+    },
+    "type": {
+      "ADDED": "Added",
+      "UPDATED": "Updated",
+      "COMPLETED": "Completed",
+      "UNCOMPLETED": "Reopened",
+      "DELETED": "Deleted",
+      "ARCHIVED": "Archived",
+      "UNARCHIVED": "Restored"
+    },
+    "inProject": "in {{project}}"
+  }
+}

@@ -378,4 +378,12 @@ describe('TaskDetailScreen', () => {
     await fireEvent.press(screen.getByTestId('task-menu-open'));
     expect(screen.getByTestId('task-menu-delete')).toBeDisabled();
   });
+
+  it('M10 menu: View activity opens the Activity log of the task', async () => {
+    await open();
+
+    await menu('view-activity');
+
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/activity', params: { taskId: 't1' } });
+  });
 });

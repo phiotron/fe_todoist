@@ -151,6 +151,13 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
       onPress: () => setEmailOpen(true),
     },
     {
+      key: 'view-activity',
+      label: t('activity.viewActivity'),
+      icon: 'activity',
+      requiresOnline: true,
+      onPress: () => router.push({ pathname: '/activity', params: { taskId } }),
+    },
+    {
       key: 'delete',
       label: t('taskDetail.menuDelete'),
       icon: 'trash-2',
@@ -172,6 +179,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
     'toggle-completed': true,
     'reorder-subtasks': !access.readOnly,
     email: !access.archived,
+    'view-activity': true,
     delete: !access.archived,
   };
   const visibleItems = items.filter((item) => allowed[item.key]);

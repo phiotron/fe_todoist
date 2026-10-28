@@ -232,4 +232,17 @@ describe('TodayScreen', () => {
     expect(screen.getByTestId('section-header-overdue')).toHaveTextContent(/Quá hạn4/);
     expect(screen.queryByText('23/10 · Hôm nay · Thứ Sáu')).toBeNull();
   });
+
+  it('M10: the menu has View activity', async () => {
+    await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY']),
+      'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
+    });
+    await screen.findByText('Họp nhóm');
+
+    await fireEvent.press(screen.getByTestId('today-menu-open'));
+    await fireEvent.press(screen.getByTestId('today-menu-view-activity'));
+
+    expect(router.push).toHaveBeenCalledWith('/activity');
+  });
 });
