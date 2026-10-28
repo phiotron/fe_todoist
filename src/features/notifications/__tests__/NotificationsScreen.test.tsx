@@ -46,7 +46,7 @@ describe('NotificationsScreen', () => {
     await fireEvent.press(screen.getByTestId('notifications-tabs-unread'));
 
     await waitFor(() => expect(screen.queryByText('Đã đọc rồi')).toBeNull());
-    expect(screen.getByText('@An xem giúp')).toBeOnTheScreen();
+    expect(await screen.findByText('@An xem giúp')).toBeOnTheScreen();
     expect(requestsTo(fetchMock, 'GET', '/api/v1/notifications').some((r) => r.query.get('unread') === 'true')).toBe(true);
   });
 

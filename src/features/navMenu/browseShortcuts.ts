@@ -2,13 +2,13 @@ import type { NavMenuItem } from '../../api/navigationSettings';
 import { BROWSE_SHORTCUTS, type BrowseShortcut } from '../browse/browseBlocks';
 import { browseMenuItems } from './navMenuModel';
 
-/** Browse shortcut drawn for each menu item that has a screen (Reporting comes with M10; Browse templates is M11). */
+/** Browse shortcut drawn for each menu item that has a screen (Reporting = M10 Productivity, Browse templates = M11). */
 const SHORTCUT_KEY: Record<NavMenuItem, string | null> = {
   INBOX: 'inbox',
   TODAY: 'today',
   UPCOMING: 'upcoming',
   FILTERS_LABELS: 'filters-labels',
-  REPORTING: null,
+  REPORTING: 'reporting',
   BROWSE_TEMPLATES: 'templates',
 };
 

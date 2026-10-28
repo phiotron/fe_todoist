@@ -48,16 +48,17 @@ describe('readNavigationSettings', () => {
 
 describe('browseMenuItems', () => {
   it('hides the items on the tab bar and the ones without a screen yet, keeping the menu order', () => {
-    expect(browseMenuItems(ALL_NAV_MENU_ITEMS, ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'])).toEqual(['FILTERS_LABELS', 'BROWSE_TEMPLATES']);
+    expect(browseMenuItems(ALL_NAV_MENU_ITEMS, ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'])).toEqual(['FILTERS_LABELS', 'REPORTING', 'BROWSE_TEMPLATES']);
     expect(browseMenuItems(['UPCOMING', 'TODAY', 'INBOX', 'REPORTING'], ['SEARCH', 'TODAY', 'BROWSE'])).toEqual([
       'UPCOMING',
       'INBOX',
+      'REPORTING',
     ]);
     expect(browseMenuItems([], ['SEARCH', 'TODAY', 'BROWSE'])).toEqual([]);
   });
 
-  it('knows which items have a screen (Reporting = M10 has none yet; Browse templates = M11)', () => {
-    expect(ALL_NAV_MENU_ITEMS.filter(isMenuItemAvailable)).toEqual(['INBOX', 'TODAY', 'UPCOMING', 'FILTERS_LABELS', 'BROWSE_TEMPLATES']);
+  it('knows which items have a screen (Reporting = M10 Productivity, Browse templates = M11)', () => {
+    expect(ALL_NAV_MENU_ITEMS.filter(isMenuItemAvailable)).toEqual(['INBOX', 'TODAY', 'UPCOMING', 'FILTERS_LABELS', 'REPORTING', 'BROWSE_TEMPLATES']);
   });
 });
 

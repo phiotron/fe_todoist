@@ -15,7 +15,7 @@ export const ALL_NAV_MENU_ITEMS: readonly NavMenuItem[] = [
 ];
 
 /** Items with a screen today: Reporting comes with M10 (saved, not shown yet); Browse templates is M11. */
-const AVAILABLE_MENU_ITEMS: readonly NavMenuItem[] = ['INBOX', 'TODAY', 'UPCOMING', 'FILTERS_LABELS', 'BROWSE_TEMPLATES'];
+const AVAILABLE_MENU_ITEMS: readonly NavMenuItem[] = ['INBOX', 'TODAY', 'UPCOMING', 'FILTERS_LABELS', 'REPORTING', 'BROWSE_TEMPLATES'];
 
 export const DEFAULT_NAVIGATION_SETTINGS: NavigationSettingsFields = {
   addButtonPlacement: 'RIGHT',

@@ -41,12 +41,13 @@ describe('browseShortcuts (M3x Navigation menu)', () => {
   const keys = (items: readonly (typeof ALL)[number][], navTabs: string[]) =>
     browseShortcuts(items, navTabs).map((shortcut) => shortcut.key);
 
-  it('default menu + default tab bar: Filters & Labels, Browse templates (M11), then Completed', () => {
-    expect(keys(ALL, ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'])).toEqual(['filters-labels', 'templates', 'completed']); // M11: Browse templates has a screen
+  it('default menu + default tab bar: Filters & Labels, Reporting (M10), Browse templates (M11), then Completed', () => {
+    expect(keys(ALL, ['INBOX', 'TODAY', 'UPCOMING', 'BROWSE'])).toEqual(['filters-labels', 'reporting', 'templates', 'completed']); // M10: Reporting = Productivity; M11: Browse templates
   });
 
-  it('follows the menu order and skips Reporting (no screen yet; M10)', () => {
+  it('follows the menu order, Reporting included (M10 Productivity)', () => {
     expect(keys(['REPORTING', 'UPCOMING', 'INBOX', 'BROWSE_TEMPLATES'], ['SEARCH', 'FILTERS_LABELS', 'BROWSE'])).toEqual([
+      'reporting',
       'upcoming',
       'inbox',
       'templates',
@@ -77,6 +78,7 @@ describe('Browse with Navigation menu settings (M3x)', () => {
       'browse-shortcut-upcoming',
       'browse-shortcut-today',
       'browse-shortcut-inbox',
+      'browse-shortcut-reporting',
       'browse-shortcut-completed',
     ]);
     expect(await screen.findByText('4')).toBeOnTheScreen();
@@ -99,6 +101,6 @@ describe('Browse with Navigation menu settings (M3x)', () => {
     await renderBrowse({ navTabs: ['TODAY', 'UPCOMING', 'BROWSE'] });
 
     expect(await screen.findByTestId('browse-shortcut-inbox')).toBeOnTheScreen();
-    expect(shortcutIds()).toEqual(['browse-shortcut-inbox', 'browse-shortcut-filters-labels', 'browse-shortcut-templates', 'browse-shortcut-completed']);
+    expect(shortcutIds()).toEqual(['browse-shortcut-inbox', 'browse-shortcut-filters-labels', 'browse-shortcut-reporting', 'browse-shortcut-templates', 'browse-shortcut-completed']);
   });
 });

@@ -35,7 +35,7 @@ describe('NavigationMenuSettingsScreen (M3x)', () => {
     expect(order).toEqual(ALL.map((item) => `nav-menu-${item}`));
     expect(screen.getByTestId('nav-menu-INBOX')).toHaveTextContent(new RegExp(vi.navMenu.onTabBar));
     expect(screen.getByTestId('nav-menu-FILTERS_LABELS')).not.toHaveTextContent(new RegExp(vi.navMenu.onTabBar));
-    expect(screen.getByTestId('nav-menu-REPORTING')).toHaveTextContent(new RegExp(vi.navMenu.comingLater));
+    expect(screen.getByTestId('nav-menu-REPORTING')).not.toHaveTextContent(new RegExp(vi.navMenu.comingLater)); // M10: Reporting has a screen
     expect(screen.getByTestId('nav-menu-count').props.accessibilityState).toMatchObject({ checked: true });
   });
 

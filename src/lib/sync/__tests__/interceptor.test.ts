@@ -91,3 +91,26 @@ describe('write interceptor', () => {
     expect(queryClient.getQueryData<{ name: string }[]>(queryKeys.labels.list())).toMatchObject([{ name: 'home' }]);
   });
 });
+
+describe('write interceptor with the writes of M8b / M10 / M12 (not queued)', () => {
+  const unqueued: [string, { method: 'POST' | 'DELETE' | 'PATCH'; body?: unknown; formData?: FormData }][] = [
+    ['/api/v1/tasks/t1/comments', { method: 'POST', body: { content: 'hi' } }],
+    ['/api/v1/comments/c1', { method: 'DELETE' }],
+    ['/api/v1/attachments', { method: 'POST', formData: new FormData() }],
+    ['/api/v1/me/avatar', { method: 'POST', formData: new FormData() }],
+    ['/api/v1/notifications/read-all', { method: 'POST' }],
+    ['/api/v1/me/notification-settings', { method: 'PATCH', body: { event: 'COMMENT_MENTION', enabled: false } }],
+  ];
+
+  it.each(unqueued)('%s goes to the server untouched while connected', (path, options) => {
+    const { queue, intercept } = setup(true);
+    expect(intercept(path, options)).toBeNull();
+    expect(queue.size()).toBe(0);
+  });
+
+  it.each(unqueued)('%s fails like before (OfflineError) while offline, never queued', (path, options) => {
+    const { queue, intercept } = setup(false);
+    expect(() => intercept(path, options)).toThrow(OfflineError);
+    expect(queue.size()).toBe(0);
+  });
+});

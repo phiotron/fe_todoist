@@ -26,6 +26,8 @@ export const BROWSE_SHORTCUTS: readonly BrowseShortcut[] = [
   { key: 'upcoming', title: () => i18n.t('views.upcoming.title'), icon: 'grid', kind: 'tab', href: '/upcoming' },
   { key: 'filters-labels', title: () => i18n.t('filtersLabels.title'), icon: 'filter', kind: 'push', href: '/filters-labels', chevron: true },
   { key: 'completed', title: () => i18n.t('views.completed.title'), icon: 'check-circle', kind: 'push', href: '/completed', chevron: true },
+  // M10: Reporting = Productivity (Daily / Weekly / Karma)
+  { key: 'reporting', title: () => i18n.t('productivity.title'), icon: 'trending-up', kind: 'push', href: '/productivity', chevron: true },
   // M11: Browse templates (Todoist has the same entry in Browse)
   { key: 'templates', title: () => i18n.t('templates.browseRow'), icon: 'layers', kind: 'push', href: '/templates', chevron: true },
 ];
