@@ -253,9 +253,22 @@ export const rawApiFetch: ApiClient = createApiClient({
   },
 });
 
+/** PERF: told about every write request (not GET) the app sends, before it goes out — lib/useDataMutation.ts uses it. */
+export type WriteObserver = (method: string, path: string, body: unknown) => void;
+const writeObservers = new Set<WriteObserver>();
+
+export function addWriteObserver(observer: WriteObserver): () => void {
+  writeObservers.add(observer);
+  return () => {
+    writeObservers.delete(observer);
+  };
+}
+
 /** App-wide client every screen / hook uses: `rawApiFetch` behind the M9 interceptor. */
 export const apiFetch: ApiClient = Object.assign(
   <T>(path: string, options: ApiRequestOptions = {}): Promise<T> => {
+    const method = options.method ?? 'GET';
+    if (method !== 'GET') writeObservers.forEach((observer) => observer(method, path, options.body));
     try {
       const handled = requestInterceptor?.(path, options);
       if (handled) return Promise.resolve(handled.value as T);

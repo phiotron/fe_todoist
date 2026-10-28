@@ -6,7 +6,7 @@ import { FakeReminderScheduler } from '../../../test/fakeReminderScheduler';
 import { renderWithProviders } from '../../../test/render';
 import type { ReminderRuntimeSettings } from '../reminderSettings';
 import type { TaskState } from '../snooze';
-import { requestReminderSync } from '../syncSignal';
+import { DATA_WRITE_META, requestReminderSync, requestReminderSyncAfterWrite } from '../syncSignal';
 import type { ReminderPermission } from '../types';
 import { useReminderSync, type ReminderRuntimeDeps } from '../useReminderSync';
 
@@ -137,6 +137,28 @@ describe('useReminderSync', () => {
         .mutate()
         .catch(() => undefined);
     });
+    await tick();
+    expect(deps.fetchOccurrences).toHaveBeenCalledTimes(2);
+  });
+
+  it('PERF: a data write that says it cannot move a reminder does not re-plan; one that can, does (debounced)', async () => {
+    const { deps } = makeDeps();
+    const { queryClient } = await renderWithProviders(<Probe settings={SETTINGS} deps={deps} />);
+    await waitFor(() => expect(deps.fetchOccurrences).toHaveBeenCalledTimes(1));
+
+    // useDataMutation marks its mutations: it decides itself (label rename, description...) whether reminders care.
+    await act(async () => {
+      await new MutationObserver(queryClient, { mutationFn: async () => 'ok', meta: DATA_WRITE_META }).mutate();
+    });
+    await tick();
+    expect(deps.fetchOccurrences).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      requestReminderSyncAfterWrite();
+      requestReminderSyncAfterWrite();
+      requestReminderSyncAfterWrite();
+    });
+    await waitFor(() => expect(deps.fetchOccurrences).toHaveBeenCalledTimes(2));
     await tick();
     expect(deps.fetchOccurrences).toHaveBeenCalledTimes(2);
   });
