@@ -33,6 +33,9 @@ import enTaskList from './locales/en/taskList.json';
 import enTemplates from './locales/en/templates.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
+import enIntegrations from './locales/en/integrations.json';
+import enNotificationPrefs from './locales/en/notificationPrefs.json';
+import enOauth from './locales/en/oauth.json';
 import viCore from './locales/vi.json';
 import viBoard from './locales/vi/board.json';
 import viBrowse from './locales/vi/browse.json';
@@ -65,6 +68,9 @@ import viTaskList from './locales/vi/taskList.json';
 import viTemplates from './locales/vi/templates.json';
 import viTwoFactor from './locales/vi/twoFactor.json';
 import viViews from './locales/vi/views.json';
+import viIntegrations from './locales/vi/integrations.json';
+import viNotificationPrefs from './locales/vi/notificationPrefs.json';
+import viOauth from './locales/vi/oauth.json';
 
 /**
  * Vietnamese strings. vi.json keeps the M0 keys (auth, errors); every later feature owns one file in
@@ -104,6 +110,9 @@ export const viTranslation = {
   ...viTemplates,
   ...viTwoFactor,
   ...viViews,
+  ...viIntegrations,
+  ...viNotificationPrefs,
+  ...viOauth,
 };
 
 /** English strings: same files and keys as viTranslation, under locales/en/. */
@@ -140,6 +149,9 @@ export const enTranslation = {
   ...enTemplates,
   ...enTwoFactor,
   ...enViews,
+  ...enIntegrations,
+  ...enNotificationPrefs,
+  ...enOauth,
 };
 
 export const resources = { vi: { translation: viTranslation }, en: { translation: enTranslation } } as const;

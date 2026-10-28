@@ -1,0 +1,23 @@
+{
+  "notificationPrefs": {
+    "title": "Notifications",
+    "emailSection": "Email",
+    "morningOverview": "Morning overview",
+    "morningOverviewHint": "Email at 07:00 with today's and overdue tasks.",
+    "eveningReview": "Evening review",
+    "eveningReviewHint": "Email at 20:00 summing up what you did today.",
+    "subscribedEmails": "Subscribed emails",
+    "subscribedEmailsHint": "Tips and news about Taskly.",
+    "timeZoneNote": "Times follow your account time zone.",
+    "remindersSection": "Reminders via",
+    "reminderPush": "Push from server",
+    "reminderPushHint": "For your other devices; this phone already reminds you on its own.",
+    "reminderEmail": "Email",
+    "reminderEmailHint": "Send an email when a reminder is due.",
+    "testSection": "Test push",
+    "testHint": "Send a test notification to every registered device of yours.",
+    "testButton": "Send test push",
+    "testSent": "Test push sent to {{devices}} device(s).",
+    "testNoDevice": "No device is registered for push yet (notifications not allowed, or Firebase is not configured in the app)."
+  }
+}

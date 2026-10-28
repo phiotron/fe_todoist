@@ -1,0 +1,14 @@
+{
+  "integrations": {
+    "title": "Integrations",
+    "sectionTitle": "Authorized apps",
+    "description": "Third-party apps you allowed to access your Taskly account.",
+    "empty": "No apps have been authorized yet",
+    "authorizedOn": "Authorized on {{date}}",
+    "revoke": "Revoke",
+    "revokeA11y": "Revoke access for {{name}}",
+    "revokeTitle": "Revoke access for {{name}}?",
+    "revokeMessage": "The app will no longer be able to access your account until you authorize it again.",
+    "revoked": "Revoked access for {{name}}"
+  }
+}

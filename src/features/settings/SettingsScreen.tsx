@@ -58,6 +58,13 @@ export function SettingsScreen() {
       <SettingsLinkRow testID="settings-row-reminders" icon="bell" label={t('reminders.settings.title')} href="/settings/reminders" />
       <SettingsLinkRow testID="settings-row-calendar" icon="link" label={t('calendar.title')} href="/settings/calendar" />
       <SettingsLinkRow
+        testID="settings-row-notifications"
+        icon="mail"
+        label={t('notificationPrefs.title')}
+        href="/settings/notifications"
+      />
+      <SettingsLinkRow testID="settings-row-integrations" icon="link" label={t('integrations.title')} href="/settings/integrations" />
+      <SettingsLinkRow
         testID="settings-row-theme"
         icon="droplet"
         label={t('settings.pages.theme')}

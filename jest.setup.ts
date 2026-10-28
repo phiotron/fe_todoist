@@ -178,5 +178,9 @@ jest.mock('expo-notifications', () => {
     getLastNotificationResponse: jest.fn(() => null),
     clearLastNotificationResponse: jest.fn(),
     addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+    // M13c: FCM device token (push from the server). Rejects like a build without Firebase unless a test overrides it.
+    getDevicePushTokenAsync: jest.fn(async () => {
+      throw new Error('Firebase is not configured in tests');
+    }),
   };
 });

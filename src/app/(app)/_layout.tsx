@@ -4,6 +4,7 @@ import { OfflineBanner } from '../../components/OfflineBanner';
 import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
+import { PushTokenHost } from '../../features/push/PushTokenHost';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
 import { SyncHost } from '../../features/sync/SyncHost';
 import { SyncStatusPill } from '../../features/sync/SyncStatusPill';
@@ -36,6 +37,8 @@ export default function SignedInLayout() {
           {/* M9: offline queue + sync engine (renders nothing) and the "syncing" pill. */}
           <SyncHost />
           <SyncStatusPill />
+          {/* M13c: registers this device's push token with the server; renders nothing. */}
+          <PushTokenHost />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />

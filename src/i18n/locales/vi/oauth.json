@@ -1,0 +1,22 @@
+{
+  "oauth": {
+    "title": "Cấp quyền ứng dụng",
+    "heading": "{{app}} muốn truy cập tài khoản Taskly của bạn",
+    "scopesTitle": "Ứng dụng sẽ được phép:",
+    "redirectNote": "Sau khi chọn, bạn sẽ được chuyển về {{uri}}",
+    "allow": "Cho phép",
+    "deny": "Từ chối",
+    "invalidTitle": "Yêu cầu không hợp lệ",
+    "invalidLink": "Liên kết cấp quyền thiếu thông tin hoặc sai định dạng.",
+    "invalidServer": "Ứng dụng, địa chỉ quay lại hoặc quyền được yêu cầu không hợp lệ.",
+    "goHome": "Về trang chủ",
+    "openFailed": "Không mở được ứng dụng đã yêu cầu quyền.",
+    "scopes": {
+      "taskAdd": "Thêm việc mới",
+      "dataRead": "Xem việc, dự án, nhãn và bộ lọc",
+      "dataReadWrite": "Xem và sửa việc, dự án, nhãn và bộ lọc",
+      "dataDelete": "Xem, sửa và xoá dữ liệu của bạn",
+      "projectDelete": "Xoá dự án"
+    }
+  }
+}

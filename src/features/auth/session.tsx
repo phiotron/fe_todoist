@@ -17,6 +17,7 @@ import {
   twoFactorTokenOf,
 } from '../two-factor/twoFactorToken';
 import { cancelAllReminders } from '../reminders/platform';
+import { unregisterPushTokenOnSignOut } from '../push/registerPushToken';
 import { linkTokenOf } from './googleErrors';
 
 export type SessionStatus = 'loading' | 'signedOut' | 'signedIn';
@@ -395,6 +396,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     // M9: signing out loses changes that are not on the server yet — the user must agree first.
     if (!(await confirmDiscardUnsynced())) return;
+    // M13c F6: sent first (still with this session), never awaited: signing out never waits for it.
+    void unregisterPushTokenOnSignOut();
     try {
       const refreshToken = await tokenStore.getRefreshToken();
       if (refreshToken) await authApi.logout();

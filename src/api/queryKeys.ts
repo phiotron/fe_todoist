@@ -42,6 +42,16 @@ export const queryKeys = {
     all: ['viewOptions'] as const,
     list: () => ['viewOptions', 'list'] as const,
   },
+  /** M13c: Settings › Notifications (GET/PATCH me/notification-prefs). */
+  notificationPrefs: {
+    all: ['notificationPrefs'] as const,
+  },
+  /** M13c: Settings › Integrations (GET me/authorized-apps). */
+  authorizedApps: {
+    all: ['authorizedApps'] as const,
+  },
+  /** M13c: OAuth consent screen, per request of the third-party app. */
+  oauthPreview: (params: { clientId: string; redirectUri: string; scope: string }) => ['oauthPreview', params] as const,
 };
 
 /** Query roots touched by writes (M2 added 'labels', 'filters', 'search', 'viewOptions'). */
