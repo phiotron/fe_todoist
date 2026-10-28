@@ -18,6 +18,8 @@ import { LIMITS, checkOptionalText, checkRequiredText } from '../../lib/limits';
 import { useSingleFlight } from '../../lib/useSingleFlight';
 import { gutter, radius, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import type { ProjectSharingFields } from '../../api/sharing';
+import { sharingOf } from '../sharing/sharingRules';
 import { asProjectColor, projectColorHex, projectDisplayName } from './appearance';
 import { projectColorName } from './colorNames';
 import { ProjectIcon } from './ProjectIcon';
@@ -29,10 +31,12 @@ interface ProjectFormScreenProps {
   projectId?: string;
   /** Preselected parent when creating (e.g. "add sub-project"). */
   parentId?: string;
+  /** M8a: create the project in this team workspace (no parent, optional Restricted access). */
+  workspaceId?: string;
 }
 
 /** M-NewProject (without workspace / access / layout, M8 / M7): name, description, 20 colours, parent, favorite. */
-export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProps) {
+export function ProjectFormScreen({ projectId, parentId, workspaceId }: ProjectFormScreenProps) {
   const styles = useThemedStyles(createProjectFormScreenStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
@@ -45,6 +49,7 @@ export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProp
   const [color, setColor] = useState<ProjectColor>(DEFAULT_PROJECT_COLOR);
   const [parent, setParent] = useState<string | null>(parentId ?? null);
   const [favorite, setFavorite] = useState(false);
+  const [restricted, setRestricted] = useState(false);
   const [nameError, setNameError] = useState<string>();
   const [formError, setFormError] = useState<string>();
   const [parentOpen, setParentOpen] = useState(false);
@@ -62,9 +67,14 @@ export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProp
     setColor(asProjectColor(existing.color));
     setParent(existing.parentId);
     setFavorite(existing.isFavorite);
+    setRestricted((existing as ProjectSharingFields).access === 'RESTRICTED');
     // Keyed on the id: a background refetch of the same project must not wipe what the user is typing.
   }, [existing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // M8a: a team project has no parent; its access (Team | Restricted) is set here by whoever manages it.
+  const existingSharing = existing ? sharingOf(existing) : undefined;
+  const teamMode = workspaceId !== undefined || existingSharing?.isTeamProject === true;
+  const canSetAccess = workspaceId !== undefined || existingSharing?.canManage === true;
   const choices = parentChoices(all, projectId);
   const parentProject = all.find((project) => project.id === parent);
 
@@ -81,15 +91,17 @@ export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProp
     await run(async () => {
       try {
         if (editing && existing) {
-          await update.mutateAsync({ projectId: existing.id, body: { name: name.trim(), color, description } });
-          if (parent !== existing.parentId) await move.mutateAsync({ projectId: existing.id, body: { parentId: parent } });
+          const access = teamMode && canSetAccess ? { access: restricted ? 'RESTRICTED' : 'TEAM' } : {};
+          await update.mutateAsync({ projectId: existing.id, body: { name: name.trim(), color, description, ...access } });
+          if (!teamMode && parent !== existing.parentId) await move.mutateAsync({ projectId: existing.id, body: { parentId: parent } });
           if (favorite !== existing.isFavorite) await setProjectFavorite.mutateAsync({ projectId: existing.id, favorite });
         } else {
           const body = {
             name: name.trim(),
             color,
             ...(description.trim() ? { description: description.trim() } : {}),
-            ...(parent ? { parentId: parent } : {}),
+            ...(parent && !teamMode ? { parentId: parent } : {}),
+            ...(workspaceId ? { workspaceId, access: restricted ? 'RESTRICTED' : 'TEAM' } : {}),
           };
           // A retry after a later failure replays the same Idempotency-Key: the project is not created twice.
           const created = await create.mutateAsync({ body, idempotencyKey: keys.keyFor(body) });
@@ -164,20 +176,30 @@ export function ProjectFormScreen({ projectId, parentId }: ProjectFormScreenProp
             );
           })}
         </View>
-        <Text style={styles.label}>{t('projects.form.parent')}</Text>
-        <Pressable
-          testID="project-form-parent"
-          accessibilityRole="button"
-          accessibilityLabel={t('projects.form.parent')}
-          onPress={() => setParentOpen(true)}
-          style={styles.parent}
-        >
-          {parentProject ? <ProjectIcon project={parentProject} /> : <Feather name="corner-left-up" size={size.icon} color={palette.mute} />}
-          <Text style={[type.body, styles.parentText]} numberOfLines={1}>
-            {parentProject ? projectDisplayName(parentProject) : t('projects.form.noParent')}
-          </Text>
-          <Feather name="chevron-down" size={size.iconSmall} color={palette.ink2} />
-        </Pressable>
+        {teamMode ? null : (
+          <>
+            <Text style={styles.label}>{t('projects.form.parent')}</Text>
+            <Pressable
+              testID="project-form-parent"
+              accessibilityRole="button"
+              accessibilityLabel={t('projects.form.parent')}
+              onPress={() => setParentOpen(true)}
+              style={styles.parent}
+            >
+              {parentProject ? <ProjectIcon project={parentProject} /> : <Feather name="corner-left-up" size={size.icon} color={palette.mute} />}
+              <Text style={[type.body, styles.parentText]} numberOfLines={1}>
+                {parentProject ? projectDisplayName(parentProject) : t('projects.form.noParent')}
+              </Text>
+              <Feather name="chevron-down" size={size.iconSmall} color={palette.ink2} />
+            </Pressable>
+          </>
+        )}
+        {teamMode && canSetAccess ? (
+          <View style={styles.favorite}>
+            <Text style={[type.body, styles.parentText]}>{t('team.project.restricted')}</Text>
+            <Toggle value={restricted} onChange={setRestricted} label={t('team.project.restricted')} testID="project-form-restricted" />
+          </View>
+        ) : null}
         <View style={styles.favorite}>
           <Text style={[type.body, styles.parentText]}>{t('projects.form.favorite')}</Text>
           <Toggle value={favorite} onChange={setFavorite} label={t('projects.form.favorite')} testID="project-form-favorite" />

@@ -1,0 +1,81 @@
+{
+  "sharing": {
+    "title": "Chia sẻ",
+    "subtitle": "{{name}}",
+    "loadFailed": "Không tải được danh sách người trong dự án",
+    "copyLink": "Sao chép liên kết",
+    "linkCopied": "Đã sao chép liên kết",
+    "linkHint": "Ai có liên kết và đăng nhập Taskly đều tham gia được (tối đa {{max}} người).",
+    "resetLink": "Đặt lại liên kết",
+    "resetLinkHint": "Liên kết cũ sẽ không dùng được nữa",
+    "disableLink": "Tắt liên kết",
+    "linkOff": "Liên kết đang tắt",
+    "access": "Quyền truy cập",
+    "accessEveryone": "Mọi người trong {{name}} đều chỉnh sửa được",
+    "inProject": "Trong dự án",
+    "owner": "Chủ dự án",
+    "you": "Bạn",
+    "pending": "Đang chờ tham gia",
+    "pendingMeta": "Đã gửi lời mời",
+    "inviteTitle": "Mời qua tên hoặc email",
+    "inviteLabel": "Email",
+    "invitePlaceholder": "ten@vi-du.com",
+    "inviteSubmit": "Mời",
+    "invited": "Đã gửi lời mời tới {{email}}",
+    "invitedAdded": "Đã thêm {{email}} vào dự án",
+    "emailInvalid": "Hãy nhập email hợp lệ",
+    "seatsLeft": "Còn mời thêm được {{n}} người",
+    "seatsFull": "Dự án đã đủ người",
+    "removeMember": "Xoá {{name}}",
+    "removeMemberTitle": "Xoá {{name}} khỏi dự án?",
+    "removeMemberMessage": "Họ sẽ không còn thấy dự án này và các công việc trong đó.",
+    "removeConfirm": "Xoá",
+    "revoke": "Thu hồi lời mời gửi tới {{email}}",
+    "menu": {
+      "share": "Chia sẻ",
+      "leave": "Rời dự án",
+      "join": "Tham gia dự án",
+      "moveToTeam": "Chuyển vào nhóm"
+    },
+    "leave": {
+      "title": "Rời dự án \"{{name}}\"?",
+      "message": "Bạn sẽ không còn thấy dự án này và các công việc trong đó.",
+      "confirm": "Rời dự án"
+    },
+    "preview": {
+      "banner": "Bạn đang xem trước dự án của nhóm. Hãy tham gia để chỉnh sửa.",
+      "join": "Tham gia dự án"
+    },
+    "join": {
+      "title": "Tham gia",
+      "hint": "Dán liên kết hoặc mã bạn được gửi.",
+      "codeLabel": "Liên kết hoặc mã",
+      "codePlaceholder": "taskly://join/…",
+      "submit": "Tham gia",
+      "invalid": "Đây không phải liên kết hoặc mã mời",
+      "joinedProject": "Bạn đã tham gia dự án",
+      "joinedTeam": "Bạn đã tham gia nhóm"
+    },
+    "invitations": {
+      "title": "Lời mời",
+      "empty": "Hiện chưa có lời mời nào",
+      "emptyHint": "Khi ai đó mời bạn vào dự án hoặc nhóm, lời mời sẽ hiện ở đây.",
+      "from": "{{name}} mời bạn",
+      "kindProject": "Dự án",
+      "kindWorkspace": "Nhóm",
+      "accept": "Chấp nhận",
+      "decline": "Từ chối",
+      "accepted": "Đã chấp nhận lời mời",
+      "declined": "Đã từ chối lời mời"
+    },
+    "moveToTeam": {
+      "title": "Chuyển vào nhóm",
+      "message": "Dự án sẽ thuộc về nhóm và không chuyển ra được nữa. Người đang cộng tác trở thành khách của nhóm.",
+      "team": "Nhóm",
+      "accessTeam": "Cả nhóm thấy và tham gia được",
+      "accessRestricted": "Chỉ người được mời",
+      "confirm": "Chuyển",
+      "moved": "Đã chuyển dự án vào nhóm"
+    }
+  }
+}

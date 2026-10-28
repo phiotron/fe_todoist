@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import type { IconName } from '../../components/IconButton';
 import i18n from '../../i18n';
 import { BrowseLabels } from './BrowseLabels';
+import { BrowseTeamBlock } from '../team/BrowseTeamBlock';
 import { SettingsBlock } from './SettingsBlock';
 
 export interface BrowseShortcut {
@@ -24,5 +25,5 @@ export const BROWSE_SHORTCUTS: readonly BrowseShortcut[] = [
   { key: 'completed', title: () => i18n.t('views.completed.title'), icon: 'check-circle', kind: 'push', href: '/completed', chevron: true },
 ];
 
-/** Blocks rendered under My Projects: Labels (M2), Settings (M3); M8 adds team projects. */
-export const BROWSE_EXTRA_BLOCKS: readonly ComponentType[] = [BrowseLabels, SettingsBlock];
+/** Blocks rendered under My Projects: Labels (M2), Teams (M8a), Settings (M3). */
+export const BROWSE_EXTRA_BLOCKS: readonly ComponentType[] = [BrowseLabels, BrowseTeamBlock, SettingsBlock];

@@ -1,0 +1,81 @@
+{
+  "sharing": {
+    "title": "Share",
+    "subtitle": "{{name}}",
+    "loadFailed": "Could not load the people of this project",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "linkHint": "Anyone with the link who signs in to Taskly can join (up to {{max}} people).",
+    "resetLink": "Reset link",
+    "resetLinkHint": "The old link stops working",
+    "disableLink": "Turn off link",
+    "linkOff": "The link is off",
+    "access": "Access",
+    "accessEveryone": "Everyone in {{name}} can edit",
+    "inProject": "In this project",
+    "owner": "Owner",
+    "you": "You",
+    "pending": "Waiting to join",
+    "pendingMeta": "Invitation sent",
+    "inviteTitle": "Invite via name or email",
+    "inviteLabel": "Email",
+    "invitePlaceholder": "name@example.com",
+    "inviteSubmit": "Invite",
+    "invited": "Invitation sent to {{email}}",
+    "invitedAdded": "{{email}} was added to the project",
+    "emailInvalid": "Enter a valid email",
+    "seatsLeft": "{{n}} more people can join",
+    "seatsFull": "This project is full",
+    "removeMember": "Remove {{name}}",
+    "removeMemberTitle": "Remove {{name}} from the project?",
+    "removeMemberMessage": "They will no longer see this project or its tasks.",
+    "removeConfirm": "Remove",
+    "revoke": "Withdraw invitation to {{email}}",
+    "menu": {
+      "share": "Share",
+      "leave": "Leave project",
+      "join": "Join project",
+      "moveToTeam": "Move to a team"
+    },
+    "leave": {
+      "title": "Leave \"{{name}}\"?",
+      "message": "You will no longer see this project or the tasks in it.",
+      "confirm": "Leave project"
+    },
+    "preview": {
+      "banner": "You are previewing a team project. Join it to make changes.",
+      "join": "Join project"
+    },
+    "join": {
+      "title": "Join",
+      "hint": "Paste the link or code you were sent.",
+      "codeLabel": "Link or code",
+      "codePlaceholder": "taskly://join/…",
+      "submit": "Join",
+      "invalid": "That does not look like an invitation link or code",
+      "joinedProject": "You joined the project",
+      "joinedTeam": "You joined the team"
+    },
+    "invitations": {
+      "title": "Invitations",
+      "empty": "No invitations right now",
+      "emptyHint": "When someone invites you to a project or a team, it shows up here.",
+      "from": "{{name}} invited you",
+      "kindProject": "Project",
+      "kindWorkspace": "Team",
+      "accept": "Accept",
+      "decline": "Decline",
+      "accepted": "Invitation accepted",
+      "declined": "Invitation declined"
+    },
+    "moveToTeam": {
+      "title": "Move to a team",
+      "message": "The project becomes part of the team and cannot be moved back out. Current collaborators become guests of the team.",
+      "team": "Team",
+      "accessTeam": "The whole team can see and join it",
+      "accessRestricted": "Only invited people",
+      "confirm": "Move",
+      "moved": "Project moved to the team"
+    }
+  }
+}

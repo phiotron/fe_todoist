@@ -27,6 +27,8 @@ export interface SettingsResponse {
   remindersEnabled?: boolean;
   /** Minutes before a timed task's due time; null = automatic reminders off. */
   autoReminderMinutes?: number | null;
+  /** M8a: invitations by email addressed to this account are accepted at once (default false). */
+  autoAcceptInvites?: boolean;
 }
 
 /**

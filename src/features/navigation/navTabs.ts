@@ -6,7 +6,7 @@ import { useSettingsContext } from '../settings/SettingsProvider';
 import { usePinTargets } from '../settings/usePinTargets';
 import { pinKinds } from './tabBarItems';
 
-export type NavTabKey = 'INBOX' | 'TODAY' | 'UPCOMING' | 'SEARCH' | 'FILTERS_LABELS' | 'BROWSE';
+export type NavTabKey = 'INBOX' | 'TODAY' | 'UPCOMING' | 'SEARCH' | 'FILTERS_LABELS' | 'TEAM' | 'BROWSE';
 
 export interface TabDef {
   key: NavTabKey;
@@ -26,6 +26,8 @@ export const TAB_DEFS: Record<NavTabKey, TabDef> = {
   UPCOMING: { key: 'UPCOMING', route: 'upcoming', title: () => i18n.t('views.upcoming.title'), icon: 'grid' },
   SEARCH: { key: 'SEARCH', route: 'search', title: () => i18n.t('search.title'), icon: 'search' },
   FILTERS_LABELS: { key: 'FILTERS_LABELS', route: 'filters-labels', title: () => i18n.t('filtersLabels.title'), icon: 'filter' },
+  /** M8a: not stored in navTabs (the server does not accept it): the bar adds it before Browse while the user has a team. */
+  TEAM: { key: 'TEAM', route: 'team', title: () => i18n.t('team.title'), icon: 'users' },
   BROWSE: { key: 'BROWSE', route: 'browse', title: () => i18n.t('views.browse.title'), icon: 'menu' },
 };
 

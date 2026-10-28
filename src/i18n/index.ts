@@ -21,8 +21,10 @@ import enSchedule from './locales/en/schedule.json';
 import enSearch from './locales/en/search.json';
 import enSelection from './locales/en/selection.json';
 import enSettings from './locales/en/settings.json';
+import enSharing from './locales/en/sharing.json';
 import enTaskDetail from './locales/en/taskDetail.json';
 import enTaskList from './locales/en/taskList.json';
+import enTeam from './locales/en/team.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
 import viCore from './locales/vi.json';
@@ -45,8 +47,10 @@ import viSearch from './locales/vi/search.json';
 import viSchedule from './locales/vi/schedule.json';
 import viSelection from './locales/vi/selection.json';
 import viSettings from './locales/vi/settings.json';
+import viSharing from './locales/vi/sharing.json';
 import viTaskDetail from './locales/vi/taskDetail.json';
 import viTaskList from './locales/vi/taskList.json';
+import viTeam from './locales/vi/team.json';
 import viTwoFactor from './locales/vi/twoFactor.json';
 import viViews from './locales/vi/views.json';
 
@@ -76,8 +80,10 @@ export const viTranslation = {
   ...viSchedule,
   ...viSelection,
   ...viSettings,
+  ...viSharing,
   ...viTaskDetail,
   ...viTaskList,
+  ...viTeam,
   ...viTwoFactor,
   ...viViews,
 };
@@ -104,8 +110,10 @@ export const enTranslation = {
   ...enSearch,
   ...enSelection,
   ...enSettings,
+  ...enSharing,
   ...enTaskDetail,
   ...enTaskList,
+  ...enTeam,
   ...enTwoFactor,
   ...enViews,
 };

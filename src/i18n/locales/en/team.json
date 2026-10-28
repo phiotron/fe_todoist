@@ -1,0 +1,76 @@
+{
+  "team": {
+    "title": "Team",
+    "loadFailed": "Could not load the team",
+    "tabs": {
+      "active": "Active",
+      "joined": "Joined",
+      "notJoined": "Projects I haven't joined"
+    },
+    "empty": {
+      "active": "No projects in this team yet",
+      "joined": "You have not joined any team project",
+      "notJoined": "You have joined every team project"
+    },
+    "people": "People",
+    "newProject": "New team project",
+    "newFolder": "New folder",
+    "folderName": "Folder name",
+    "folderNameRequired": "Enter a folder name",
+    "folderCreate": "Add",
+    "deleteFolder": "Delete folder {{name}}",
+    "deleteFolderTitle": "Delete the folder \"{{name}}\"?",
+    "deleteFolderMessage": "Its projects are kept and move out of the folder.",
+    "noFolder": "No folder",
+    "join": "Join",
+    "members": "{{n}} people",
+    "tasks": "{{n}} tasks",
+    "restricted": "Restricted",
+    "project": {
+      "restricted": "Restricted (invited people only)"
+    },
+    "create": {
+      "entry": "Create a team",
+      "title": "Create a team",
+      "nameLabel": "Team name",
+      "nameRequired": "Enter a team name",
+      "submit": "Create"
+    },
+    "roles": {
+      "ADMIN": "Admin",
+      "MEMBER": "Member",
+      "GUEST": "Guest"
+    },
+    "peopleScreen": {
+      "title": "People",
+      "you": "You",
+      "changeRole": "Change role of {{name}}",
+      "remove": "Remove {{name}}",
+      "removeTitle": "Remove {{name}} from the team?",
+      "removeMessage": "They will lose access to every project of the team.",
+      "removeConfirm": "Remove",
+      "leave": "Leave team",
+      "leaveTitle": "Leave \"{{name}}\"?",
+      "leaveMessage": "You will lose access to every project of the team.",
+      "leaveConfirm": "Leave team",
+      "pending": "Waiting to join",
+      "inviteTitle": "Invite to the team",
+      "invitePlaceholder": "name@example.com",
+      "inviteSubmit": "Invite",
+      "invited": "Invitation sent to {{email}}",
+      "emailInvalid": "Enter a valid email",
+      "roleLabel": "Role",
+      "copyLink": "Copy team link",
+      "linkCopied": "Link copied",
+      "resetLink": "Reset link",
+      "disableLink": "Turn off link",
+      "linkHint": "People who join with the link become members.",
+      "revoke": "Withdraw invitation to {{email}}"
+    },
+    "browse": {
+      "title": "Teams",
+      "invitations": "Invitations",
+      "join": "Join with a link or code"
+    }
+  }
+}

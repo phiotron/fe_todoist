@@ -63,6 +63,7 @@
       "labels": "Bạn chỉ có thể tạo tối đa {{max}} label",
       "filters": "Bạn chỉ có thể tạo tối đa {{max}} filter",
       "reminders": "Đã đạt tối đa {{max}} nhắc nhở",
+      "projectMembers": "Dự án này đã đủ tối đa {{max}} người (tính cả lời mời đang chờ)",
       "other": "Đã đạt giới hạn tối đa ({{max}})"
     }
   }
