@@ -34,7 +34,55 @@
       "./plugins/withAndroidBuildFixes",
       "expo-font",
       "expo-asset",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "Taskly uses your location to remind you when you arrive at or leave a saved place.",
+          "locationWhenInUsePermission": "Taskly uses your location to save the place you are at."
+        }
+      ],
+      "./plugins/withTasklyAndroid",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "AddTask",
+              "label": "Taskly: Add task",
+              "description": "Add a task in one tap.",
+              "minWidth": "110dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal"
+            },
+            {
+              "name": "TaskList",
+              "label": "Taskly: Today",
+              "description": "Tasks due today.",
+              "minWidth": "180dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 3,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Productivity",
+              "label": "Taskly: Productivity",
+              "description": "Your daily goal at a glance.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
     ],
     "scheme": "taskly"
   }

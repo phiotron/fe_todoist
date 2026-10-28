@@ -7,6 +7,7 @@ import { describeError, isNotFound } from '../../api/describeError';
 import type { Project } from '../../api/models';
 import { invalidateData, queryKeys } from '../../api/queryKeys';
 import { ActionMenu, type ActionMenuItem } from '../../components/ActionMenu';
+import { useCopyLink } from '../links/useCopyLink';
 import { AppButton } from '../../components/AppButton';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { ErrorText } from '../../components/ErrorText';
@@ -79,6 +80,7 @@ function ProjectBody({
   const unarchive = useUnarchiveProject();
   const remove = useDeleteProject();
   const reorderProject = useReorderProject();
+  const copyLink = useCopyLink();
   const [menuOpen, setMenuOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -145,6 +147,13 @@ function ProjectBody({
       onPress: () => setEmailOpen(true),
     });
   }
+  // M12: Copy link of a project, or of the Inbox (`taskly://inbox`).
+  items.push({
+    key: 'copy-link',
+    label: t('android.link.copy'),
+    icon: 'link',
+    onPress: () => void copyLink(project.isInbox ? { kind: 'inbox' } : { kind: 'project', id: project.id }),
+  });
   items.push({ key: 'display', label: t('projectScreen.menuDisplay'), icon: 'sliders', onPress: () => setDisplayOpen(true) });
   // M8b: comments of the project (also of an archived one: reading is allowed, the composer hides itself).
   items.push({ key: 'comments', label: t('comments.projectMenu'), icon: 'message-circle', onPress: () => router.push(`/project-comments/${project.id}`) });

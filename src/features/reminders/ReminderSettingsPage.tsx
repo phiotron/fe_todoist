@@ -20,6 +20,21 @@ export function ReminderSettingsPage() {
     },
     [update, snackbar],
   );
-  const settings = data ? { remindersEnabled: data.remindersEnabled, autoReminderMinutes: data.autoReminderMinutes } : null;
-  return <ReminderSettingsScreen settings={settings} onSave={onSave} onBack={() => router.back()} />;
+  const settings = data
+    ? {
+        remindersEnabled: data.remindersEnabled,
+        autoReminderMinutes: data.autoReminderMinutes,
+        snoozeMinutes: data.snoozeMinutes,
+        pinReminders: data.pinReminders,
+        urgentDeviceId: data.urgentDeviceId,
+      }
+    : null;
+  return (
+    <ReminderSettingsScreen
+      settings={settings}
+      onSave={onSave}
+      onBack={() => router.back()}
+      onOpenPlaces={() => router.push('/settings/places')}
+    />
+  );
 }

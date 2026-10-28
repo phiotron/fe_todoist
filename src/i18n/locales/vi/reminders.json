@@ -4,7 +4,7 @@
     "notification": {
       "dueSoonBody": "Sắp đến hạn",
       "reminderBody": "Nhắc việc",
-      "snoozedBody": "Đã hoãn 15 phút",
+      "snoozedBody": "Đã hoãn {{count}} phút",
       "snoozeAction": "Hoãn",
       "completeAction": "Hoàn thành"
     },
@@ -20,7 +20,13 @@
       "relativeNeedsTime": "Task cần có giờ mới đặt được nhắc trước hạn",
       "pastTime": "Thời điểm nhắc phải ở tương lai",
       "remove": "Xoá nhắc nhở {{label}}",
-      "close": "Đóng"
+      "close": "Đóng",
+      "urgentToggle": "Khẩn cấp (reo như báo thức)",
+      "urgentHint": "Chỉ có tác dụng trên thiết bị đã chọn trong Cài đặt › Nhắc nhở.",
+      "locationTitle": "Khi tới hoặc rời một địa điểm",
+      "locationNone": "Chưa có địa điểm nào. Hãy thêm trong Cài đặt › Nhắc nhở › Địa điểm.",
+      "locationEnter": "Khi tới {{place}}",
+      "locationLeave": "Khi rời {{place}}"
     },
     "offset": {
       "atTime": "Đúng giờ hạn",
@@ -30,6 +36,34 @@
     },
     "quickAdd": {
       "partialFailure": "Đã thêm task nhưng không thêm được {{count}} nhắc nhở"
+    },
+    "urgent": {
+      "channelName": "Nhắc khẩn cấp",
+      "label": "{{label}} (khẩn cấp)",
+      "title": "Nhắc khẩn cấp",
+      "hint": "Nhắc khẩn cấp reo toàn màn hình như báo thức, kể cả khi bật Không làm phiền, cho tới khi bạn dừng. Chỉ một thiết bị reo.",
+      "none": "Chưa chọn thiết bị",
+      "thisDevice": "Thiết bị này",
+      "otherDevice": "Thiết bị khác",
+      "useThisDevice": "Dùng thiết bị này",
+      "clear": "Không reo trên thiết bị nào",
+      "fullScreenHint": "Android 14 trở lên: hãy cho phép thông báo toàn màn hình cho Taskly, nếu không báo thức chỉ hiện như thông báo thường.",
+      "fullScreenOpen": "Mở cài đặt thông báo"
+    },
+    "alarm": {
+      "title": "Nhắc khẩn cấp",
+      "stop": "Dừng",
+      "snooze": "Hoãn {{count}} phút",
+      "complete": "Hoàn thành",
+      "missing": "Task này không còn nữa"
+    },
+    "location": {
+      "unknownPlace": "một địa điểm",
+      "enterLabel": "Khi tới {{place}}",
+      "leaveLabel": "Khi rời {{place}}",
+      "notificationEnter": "Bạn vừa tới {{place}}",
+      "notificationLeave": "Bạn vừa rời {{place}}",
+      "channelName": "Nhắc theo vị trí"
     },
     "settings": {
       "title": "Nhắc nhở",
@@ -41,7 +75,40 @@
       "allowNotifications": "Cho phép thông báo",
       "openSystemSettings": "Mở cài đặt hệ thống",
       "exactAlarmHint": "Android 14 trở lên: hãy bật “Báo thức & lời nhắc” cho Taskly để nhắc đúng giờ. Nếu không bật, nhắc có thể trễ vài phút.",
-      "exactAlarmOpen": "Mở cài đặt báo thức"
+      "exactAlarmOpen": "Mở cài đặt báo thức",
+      "snoozeTitle": "Khi hoãn",
+      "snoozeHint": "Nút Hoãn trên thông báo sẽ nhắc lại sau bao lâu.",
+      "snoozeOption": "{{count}} phút",
+      "snoozeHours": "{{count}} giờ",
+      "pinTitle": "Ghim thông báo nhắc",
+      "pinHint": "Thông báo nhắc nằm lại trên thanh thông báo cho tới khi bạn chạm vào.",
+      "placesRow": "Địa điểm"
+    },
+    "places": {
+      "title": "Địa điểm",
+      "intro": "Các địa điểm đã lưu cho nhắc nhở khi bạn tới hoặc rời nơi đó.",
+      "empty": "Chưa có địa điểm nào",
+      "add": "Thêm địa điểm",
+      "name": "Tên địa điểm",
+      "latitude": "Vĩ độ",
+      "longitude": "Kinh độ",
+      "radius": "Bán kính (100–5000 m)",
+      "useCurrent": "Dùng vị trí hiện tại",
+      "locating": "Đang xác định vị trí…",
+      "locationDenied": "Taskly chưa được phép đọc vị trí của bạn.",
+      "save": "Lưu địa điểm",
+      "cancel": "Huỷ",
+      "remove": "Xoá {{name}}",
+      "removeConfirmTitle": "Xoá địa điểm này?",
+      "removeConfirmMessage": "Các nhắc nhở dùng “{{name}}” cũng bị xoá.",
+      "removeConfirm": "Xoá",
+      "invalidName": "Hãy nhập tên",
+      "invalidLatitude": "Vĩ độ phải từ -90 đến 90",
+      "invalidLongitude": "Kinh độ phải từ -180 đến 180",
+      "invalidRadius": "Bán kính phải từ 100 đến 5000 mét",
+      "radiusValue": "{{count}} m",
+      "backgroundHint": "Để được nhắc khi đã đóng app, hãy cho phép vị trí “mọi lúc” trong cài đặt hệ thống.",
+      "openSystemSettings": "Mở cài đặt hệ thống"
     }
   }
 }

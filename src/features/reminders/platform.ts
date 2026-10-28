@@ -26,8 +26,11 @@ export interface ReminderTap {
  */
 export interface ReminderPlatform {
   scheduler: ReminderScheduler;
-  /** Android 13+ shows the permission prompt only once a channel exists, so call this before asking. */
-  ensureChannel(name: string): Promise<void>;
+  /**
+   * Android 13+ shows the permission prompt only once a channel exists, so call this before asking. M12: `urgentName`
+   * also creates the urgent-reminder channel.
+   */
+  ensureChannel(name: string, urgentName?: string): Promise<void>;
   configureActions(labels: ReminderActionLabels): Promise<void>;
   /** Reminders also show as a banner while the app is in the foreground. Call once at startup. */
   configurePresentation(): void;

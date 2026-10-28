@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { SyncHomeViewSection } from '../navMenu/SyncHomeViewSection';
 import { ResetSubtasksSection } from '../recurrence/ResetSubtasksSection';
+import { CompletionToneSection } from './CompletionToneSection';
 import { LanguageSection } from './LanguageSection';
 import { SettingsPage } from './SettingsPage';
 import { SmartDateSection } from './SmartDateSection';
@@ -20,6 +21,7 @@ export function GeneralSettingsScreen() {
       <SmartDateSection />
       <ResetSubtasksSection />
       <SwipeSection />
+      <CompletionToneSection />
     </SettingsPage>
   );
 }

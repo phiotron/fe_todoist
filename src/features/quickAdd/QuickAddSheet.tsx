@@ -89,8 +89,9 @@ export function QuickAddSheet({ params }: { params: QuickAddParams }) {
   const prefs = readQuickAddPrefs(settingsData as Record<string, unknown> | undefined);
   const dateSettings = useDateSettings();
   const { all: allProjects, inbox, byId } = useProjects();
-  const [content, setContent] = useState('');
-  const [description, setDescription] = useState('');
+  // M12: share-to-app / widgets open the sheet with the shared text already in (`content`, `description` params).
+  const [content, setContent] = useState(params.content ?? '');
+  const [description, setDescription] = useState(params.description ?? '');
   const [priority, setPriority] = useState(DEFAULT_PRIORITY);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<string | null>(null);

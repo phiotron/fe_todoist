@@ -4,7 +4,7 @@
     "notification": {
       "dueSoonBody": "Due soon",
       "reminderBody": "Reminder",
-      "snoozedBody": "Snoozed for 15 minutes",
+      "snoozedBody": "Snoozed for {{count}} minutes",
       "snoozeAction": "Snooze",
       "completeAction": "Complete"
     },
@@ -20,7 +20,13 @@
       "relativeNeedsTime": "The task needs a time to set a reminder before it is due",
       "pastTime": "The reminder time must be in the future",
       "remove": "Remove reminder {{label}}",
-      "close": "Close"
+      "close": "Close",
+      "urgentToggle": "Urgent (rings like an alarm)",
+      "urgentHint": "Only works on the device chosen in Settings › Reminders.",
+      "locationTitle": "When arriving at or leaving a place",
+      "locationNone": "No saved places yet. Add one in Settings › Reminders › Places.",
+      "locationEnter": "Arriving at {{place}}",
+      "locationLeave": "Leaving {{place}}"
     },
     "offset": {
       "atTime": "At the due time",
@@ -30,6 +36,34 @@
     },
     "quickAdd": {
       "partialFailure": "The task was added but {{count}} reminders could not be added"
+    },
+    "urgent": {
+      "channelName": "Urgent reminders",
+      "label": "{{label}} (urgent)",
+      "title": "Urgent reminders",
+      "hint": "An urgent reminder rings full screen like an alarm, even in Do Not Disturb, until you stop it. Only one device rings.",
+      "none": "No device chosen",
+      "thisDevice": "This device",
+      "otherDevice": "Another device",
+      "useThisDevice": "Use this device",
+      "clear": "Do not ring on any device",
+      "fullScreenHint": "Android 14 and later: allow full-screen notifications for Taskly, or the alarm only shows as a normal notification.",
+      "fullScreenOpen": "Open notification settings"
+    },
+    "alarm": {
+      "title": "Urgent reminder",
+      "stop": "Stop",
+      "snooze": "Snooze {{count}} minutes",
+      "complete": "Complete",
+      "missing": "This task no longer exists"
+    },
+    "location": {
+      "unknownPlace": "a place",
+      "enterLabel": "Arriving at {{place}}",
+      "leaveLabel": "Leaving {{place}}",
+      "notificationEnter": "You arrived at {{place}}",
+      "notificationLeave": "You left {{place}}",
+      "channelName": "Location reminders"
     },
     "settings": {
       "title": "Reminders",
@@ -41,7 +75,40 @@
       "allowNotifications": "Allow notifications",
       "openSystemSettings": "Open system settings",
       "exactAlarmHint": "Android 14 and later: turn on “Alarms & reminders” for Taskly to be reminded on time. Otherwise reminders can be a few minutes late.",
-      "exactAlarmOpen": "Open alarm settings"
+      "exactAlarmOpen": "Open alarm settings",
+      "snoozeTitle": "When snoozed",
+      "snoozeHint": "How long the Snooze button on a reminder waits before reminding you again.",
+      "snoozeOption": "{{count}} minutes",
+      "snoozeHours": "{{count}} hours",
+      "pinTitle": "Pin reminders",
+      "pinHint": "Reminder notifications stay in the notification bar until you tap them.",
+      "placesRow": "Places"
+    },
+    "places": {
+      "title": "Places",
+      "intro": "Saved places for reminders that fire when you arrive at or leave them.",
+      "empty": "No places yet",
+      "add": "Add a place",
+      "name": "Place name",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "radius": "Radius (100–5000 m)",
+      "useCurrent": "Use my current location",
+      "locating": "Finding your location…",
+      "locationDenied": "Taskly is not allowed to read your location.",
+      "save": "Save place",
+      "cancel": "Cancel",
+      "remove": "Remove {{name}}",
+      "removeConfirmTitle": "Remove this place?",
+      "removeConfirmMessage": "Reminders that use “{{name}}” are removed too.",
+      "removeConfirm": "Remove",
+      "invalidName": "Enter a name",
+      "invalidLatitude": "Latitude must be between -90 and 90",
+      "invalidLongitude": "Longitude must be between -180 and 180",
+      "invalidRadius": "Radius must be between 100 and 5000 meters",
+      "radiusValue": "{{count}} m",
+      "backgroundHint": "To remind you while the app is closed, allow location “all the time” in system settings.",
+      "openSystemSettings": "Open system settings"
     }
   }
 }

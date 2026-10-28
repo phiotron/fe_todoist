@@ -9,6 +9,9 @@ export interface QuickAddParams {
   parentId?: string;
   /** yyyy-MM-dd preset for the date chip. */
   dueDate?: string;
+  /** M12: text already in the name / description fields (shared text, widget). */
+  content?: string;
+  description?: string;
 }
 
 export interface QuickAddContext {
@@ -48,7 +51,7 @@ export function openQuickAdd(params: QuickAddParams = {}): void {
 export function parseQuickAddParams(raw: Record<string, string | string[] | undefined>): QuickAddParams {
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
   const result: QuickAddParams = {};
-  for (const key of ['projectId', 'sectionId', 'parentId', 'dueDate'] as const) {
+  for (const key of ['projectId', 'sectionId', 'parentId', 'dueDate', 'content', 'description'] as const) {
     const value = first(raw[key]);
     if (value) result[key] = value;
   }

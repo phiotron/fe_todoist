@@ -7,6 +7,7 @@ import { useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { PALETTES } from '../../theme/themes';
 import { THEME_NAMES, type Appearance, type ThemeName } from '../../theme/themeNames';
+import { DynamicColorSection } from './DynamicColorSection';
 import { SettingsPage } from './SettingsPage';
 import { describeSettingsSaveError } from './settingsErrors';
 import { THEME_NAME_KEYS } from './themeLabels';
@@ -66,6 +67,7 @@ export function ThemeSettingsScreen() {
         />
         <ErrorText testID="theme-error" message={error} />
       </SettingsSection>
+      <DynamicColorSection />
       <SettingsSection testID="settings-section-themeSync">
         <SwitchRow
           testID="theme-sync"

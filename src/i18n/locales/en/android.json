@@ -1,0 +1,57 @@
+{
+  "android": {
+    "link": {
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "failed": "Could not copy the link"
+    },
+    "tone": {
+      "title": "Task complete tone",
+      "hint": "Play a short sound when you complete a task."
+    },
+    "dynamicColor": {
+      "title": "Dynamic Color",
+      "hint": "Use the accent color of your Android wallpaper (Android 12 and later)."
+    },
+    "appIcon": {
+      "title": "App icon",
+      "intro": "Choose how Taskly looks on your home screen.",
+      "activate": "Activate custom icons",
+      "activeHint": "Custom icons are on. The app closes for a moment when you pick one.",
+      "confirmTitle": "Activate custom icons?",
+      "confirmMessage": "When you change the icon, Android may close Taskly and refresh the launcher. Your data is not affected.",
+      "confirm": "Activate",
+      "unsupported": "Custom icons are not available in this build of the app.",
+      "failed": "Could not change the icon",
+      "names": {
+        "default": "Taskly",
+        "dark": "Midnight",
+        "light": "Mist"
+      }
+    },
+    "shortcuts": {
+      "addTask": "Add task",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "search": "Search"
+    },
+    "share": {
+      "title": "Add shared text as a task",
+      "empty": "Nothing to add"
+    },
+    "widget": {
+      "addTask": "Add task",
+      "addTaskHint": "Tap to add a task",
+      "taskListTitle": "Today",
+      "taskListEmpty": "Nothing due today",
+      "taskListMore": "+{{count}} more",
+      "productivityTitle": "Productivity",
+      "productivityEmpty": "Open Taskly to see your progress",
+      "productivityProgress": "{{done}} of {{goal}} today",
+      "needsSignIn": "Sign in to Taskly",
+      "descriptionAddTask": "Add a task in one tap.",
+      "descriptionTaskList": "Tasks due today.",
+      "descriptionProductivity": "Your daily goal at a glance."
+    }
+  }
+}

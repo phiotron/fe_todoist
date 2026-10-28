@@ -6,6 +6,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { describeError, isNotFound } from '../../../api/describeError';
 import { invalidateData, queryKeys } from '../../../api/queryKeys';
 import { ActionMenu, type ActionMenuItem } from '../../../components/ActionMenu';
+import { useCopyLink } from '../../links/useCopyLink';
 import { AppButton } from '../../../components/AppButton';
 import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { ErrorText } from '../../../components/ErrorText';
@@ -63,6 +64,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   const [reorderOpen, setReorderOpen] = useState(false);
   const [localGone, setLocalGone] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
+  const copyLink = useCopyLink();
 
   function leave() {
     // Refresh the lists but not this detail (it is gone), then drop it from the cache.
@@ -130,6 +132,12 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
       onPress: () => complete(taskId, { onError: onActionError, resetSubtasks: true }),
     },
     {
+      key: 'copy-link',
+      label: t('android.link.copy'),
+      icon: 'link',
+      onPress: () => void copyLink({ kind: 'task', id: taskId }),
+    },
+    {
       key: 'toggle-completed',
       label: hideCompleted ? t('taskDetail.menuShowCompleted') : t('taskDetail.menuHideCompleted'),
       icon: hideCompleted ? 'eye' : 'eye-off',
@@ -177,6 +185,7 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
     duplicate: !access.readOnly,
     'complete-forever': task.isRecurring && !completed && !access.readOnly,
     'complete-reset': task.isRecurring && !completed && !access.readOnly && task.subtaskCount > 0,
+    'copy-link': true,
     'toggle-completed': true,
     'reorder-subtasks': !access.readOnly,
     email: !access.archived,

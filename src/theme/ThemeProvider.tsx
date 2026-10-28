@@ -1,4 +1,6 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import type { SystemAccentColors } from '../lib/native/tasklyAndroid';
+import { applyDynamicColor } from './dynamicColor';
 import { gutter, layout, radius, shadow, size, space } from './metrics';
 import { lightPalette, type Palette } from './palette';
 import { legacyColorsOf, paletteFor, type LegacyColors } from './themes';
@@ -44,18 +46,20 @@ const ThemeContext = createContext<Theme>({
 interface ThemeProviderProps {
   theme: ThemeName;
   appearance: Appearance;
+  /** M12 Dynamic Color: system accent colours (null / absent = the theme's own accent). */
+  dynamicColors?: SystemAccentColors | null;
   children: ReactNode;
 }
 
-export function ThemeProvider({ theme, appearance, children }: ThemeProviderProps) {
+export function ThemeProvider({ theme, appearance, dynamicColors, children }: ThemeProviderProps) {
   const system = useSystemColorScheme();
   const scheme = resolveColorScheme(appearance, system);
   const value = useMemo<Theme>(
     () => {
-      const palette = paletteFor(theme, scheme);
+      const palette = applyDynamicColor(paletteFor(theme, scheme), scheme, dynamicColors);
       return { ...STATIC, name: theme, scheme, palette, colors: legacyColorsOf(palette) };
     },
-    [theme, scheme],
+    [theme, scheme, dynamicColors],
   );
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

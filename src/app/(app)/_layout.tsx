@@ -9,7 +9,9 @@ import { GoalCelebrationHost } from '../../features/productivity/GoalCelebration
 import { ReminderHost } from '../../features/reminders/ReminderHost';
 import { SyncHost } from '../../features/sync/SyncHost';
 import { SyncStatusPill } from '../../features/sync/SyncStatusPill';
+import { ShareIntentHandler } from '../../features/share/ShareIntentHandler';
 import { TimeZoneBanner } from '../../features/settings/TimeZoneBanner';
+import { WidgetSnapshotWriter } from '../../features/widgets/WidgetSnapshotWriter';
 import { useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 
@@ -42,6 +44,10 @@ export default function SignedInLayout() {
           <PushTokenHost />
           {/* M10: congratulates when a daily / weekly goal is reached; renders nothing. */}
           <GoalCelebrationHost />
+          {/* M12: text shared into Taskly from another app opens Quick Add. */}
+          <ShareIntentHandler />
+          {/* M12: the picture the home-screen widgets draw (Today's tasks). */}
+          <WidgetSnapshotWriter />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />

@@ -8,9 +8,16 @@ export interface LabelFormats {
 
 /** Server reminder (ReminderResponse) or a draft (Quick Add). */
 export interface LabelledReminder {
-  type: 'ABSOLUTE' | 'RELATIVE';
+  type: 'ABSOLUTE' | 'RELATIVE' | 'LOCATION';
   at?: string | null;
   minuteOffset?: number | null;
+  /** M12 */
+  urgent?: boolean;
+  /** M12 LOCATION: draft field `trigger`, server field `locationTrigger`. */
+  trigger?: 'ON_ENTER' | 'ON_LEAVE';
+  locationTrigger?: 'ON_ENTER' | 'ON_LEAVE' | null;
+  /** M12 LOCATION: name of the saved place (drafts carry it; server reminders get it from the locations list). */
+  locationName?: string;
 }
 
 /** me/settings date / time format (M3), DMY + 24 h when unknown. */
@@ -36,9 +43,16 @@ export function offsetLabel(minutes: number, t: TFunction): string {
 }
 
 export function reminderLabel(reminder: LabelledReminder, t: TFunction, formats: LabelFormats): string {
-  if (reminder.type === 'RELATIVE') return offsetLabel(reminder.minuteOffset ?? 0, t);
-  const at = reminder.at ?? '';
-  return formatFloatingForDisplay(at, formats.dateFormat, formats.timeFormat) ?? at;
+  if (reminder.type === 'LOCATION') {
+    const trigger = reminder.trigger ?? reminder.locationTrigger ?? 'ON_ENTER';
+    const place = reminder.locationName ?? t('reminders.location.unknownPlace');
+    return t(trigger === 'ON_LEAVE' ? 'reminders.location.leaveLabel' : 'reminders.location.enterLabel', { place });
+  }
+  const base =
+    reminder.type === 'RELATIVE'
+      ? offsetLabel(reminder.minuteOffset ?? 0, t)
+      : (formatFloatingForDisplay(reminder.at ?? '', formats.dateFormat, formats.timeFormat) ?? reminder.at ?? '');
+  return reminder.urgent ? t('reminders.urgent.label', { label: base }) : base;
 }
 
 /** Reminders chip text (design M-TaskDetail shows the value): none → "Reminders", one → it, more → first + " +N". */

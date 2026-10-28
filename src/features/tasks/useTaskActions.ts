@@ -18,7 +18,9 @@ import { tasksApi } from '../../api/tasks';
 import { useSnackbar } from '../../components/Snackbar';
 import { taskDateKey } from '../../lib/dates';
 import { formatDateKey } from '../../lib/dates/format';
+import { getDeviceSettings } from '../../lib/device/deviceSettings';
 import { useIdempotencyKeys } from '../../lib/idempotency';
+import { playCompletionTone } from '../../lib/native/tasklyAndroid';
 import { useDataMutation } from '../../lib/useDataMutation';
 
 /**
@@ -32,6 +34,8 @@ export function useCloseTask() {
     // M6c: a repeating task is NOT completed by a plain close — it moves to its next due (answer: completedAt null).
     const change = await tasksApi.close(taskId, body);
     applyTaskChange(queryClient, change);
+    // M12: the "Task complete tone" setting of this device (on by default); silent without the native module.
+    if (getDeviceSettings().completionTone) playCompletionTone();
     return change;
   });
 }

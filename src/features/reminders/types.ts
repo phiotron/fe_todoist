@@ -9,6 +9,10 @@ export interface DesiredReminder {
   fireAtMs: number;
   title: string;
   body: string;
+  /** M12 Pin reminders: the notification stays in the tray until tapped (Android `sticky`). */
+  pinned?: boolean;
+  /** M12 urgent reminder on the chosen device: full-screen alarm (native) or the urgent channel. */
+  urgent?: boolean;
 }
 
 /** A desired reminder plus the fingerprint stored in the notification data to detect changes. */

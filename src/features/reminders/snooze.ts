@@ -1,7 +1,7 @@
 import { errorName, reminderSignature, warnLog, type ReminderLog } from './syncReminders';
 import type { DesiredReminder, ReminderScheduler } from './types';
 
-/** Snooze length (spec 5.8). */
+/** Default snooze length (spec 5.8); M12 makes it a setting (me/settings.snoozeMinutes). */
 export const SNOOZE_MINUTES = 15;
 
 const MINUTE_MS = 60_000;
@@ -19,15 +19,25 @@ export interface SnoozeInput {
   body: string;
 }
 
-/** The same task again in 15 minutes, on this device only (spec 5.8). Snoozing again replaces it. */
-export async function scheduleSnooze(scheduler: ReminderScheduler, input: SnoozeInput, nowMs: number): Promise<number> {
+/**
+ * The same task again in `minutes` (default 15; M12 me/settings.snoozeMinutes), on this device only (spec 5.8).
+ * Snoozing again replaces it. `pinned` (M12 Pin reminders) keeps the snoozed notification in the tray too.
+ */
+export async function scheduleSnooze(
+  scheduler: ReminderScheduler,
+  input: SnoozeInput,
+  nowMs: number,
+  minutes: number = SNOOZE_MINUTES,
+  pinned = false,
+): Promise<number> {
   const reminder: DesiredReminder = {
     id: snoozeId(input.taskId),
     taskId: input.taskId,
     kind: 'SNOOZE',
-    fireAtMs: nowMs + SNOOZE_MINUTES * MINUTE_MS,
+    fireAtMs: nowMs + minutes * MINUTE_MS,
     title: input.title,
     body: input.body,
+    ...(pinned ? { pinned: true } : {}),
   };
   await scheduler.schedule({ ...reminder, signature: reminderSignature(reminder) });
   return reminder.fireAtMs;

@@ -46,6 +46,12 @@ export interface SettingsResponse {
   vacationMode?: boolean;
   goalCelebrations?: boolean;
   karmaEnabled?: boolean;
+  /** M12: minutes of the Snooze button (5, 10, 15, 30, 45, 60, 120, 180; server default 15). Optional as above. */
+  snoozeMinutes?: number;
+  /** M12: reminder notifications stay in the tray until tapped. */
+  pinReminders?: boolean;
+  /** M12: install id of the device that rings urgent reminders; null = none chosen. */
+  urgentDeviceId?: string | null;
 }
 
 /**

@@ -1,19 +1,34 @@
 import type { OccurrenceInput, ReminderDraft } from '../lib/reminders';
 import { apiFetch } from './client';
 import { ApiError } from './errors';
+import type { LocationTrigger } from './locations';
 import type { components } from './types.gen';
 
 /** The server returns and the app schedules at most this many reminders (spec 5.8, 5.9). */
 export const REMINDER_FETCH_LIMIT = 50;
 
-/** Item of GET /api/v1/tasks/reminders (spec 12.8). `fireAt` is a floating "yyyy-MM-ddTHH:mm:ss" in the account time zone. */
-export type ReminderOccurrence = components['schemas']['ReminderOccurrence'];
+/**
+ * Item of GET /api/v1/tasks/reminders (spec 12.8). `fireAt` is a floating "yyyy-MM-ddTHH:mm:ss" in the account time zone.
+ * M12 adds `urgent` (declared by hand until types.gen.ts is regenerated; optional so older answers still fit).
+ */
+export type ReminderOccurrence = components['schemas']['ReminderOccurrence'] & { urgent?: boolean };
 
-/** Item of GET /api/v1/tasks/{id}/reminders (spec 12.8). */
-export type ReminderResponse = components['schemas']['ReminderResponse'];
+/** M12 reminder types: LOCATION joins ABSOLUTE / RELATIVE. */
+export type ReminderType = 'ABSOLUTE' | 'RELATIVE' | 'LOCATION';
+
+/** Item of GET /api/v1/tasks/{id}/reminders (spec 12.8) plus the M12 fields (hand-written until regeneration). */
+export type ReminderResponse = Omit<components['schemas']['ReminderResponse'], 'type'> & {
+  type: ReminderType;
+  locationId?: string | null;
+  locationTrigger?: LocationTrigger | null;
+  urgent?: boolean;
+};
 
 /** Body of POST /api/v1/tasks/{id}/reminders. */
-export type CreateReminderRequest = { type: 'ABSOLUTE'; at: string } | { type: 'RELATIVE'; minuteOffset: number };
+export type CreateReminderRequest =
+  | { type: 'ABSOLUTE'; at: string; urgent?: boolean }
+  | { type: 'RELATIVE'; minuteOffset: number; urgent?: boolean }
+  | { type: 'LOCATION'; locationId: string; trigger: LocationTrigger };
 
 const taskPath = (taskId: string) => `/api/v1/tasks/${encodeURIComponent(taskId)}`;
 
@@ -34,6 +49,7 @@ export function toOccurrenceInput(item: ReminderOccurrence): OccurrenceInput {
     kind: item.kind,
     fireAt: item.fireAt,
     content: item.content,
+    ...(item.urgent ? { urgent: true } : {}),
   };
 }
 
@@ -43,9 +59,16 @@ export async function fetchUpcomingReminders(): Promise<OccurrenceInput[]> {
 }
 
 export function toCreateRequest(draft: ReminderDraft): CreateReminderRequest {
-  return draft.type === 'ABSOLUTE'
-    ? { type: 'ABSOLUTE', at: draft.at }
-    : { type: 'RELATIVE', minuteOffset: draft.minuteOffset };
+  switch (draft.type) {
+    case 'ABSOLUTE':
+      return draft.urgent ? { type: 'ABSOLUTE', at: draft.at, urgent: true } : { type: 'ABSOLUTE', at: draft.at };
+    case 'RELATIVE':
+      return draft.urgent
+        ? { type: 'RELATIVE', minuteOffset: draft.minuteOffset, urgent: true }
+        : { type: 'RELATIVE', minuteOffset: draft.minuteOffset };
+    case 'LOCATION':
+      return { type: 'LOCATION', locationId: draft.locationId, trigger: draft.trigger };
+  }
 }
 
 /** Does a snoozed task still deserve its snooze? Completed or deleted (404) → gone. Other errors throw. */

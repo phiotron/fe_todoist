@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Task } from '../../api/models';
 import { Chip } from '../../components/Chip';
 import { DEFAULT_TIME_ZONE } from '../../lib/reminders';
+import { useLocations } from '../locations/useLocations';
 import { OpenRemindersContext } from './OpenRemindersContext';
 import { ReminderEditorModal } from './ReminderEditorModal';
 import { reminderChipLabel, reminderLabel } from './reminderLabel';
@@ -30,7 +31,14 @@ export function TaskReminderChip({ task, timeZone = DEFAULT_TIME_ZONE, readOnly 
   const { data } = useTaskReminders(task.id);
   const mutations = useReminderMutations(task.id);
 
-  const items = (data ?? []).map((reminder) => ({ id: reminder.id, label: reminderLabel(reminder, t, formats) }));
+  // M12: saved places, fetched once the editor is open or a location reminder needs its place name.
+  const hasLocationReminder = (data ?? []).some((reminder) => reminder.type === 'LOCATION');
+  const places = useLocations(open || hasLocationReminder).data;
+  const placeName = (id?: string | null) => places?.find((place) => place.id === id)?.name;
+  const items = (data ?? []).map((reminder) => ({
+    id: reminder.id,
+    label: reminderLabel({ ...reminder, locationName: placeName(reminder.locationId) }, t, formats),
+  }));
   const label = reminderChipLabel(items.map((item) => item.label), t);
 
   return (
@@ -49,6 +57,7 @@ export function TaskReminderChip({ task, timeZone = DEFAULT_TIME_ZONE, readOnly 
         busy={mutations.busy}
         error={mutations.error}
         requiresOnline
+        places={places ?? []}
       />
     </>
   );

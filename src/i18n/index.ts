@@ -6,6 +6,7 @@ import enBoard from './locales/en/board.json';
 import enActivity from './locales/en/activity.json';
 import enInsights from './locales/en/insights.json';
 import enProductivity from './locales/en/productivity.json';
+import enAndroid from './locales/en/android.json';
 import enBrowse from './locales/en/browse.json';
 import enCalendar from './locales/en/calendar.json';
 import enAvatar from './locales/en/avatar.json';
@@ -47,6 +48,7 @@ import viBoard from './locales/vi/board.json';
 import viActivity from './locales/vi/activity.json';
 import viInsights from './locales/vi/insights.json';
 import viProductivity from './locales/vi/productivity.json';
+import viAndroid from './locales/vi/android.json';
 import viBrowse from './locales/vi/browse.json';
 import viCalendar from './locales/vi/calendar.json';
 import viAvatar from './locales/vi/avatar.json';
@@ -95,6 +97,7 @@ export const viTranslation = {
   ...viActivity,
   ...viInsights,
   ...viProductivity,
+  ...viAndroid,
   ...viBrowse,
   ...viCalendar,
   ...viAvatar,
@@ -140,6 +143,7 @@ export const enTranslation = {
   ...enActivity,
   ...enInsights,
   ...enProductivity,
+  ...enAndroid,
   ...enBrowse,
   ...enCalendar,
   ...enAvatar,
