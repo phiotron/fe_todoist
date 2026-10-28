@@ -17,12 +17,13 @@ import { SubHeader } from '../../components/SubHeader';
 import { TextField } from '../../components/TextField';
 import { gutter, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
-import type { ProjectMemberResponse } from '../../api/sharing';
+import type { ProjectAccess, ProjectMemberResponse } from '../../api/sharing';
 import { useMe } from '../auth/session';
 import { projectDisplayName } from '../projects/appearance';
 import { useProject } from '../projects/useProjects';
-import { MAX_PROJECT_MEMBERS, isValidInviteEmail, seatsLeft, sharingOf } from './sharingRules';
+import { MAX_PROJECT_MEMBERS, canChangeAccess, isValidInviteEmail, otherAccess, seatsLeft, sharingOf } from './sharingRules';
 import {
+  useChangeProjectAccess,
   useDisableProjectInviteLink,
   useInviteToProject,
   useProjectInvitations,
@@ -53,6 +54,7 @@ export function ShareProjectScreen({ projectId }: { projectId: string }) {
   const resetLink = useResetProjectInviteLink();
   const disableLink = useDisableProjectInviteLink();
   const removeMember = useRemoveProjectMember();
+  const changeAccess = useChangeProjectAccess();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string>();
   const [formError, setFormError] = useState<string>();
@@ -65,7 +67,7 @@ export function ShareProjectScreen({ projectId }: { projectId: string }) {
   const people = members.data ?? [];
   const isPersonal = sharing ? !sharing.isTeamProject : true;
   const free = seatsLeft(sharing?.memberCount ?? people.length, pending.length);
-  const actionError = [invite.error, revoke.error, resetLink.error, disableLink.error, removeMember.error].find(Boolean);
+  const actionError = [invite.error, revoke.error, resetLink.error, disableLink.error, removeMember.error, changeAccess.error].find(Boolean);
 
   async function refresh() {
     setRefreshing(true);
@@ -133,14 +135,29 @@ export function ShareProjectScreen({ projectId }: { projectId: string }) {
               ) : null}
             </>
           ) : null}
-          <ListRow testID="share-access" icon="lock" iconBox title={t('sharing.access')} right={t('sharing.accessEveryone', { name: projectName })} />
+          {isPersonal || !project ? (
+            <ListRow testID="share-access" icon="lock" iconBox title={t('sharing.access')} right={t('sharing.accessEveryone', { name: projectName })} />
+          ) : (
+            <ListRow
+              testID="share-access"
+              icon="lock"
+              iconBox
+              title={t('sharing.access')}
+              right={(project as { access?: ProjectAccess | null }).access === 'RESTRICTED' ? t('sharing.accessRestrictedValue') : t('sharing.accessTeamValue')}
+              onPress={
+                canChangeAccess(project)
+                  ? () => changeAccess.mutate({ projectId, access: otherAccess((project as { access?: ProjectAccess | null }).access) })
+                  : undefined
+              }
+            />
+          )}
 
           <Text accessibilityRole="header" style={styles.section}>
             {t('sharing.inProject')}
           </Text>
           {people.map((person) => (
             <View key={person.userId} testID={`share-member-${person.userId}`} style={styles.person}>
-              <Avatar name={person.displayName} seed={person.userId} />
+              <Avatar name={person.displayName} seed={person.userId} uri={person.avatarUrl} testID={`share-avatar-${person.userId}`} />
               <View style={styles.personTexts}>
                 <Text style={[type.bodyStrong, styles.name]} numberOfLines={1}>
                   {person.displayName}

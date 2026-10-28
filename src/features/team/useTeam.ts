@@ -96,4 +96,7 @@ export const useCreateFolder = () =>
     workspacesApi.createFolder(workspaceId, name),
   );
 
+export const useRenameFolder = () =>
+  useDataMutation(({ folderId, name }: { folderId: string; name: string }) => workspacesApi.renameFolder(folderId, name));
+
 export const useDeleteFolder = () => useDataMutation((folderId: string) => workspacesApi.deleteFolder(folderId));

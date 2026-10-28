@@ -48,6 +48,38 @@
       "ARCHIVED": "Đã lưu trữ",
       "UNARCHIVED": "Đã khôi phục"
     },
-    "inProject": "trong {{project}}"
+    "inProject": "trong {{project}}",
+    "filterPerson": "Người",
+    "filterAllPeople": "Tất cả mọi người",
+    "eventBy": {
+      "TASK": {
+        "ADDED": "{{who}} đã thêm công việc: {{name}}",
+        "UPDATED": "{{who}} đã sửa công việc: {{name}}",
+        "COMPLETED": "{{who}} đã hoàn thành: {{name}}",
+        "UNCOMPLETED": "{{who}} đã mở lại công việc: {{name}}",
+        "DELETED": "{{who}} đã xoá công việc: {{name}}",
+        "ARCHIVED": "{{who}} đã lưu trữ công việc: {{name}}",
+        "UNARCHIVED": "{{who}} đã khôi phục công việc: {{name}}"
+      },
+      "PROJECT": {
+        "ADDED": "{{who}} đã thêm dự án: {{name}}",
+        "UPDATED": "{{who}} đã sửa dự án: {{name}}",
+        "COMPLETED": "{{who}} đã hoàn thành dự án: {{name}}",
+        "UNCOMPLETED": "{{who}} đã mở lại dự án: {{name}}",
+        "DELETED": "{{who}} đã xoá dự án: {{name}}",
+        "ARCHIVED": "{{who}} đã lưu trữ dự án: {{name}}",
+        "UNARCHIVED": "{{who}} đã khôi phục dự án: {{name}}"
+      },
+      "SECTION": {
+        "ADDED": "{{who}} đã thêm mục: {{name}}",
+        "UPDATED": "{{who}} đã sửa mục: {{name}}",
+        "COMPLETED": "{{who}} đã hoàn thành mục: {{name}}",
+        "UNCOMPLETED": "{{who}} đã mở lại mục: {{name}}",
+        "DELETED": "{{who}} đã xoá mục: {{name}}",
+        "ARCHIVED": "{{who}} đã lưu trữ mục: {{name}}",
+        "UNARCHIVED": "{{who}} đã khôi phục mục: {{name}}"
+      }
+    },
+    "someone": "Một tài khoản đã xoá"
   }
 }

@@ -1,6 +1,6 @@
 import { makeProject } from '../../../test/m1Fixtures';
 import { makeSharedProject } from '../../../test/m8aFixtures';
-import { canMoveToTeam, isValidInviteEmail, parseInviteToken, seatsLeft, sharingOf } from '../sharingRules';
+import { canChangeAccess, canMoveToTeam, isValidInviteEmail, otherAccess, parseInviteToken, seatsLeft, sharingOf } from '../sharingRules';
 
 describe('sharingOf', () => {
   it('reads a response without the M8a fields as a personal project of mine', () => {
@@ -73,5 +73,22 @@ describe('isValidInviteEmail', () => {
     expect(isValidInviteEmail('an@example')).toBe(false);
     expect(isValidInviteEmail('')).toBe(false);
     expect(isValidInviteEmail(`${'a'.repeat(250)}@e.co`)).toBe(false);
+  });
+});
+
+describe('canChangeAccess / otherAccess (X2)', () => {
+  it('only whoever manages a joined, live team project may switch Team <-> Restricted', () => {
+    expect(canChangeAccess(makeSharedProject({ access: 'TEAM', canManage: true }))).toBe(true);
+    expect(canChangeAccess(makeSharedProject({ access: 'RESTRICTED', canManage: true }))).toBe(true);
+    expect(canChangeAccess(makeSharedProject({ access: 'TEAM', canManage: false }))).toBe(false);
+    expect(canChangeAccess(makeSharedProject({ access: 'TEAM', canManage: true, joined: false }))).toBe(false);
+    expect(canChangeAccess(makeSharedProject({ access: 'TEAM', canManage: true, archivedAt: '2026-10-01T00:00:00Z' }))).toBe(false);
+    expect(canChangeAccess(makeSharedProject({ access: null, canManage: true }))).toBe(false);
+  });
+
+  it('otherAccess flips the access', () => {
+    expect(otherAccess('TEAM')).toBe('RESTRICTED');
+    expect(otherAccess('RESTRICTED')).toBe('TEAM');
+    expect(otherAccess(null)).toBe('RESTRICTED');
   });
 });

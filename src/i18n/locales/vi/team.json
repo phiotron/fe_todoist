@@ -27,7 +27,10 @@
     "tasks": "{{n}} việc",
     "restricted": "Riêng tư",
     "project": {
-      "restricted": "Riêng tư (chỉ người được mời)"
+      "restricted": "Riêng tư (chỉ người được mời)",
+      "folder": "Thư mục",
+      "noFolder": "Không có thư mục",
+      "folderTitle": "Chọn thư mục"
     },
     "create": {
       "entry": "Tạo nhóm",
@@ -65,12 +68,24 @@
       "resetLink": "Đặt lại liên kết",
       "disableLink": "Tắt liên kết",
       "linkHint": "Người vào bằng liên kết sẽ là thành viên.",
-      "revoke": "Thu hồi lời mời gửi tới {{email}}"
+      "revoke": "Thu hồi lời mời gửi tới {{email}}",
+      "settingsTitle": "Cài đặt nhóm",
+      "nameLabel": "Tên nhóm",
+      "nameInvalid": "Tên nhóm cần từ 1 đến 100 ký tự",
+      "renameSubmit": "Đổi tên nhóm",
+      "renamed": "Đã đổi tên nhóm",
+      "delete": "Xoá nhóm",
+      "deleteTitle": "Xoá nhóm \"{{name}}\"?",
+      "deleteMessage": "Mọi dự án và công việc của nhóm sẽ bị xoá vĩnh viễn, không khôi phục được."
     },
     "browse": {
       "title": "Nhóm",
       "invitations": "Lời mời",
       "join": "Tham gia bằng liên kết hoặc mã"
-    }
+    },
+    "lastAdmin": "Nhóm phải còn ít nhất một quản trị viên",
+    "renameFolder": "Đổi tên thư mục {{name}}",
+    "renameFolderTitle": "Đổi tên thư mục",
+    "folderRename": "Lưu"
   }
 }

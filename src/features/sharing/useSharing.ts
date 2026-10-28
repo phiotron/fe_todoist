@@ -1,6 +1,8 @@
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../../api/queryKeys';
-import { sharingApi, type MoveToWorkspaceRequest } from '../../api/sharing';
+import type { UpdateProjectRequest } from '../../api/models';
+import { projectsApi } from '../../api/projects';
+import { sharingApi, type MoveToWorkspaceRequest, type ProjectAccess } from '../../api/sharing';
 import { useDataMutation } from '../../lib/useDataMutation';
 
 /** "In this project": owner first, then the collaborators. */
@@ -54,6 +56,12 @@ export const useJoinProject = () => useDataMutation((projectId: string) => shari
 export const useMoveToWorkspace = () =>
   useDataMutation(({ projectId, body }: { projectId: string; body: MoveToWorkspaceRequest }) =>
     sharingApi.moveToWorkspace(projectId, body),
+  );
+
+/** Team <-> Restricted of a team project (PATCH projects/{id} with `access`; the server allows Admin / creator only). */
+export const useChangeProjectAccess = () =>
+  useDataMutation(({ projectId, access }: { projectId: string; access: ProjectAccess }) =>
+    projectsApi.update(projectId, { access } as UpdateProjectRequest),
   );
 
 export const useAcceptInvitationToken = () => useDataMutation((token: string) => sharingApi.acceptToken(token));

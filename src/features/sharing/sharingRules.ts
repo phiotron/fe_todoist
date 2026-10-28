@@ -1,5 +1,5 @@
 import type { Project } from '../../api/models';
-import type { ProjectSharingFields } from '../../api/sharing';
+import type { ProjectAccess, ProjectSharingFields } from '../../api/sharing';
 import { isProjectReadOnly } from '../projects/projectReadOnly';
 
 /** Max people of a personal project, owner included (Todoist Pro; mirrors the server's PROJECT_MEMBERS limit). */
@@ -47,6 +47,17 @@ export function sharingOf(project: ProjectLike): ProjectSharing {
 export function canMoveToTeam(project: ProjectLike, hasChildren: boolean): boolean {
   const sharing = sharingOf(project);
   return !project.isInbox && !isProjectReadOnly(project) && !sharing.isTeamProject && sharing.canManage && !hasChildren;
+}
+
+/** Team <-> Restricted from the project menu: only whoever manages a joined, live team project. */
+export function canChangeAccess(project: ProjectLike): boolean {
+  const sharing = sharingOf(project);
+  return sharing.isTeamProject && sharing.canManage && sharing.joined && !project.isInbox && !isProjectReadOnly(project);
+}
+
+/** The access the menu switches a team project to. */
+export function otherAccess(access: ProjectAccess | null | undefined): ProjectAccess {
+  return access === 'RESTRICTED' ? 'TEAM' : 'RESTRICTED';
 }
 
 /** Seats of a personal project still free for people + pending email invitations (UI hint; the server decides). */
