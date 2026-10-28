@@ -49,7 +49,8 @@ function onId(type: string, extra?: (params: Params) => Body, drop: string[] = [
 
 /**
  * THE extension point of the mobile side (plan 8.3): one line per REST write that can be queued. A write that matches
- * no route is NOT queued (reorder, batch, favorites, settings...: online only).
+ * no route is NOT queued (it answers OfflineError while offline): settings (me/settings keeps its own on-device pending
+ * copy), duplicate, templates, comments, attachments, Display options, sharing...
  */
 export const ROUTES: readonly Route[] = [
   // projects
@@ -100,6 +101,35 @@ export const ROUTES: readonly Route[] = [
   { method: 'POST', pattern: new RegExp(`${API}/filters$`), build: create('filter_add') },
   { method: 'PATCH', pattern: new RegExp(`${API}/filters/${SEG}$`), build: onId('filter_update') },
   { method: 'DELETE', pattern: new RegExp(`${API}/filters/${SEG}$`), build: onId('filter_delete') },
+  // M9 phase 2 — organise: the REST body IS the command args (reorder: {type, id, afterId}; batch: {action, taskIds, ...})
+  { method: 'POST', pattern: new RegExp(`${API}/reorder$`), build: (_params, body) => ({ type: 'reorder', args: { ...body } }) },
+  { method: 'POST', pattern: new RegExp(`${API}/tasks/batch$`), build: (_params, body) => ({ type: 'task_batch', args: { ...body } }) },
+  {
+    method: 'POST',
+    pattern: new RegExp(`${API}/tasks/overdue/reschedule$`),
+    build: (_params, body) => ({ type: 'task_reschedule_overdue', args: { ...body } }),
+  },
+  // favorites: PUT sets, DELETE clears (no body)
+  { method: 'PUT', pattern: new RegExp(`${API}/projects/${SEG}/favorite$`), build: onId('project_favorite') },
+  { method: 'DELETE', pattern: new RegExp(`${API}/projects/${SEG}/favorite$`), build: onId('project_unfavorite') },
+  { method: 'PUT', pattern: new RegExp(`${API}/labels/${SEG}/favorite$`), build: onId('label_favorite') },
+  { method: 'DELETE', pattern: new RegExp(`${API}/labels/${SEG}/favorite$`), build: onId('label_unfavorite') },
+  { method: 'PUT', pattern: new RegExp(`${API}/filters/${SEG}/favorite$`), build: onId('filter_favorite') },
+  { method: 'DELETE', pattern: new RegExp(`${API}/filters/${SEG}/favorite$`), build: onId('filter_unfavorite') },
+  // reminders of one task (the server makes the reminder id; the app's id is only its temp id)
+  {
+    method: 'POST',
+    pattern: new RegExp(`${API}/tasks/${SEG}/reminders$`),
+    build: create('reminder_add', ([taskId]) => ({ taskId })),
+  },
+  {
+    method: 'DELETE',
+    pattern: new RegExp(`${API}/tasks/${SEG}/reminders/${SEG}$`),
+    build: (params, body) => {
+      const [taskId, id] = decoded(params);
+      return { type: 'reminder_delete', args: { ...body, id, taskId } };
+    },
+  },
 ];
 
 function sectionCommand(type: string, params: Params, body: Body): MappedCommand {

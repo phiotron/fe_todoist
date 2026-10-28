@@ -228,6 +228,194 @@ function descendantIds(queryClient: QueryClient, rootId: string): Set<string> {
   return ids;
 }
 
+// ---------- M9 phase 2: reorder, batch, favorites, reminders ----------
+
+/** `taskRemindersKey` of features/reminders (a literal here so lib/ does not import features/; a test pins them equal). */
+export const remindersCacheKey = (taskId: string) => ['tasks', 'reminders', taskId] as const;
+
+const REORDER_ROOTS: Record<string, readonly string[]> = {
+  TASK: queryKeys.tasks.all,
+  SECTION: queryKeys.sections.all,
+  PROJECT: queryKeys.projects.all,
+  LABEL: queryKeys.labels.all,
+  FILTER: queryKeys.filters.all,
+};
+
+const SORT_STEP = 1024;
+
+/** Every record cached under `root` (lists, pages, details), once per id. */
+function cachedRecords(queryClient: QueryClient, root: readonly string[]): Rec[] {
+  const found = new Map<string, Rec>();
+  for (const [, data] of queryClient.getQueriesData({ queryKey: root })) {
+    const items = Array.isArray(data) ? data : isInfinite(data) ? data.pages.flatMap((p) => p.items ?? []) : [data];
+    for (const item of items) if (isRec(item) && !found.has(item.id)) found.set(item.id, item);
+  }
+  return [...found.values()];
+}
+
+/** Same container (spec 10.1): tasks share (project, section, parent), sections a project, projects a parent. */
+function sameContainer(type: string, a: Rec, b: Rec): boolean {
+  const eq = (field: string) => (a[field] ?? null) === (b[field] ?? null);
+  switch (type) {
+    case 'TASK':
+      return eq('projectId') && eq('sectionId') && eq('parentId');
+    case 'SECTION':
+      return eq('projectId');
+    case 'PROJECT':
+      return eq('parentId') && eq('workspaceId');
+    default:
+      return true;
+  }
+}
+
+/** sortOrder that puts `id` right after `afterId` (null = first) among its cached siblings — the server decides for real. */
+function reorderSortOrder(siblings: Rec[], afterId: string | null): number {
+  const orders = siblings.map((s) => s.sortOrder as number);
+  if (afterId === null) return orders.length > 0 ? orders[0] - SORT_STEP : SORT_STEP;
+  const index = siblings.findIndex((s) => s.id === afterId);
+  if (index < 0) return orders.length > 0 ? Math.min(orders[orders.length - 1] + SORT_STEP, Number.MAX_SAFE_INTEGER) : SORT_STEP;
+  const next = orders[index + 1];
+  return next === undefined ? Math.min(orders[index] + SORT_STEP, Number.MAX_SAFE_INTEGER) : (orders[index] + next) / 2;
+}
+
+function applyReorder(queryClient: QueryClient, args: Rec): unknown {
+  const type = str(args.type) ?? '';
+  const root = REORDER_ROOTS[type];
+  const id = args.id;
+  if (!root) return { type, id, sortOrder: 0 };
+  const afterId = str(args.afterId);
+  const all = cachedRecords(queryClient, root);
+  const self = all.find((r) => r.id === id);
+  if (!self) return { type, id, sortOrder: 0 };
+  const siblings = all
+    .filter((r) => r.id !== id && typeof r.sortOrder === 'number' && sameContainer(type, r, self))
+    .sort((a, b) => (a.sortOrder as number) - (b.sortOrder as number));
+  const sortOrder = reorderSortOrder(siblings, afterId);
+  queryClient.setQueriesData({ queryKey: root }, patchById(id, { sortOrder }));
+  return { type, id, sortOrder };
+}
+
+function dateKey(iso: string): string {
+  return iso.slice(0, 10);
+}
+
+/** New due of a task moved to `date` (null = no due). A timed task keeps its time of day (like the server's reschedule). */
+function rescheduled(task: Task | undefined, date: string | null, today: string): Record<string, unknown> {
+  const time = typeof task?.dueDatetime === 'string' ? task.dueDatetime.slice(10) : null;
+  const dueDatetime = date !== null && time ? `${date}${time}` : null;
+  return {
+    dueDate: date,
+    dueDatetime,
+    durationMinutes: dueDatetime ? (task?.durationMinutes ?? null) : null,
+    isOverdue: date !== null && date < today,
+  };
+}
+
+function applyBatch(queryClient: QueryClient, args: Rec, nowIso: string): unknown {
+  const taskIds = Array.isArray(args.taskIds) ? (args.taskIds as unknown[]).filter((v): v is string => typeof v === 'string') : [];
+  const action = str(args.action);
+  const each = (type: string, extra: Record<string, unknown> = {}) =>
+    taskIds.forEach((taskId) => applyOptimistic(queryClient, { type, args: { id: taskId, ...extra } }, nowIso));
+  const patchAll = (build: (id: string) => Record<string, unknown>) =>
+    taskIds.forEach((taskId) =>
+      queryClient.setQueriesData({ queryKey: queryKeys.tasks.all }, patchById(taskId, { ...build(taskId), updatedAt: nowIso })),
+    );
+  switch (action) {
+    case 'CLOSE':
+      each('task_close');
+      break;
+    case 'REOPEN':
+      each('task_reopen');
+      break;
+    case 'DELETE':
+      each('task_delete');
+      break;
+    case 'MOVE':
+      each('task_move', { projectId: str(args.projectId), sectionId: str(args.sectionId), parentId: null });
+      break;
+    case 'PRIORITY':
+      patchAll(() => ({ priority: args.priority }));
+      break;
+    case 'SCHEDULE': {
+      const date = args.date === undefined ? null : str(args.date);
+      patchAll((taskId) => rescheduled(cachedTask(queryClient, taskId), date, dateKey(nowIso)));
+      break;
+    }
+    case 'ADD_LABELS':
+    case 'REMOVE_LABELS': {
+      const labelIds = Array.isArray(args.labelIds) ? (args.labelIds as string[]) : [];
+      patchAll((taskId) => {
+        const current = cachedTask(queryClient, taskId)?.labelIds ?? [];
+        return {
+          labelIds:
+            action === 'ADD_LABELS'
+              ? [...current, ...labelIds.filter((l) => !current.includes(l))]
+              : current.filter((l) => !labelIds.includes(l)),
+        };
+      });
+      break;
+    }
+    default:
+      break;
+  }
+  return { taskIds };
+}
+
+/** "Reschedule" of the Overdue block: every cached open overdue task moves to `date`. */
+function applyRescheduleOverdue(queryClient: QueryClient, args: Rec, nowIso: string): unknown {
+  const date = str(args.date);
+  const overdue = date
+    ? cachedRecords(queryClient, queryKeys.tasks.all).filter((r) => r.isOverdue === true && r.completedAt == null)
+    : [];
+  overdue.forEach((record) =>
+    queryClient.setQueriesData(
+      { queryKey: queryKeys.tasks.all },
+      patchById(record.id, { ...rescheduled(record as unknown as Task, date, dateKey(nowIso)), updatedAt: nowIso }),
+    ),
+  );
+  return { taskIds: overdue.map((r) => r.id) };
+}
+
+const FAVORITE_KINDS = {
+  project: { root: queryKeys.projects.all, targetType: 'PROJECT' },
+  label: { root: queryKeys.labels.all, targetType: 'LABEL' },
+  filter: { root: queryKeys.filters.all, targetType: 'FILTER' },
+} as const;
+
+function applyFavorite(queryClient: QueryClient, command: MappedCommand, nowIso: string): unknown {
+  const id = (command.args as Rec).id;
+  const kind = FAVORITE_KINDS[command.type.split('_')[0] as keyof typeof FAVORITE_KINDS];
+  const favorite = !command.type.endsWith('unfavorite');
+  const before = cachedRecords(queryClient, kind.root).find((r) => r.id === id);
+  queryClient.setQueriesData({ queryKey: kind.root }, patchById(id, { isFavorite: favorite }));
+  queryClient.setQueriesData({ queryKey: queryKeys.favorites.all }, (data: unknown) => {
+    if (!Array.isArray(data)) return data;
+    const rest = data.filter((f) => !(f && (f as { targetId?: string }).targetId === id));
+    return favorite ? [...rest, { targetType: kind.targetType, targetId: id, createdAt: nowIso }] : rest;
+  });
+  return { ...(before ?? { id }), isFavorite: favorite };
+}
+
+function applyReminderAdd(queryClient: QueryClient, args: Rec, nowIso: string): unknown {
+  const taskId = str(args.taskId) ?? '';
+  const at = str(args.at);
+  const reminder = {
+    id: args.id,
+    taskId,
+    type: str(args.type) ?? 'ABSOLUTE',
+    at: at && at.length === 16 ? `${at}:00` : at,
+    minuteOffset: typeof args.minuteOffset === 'number' ? args.minuteOffset : null,
+    createdAt: nowIso,
+    locationId: str(args.locationId),
+    locationTrigger: str(args.trigger),
+    urgent: args.urgent === true,
+  };
+  queryClient.setQueriesData({ queryKey: remindersCacheKey(taskId) }, (data: unknown) =>
+    Array.isArray(data) ? [...data, reminder] : data,
+  );
+  return reminder;
+}
+
 /** Patches the caches for one command and returns the value the matching REST call would have answered with. */
 export function applyOptimistic(queryClient: QueryClient, command: MappedCommand, nowIso: string): unknown {
   const args = command.args as Rec;
@@ -373,6 +561,25 @@ export function applyOptimistic(queryClient: QueryClient, command: MappedCommand
     case 'filter_delete': {
       const root = command.type === 'label_delete' ? queryKeys.labels.all : queryKeys.filters.all;
       queryClient.setQueriesData({ queryKey: root }, removeById(new Set([id])));
+      return undefined;
+    }
+    case 'reorder':
+      return applyReorder(queryClient, args);
+    case 'task_batch':
+      return applyBatch(queryClient, args, nowIso);
+    case 'task_reschedule_overdue':
+      return applyRescheduleOverdue(queryClient, args, nowIso);
+    case 'project_favorite':
+    case 'project_unfavorite':
+    case 'label_favorite':
+    case 'label_unfavorite':
+    case 'filter_favorite':
+    case 'filter_unfavorite':
+      return applyFavorite(queryClient, command, nowIso);
+    case 'reminder_add':
+      return applyReminderAdd(queryClient, args, nowIso);
+    case 'reminder_delete': {
+      queryClient.setQueriesData({ queryKey: remindersCacheKey(str(args.taskId) ?? '') }, removeById(new Set([id])));
       return undefined;
     }
     default:

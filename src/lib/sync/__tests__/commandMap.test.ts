@@ -93,17 +93,64 @@ describe('mapRequest — updates and state changes', () => {
 describe('mapRequest — not queueable', () => {
   it.each([
     ['GET', '/api/v1/tasks'],
-    ['POST', '/api/v1/tasks/batch'],
     ['POST', '/api/v1/tasks/t1/duplicate'],
-    ['POST', '/api/v1/tasks/overdue/reschedule'],
-    ['POST', '/api/v1/reorder'],
-    ['PUT', '/api/v1/projects/p1/favorite'],
-    ['DELETE', '/api/v1/labels/l1/favorite'],
+    ['GET', '/api/v1/tasks/t1/reminders'],
     ['POST', '/api/v1/filters/validate'],
     ['PATCH', '/api/v1/me/settings'],
+    ['POST', '/api/v1/me/settings/reset'],
     ['POST', '/api/v1/auth/logout'],
     ['PUT', '/api/v1/view-options/TODAY'],
   ] as const)('%s %s is null', (method, path) => {
     expect(mapRequest(method, path, {}, newId)).toBeNull();
+  });
+});
+
+describe('mapRequest — M9 phase 2 (reorder, batch, favorites, reminders)', () => {
+  it('maps a reorder to a command whose args are the REST body (afterId null kept)', () => {
+    expect(mapRequest('POST', '/api/v1/reorder', { type: 'TASK', id: 't1', afterId: null }, newId)).toEqual({
+      type: 'reorder',
+      args: { type: 'TASK', id: 't1', afterId: null },
+    });
+  });
+
+  it('maps tasks/batch and overdue reschedule with the body as args', () => {
+    expect(mapRequest('POST', '/api/v1/tasks/batch', { action: 'CLOSE', taskIds: ['a', 'b'] }, newId)).toEqual({
+      type: 'task_batch',
+      args: { action: 'CLOSE', taskIds: ['a', 'b'] },
+    });
+    expect(mapRequest('POST', '/api/v1/tasks/overdue/reschedule', { date: '2026-11-01' }, newId)).toEqual({
+      type: 'task_reschedule_overdue',
+      args: { date: '2026-11-01' },
+    });
+  });
+
+  it.each([
+    ['PUT', '/api/v1/projects/p1/favorite', 'project_favorite'],
+    ['DELETE', '/api/v1/projects/p1/favorite', 'project_unfavorite'],
+    ['PUT', '/api/v1/labels/p1/favorite', 'label_favorite'],
+    ['DELETE', '/api/v1/labels/p1/favorite', 'label_unfavorite'],
+    ['PUT', '/api/v1/filters/p1/favorite', 'filter_favorite'],
+    ['DELETE', '/api/v1/filters/p1/favorite', 'filter_unfavorite'],
+  ] as const)('maps %s %s', (method, path, type) => {
+    expect(mapRequest(method, path, undefined, newId)).toEqual({ type, args: { id: 'p1' } });
+  });
+
+  it('maps a reminder create with a temp id (the app id) and the task id', () => {
+    expect(mapRequest('POST', '/api/v1/tasks/t%201/reminders', { type: 'RELATIVE', minuteOffset: 30 }, newId)).toEqual({
+      type: 'reminder_add',
+      tempId: 'generated-1',
+      args: { type: 'RELATIVE', minuteOffset: 30, id: 'generated-1', taskId: 't 1' },
+    });
+  });
+
+  it('maps a reminder delete with both ids', () => {
+    expect(mapRequest('DELETE', '/api/v1/tasks/t1/reminders/r1', undefined, newId)).toEqual({
+      type: 'reminder_delete',
+      args: { id: 'r1', taskId: 't1' },
+    });
+  });
+
+  it('keeps a plain task delete on its own route', () => {
+    expect(mapRequest('DELETE', '/api/v1/tasks/t1', undefined, newId)?.type).toBe('task_delete');
   });
 });
