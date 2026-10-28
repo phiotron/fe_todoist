@@ -24,6 +24,9 @@ import { TODAY_VIEW_KEY, layoutOf } from '../display/displayRules';
 import { displayRows } from '../display/groupTasks';
 import { useGroupContext } from '../display/useGroupContext';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
+import { CalendarEventRows } from '../calendar/CalendarEventRows';
+import { eventsOnDay } from '../calendar/calendarEvents';
+import { useCalendarEvents } from '../calendar/useCalendar';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { SelectionScope } from '../tasks/SelectionScope';
 import { useTaskSelection } from '../tasks/selection';
@@ -49,14 +52,23 @@ function TodayBody({ display }: { display: ViewDisplay }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
   const overdue = useOverdueReschedule();
+  // M13b: read-only events of the connected calendar (nothing is requested while no calendar is connected).
+  const calendar = useCalendarEvents(today, today);
+  const todayEvents = useMemo(() => eventsOnDay(calendar.events, today), [calendar.events, today]);
 
   const rows = useMemo(() => {
     const groups = groupTodayView(tasks, now, timeZone);
-    const result: TaskListRow[] = overdueRows(groups.overdue, {
-      collapsed,
-      onToggle: () => setCollapsed((value) => !value),
-      onReschedule: overdue.start,
-    }, palette);
+    const result: TaskListRow[] = [];
+    if (todayEvents.length > 0) {
+      result.push(nodeRow('calendar-events', <CalendarEventRows events={todayEvents} testID="today-calendar-events" showTitle />));
+    }
+    result.push(
+      ...overdueRows(groups.overdue, {
+        collapsed,
+        onToggle: () => setCollapsed((value) => !value),
+        onReschedule: overdue.start,
+      }, palette),
+    );
     if (groups.today.length > 0) {
       // Counts follow the Overdue block: a task completed a moment ago keeps its (struck) row until the refetch but is not counted.
       result.push(sectionRow('today', { title: formatDayHeader(today, today), count: openCount(groups.today) }), ...displayRows(groups.today, groupBy, ctx));
@@ -77,7 +89,7 @@ function TodayBody({ display }: { display: ViewDisplay }) {
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t, palette, displayPrefs, display.options.showCompleted]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t, palette, displayPrefs, display.options.showCompleted, todayEvents]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // M7: List / Board / Calendar of Today (saved with the Display).
   const layout = layoutOf(display.options);
@@ -163,3 +175,4 @@ function createTodayScreenStyles(palette: Palette) {
     loading: { padding: 24 },
   });
 }
+

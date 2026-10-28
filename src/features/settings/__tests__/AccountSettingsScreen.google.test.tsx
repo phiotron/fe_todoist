@@ -12,6 +12,8 @@ jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), re
 const ORDER = [
   'settings-section-password',
   'settings-section-google',
+  'settings-section-apple', // M13b: Apple and Facebook follow Google
+  'settings-section-facebook',
   'settings-section-twoFactor',
   'settings-section-deleteAccount',
 ];
@@ -37,6 +39,7 @@ describe('AccountSettingsScreen — Google', () => {
       .map((node) => node.props.testID as string)
       .filter((id) => ORDER.includes(id));
     expect(order).toEqual(ORDER);
-    expect(screen.getByText(vi.google.settings.notLinked)).toBeTruthy();
+    // Google, Apple and Facebook each say "not linked".
+    expect(screen.getAllByText(vi.google.settings.notLinked)).toHaveLength(3);
   });
 });

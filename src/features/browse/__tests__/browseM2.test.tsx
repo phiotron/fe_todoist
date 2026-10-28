@@ -1,4 +1,4 @@
-﻿import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeProject } from '../../../test/m1Fixtures';
@@ -11,7 +11,7 @@ jest.mock('expo-router', () => ({
 }));
 
 const routes = {
-  'GET /api/v1/projects': () => jsonResponse(200, [inboxProject, makeProject({ id: 'p-1', name: 'Nhà', isFavorite: true })]),
+  'GET /api/v1/projects': () => jsonResponse(200, [inboxProject, makeProject({ id: 'p-1', name: 'Nh�', isFavorite: true })]),
   'GET /api/v1/favorites': () =>
     jsonResponse(200, [
       { targetType: 'LABEL', targetId: 'l-1', createdAt: '2026-10-20T00:00:00Z' },
@@ -20,7 +20,7 @@ const routes = {
     ]),
   'GET /api/v1/labels': () =>
     jsonResponse(200, [makeLabel({ id: 'l-1', name: 'gap', isFavorite: true }), makeLabel({ id: 'l-2', name: 'nha' })]),
-  'GET /api/v1/filters': () => jsonResponse(200, [makeFilter({ id: 'f-1', name: 'Gấp', isFavorite: true })]),
+  'GET /api/v1/filters': () => jsonResponse(200, [makeFilter({ id: 'f-1', name: 'G?p', isFavorite: true })]),
 };
 
 describe('Browse (M2 parts of M-Browse)', () => {

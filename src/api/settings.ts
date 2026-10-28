@@ -1,4 +1,4 @@
-﻿import { apiFetch } from './client';
+import { apiFetch } from './client';
 
 /** Hand-written from spec 12.1.1 (backend DTO SettingsResponse) until Task 36 switches to generated types. */
 export type SettingsTheme = 'TASKLY' | 'MOONSTONE' | 'TANGERINE' | 'KALE' | 'BLUEBERRY' | 'LAVENDER' | 'RASPBERRY';
@@ -10,7 +10,7 @@ export interface SettingsResponse {
   appearance: SettingsAppearance;
   locale: string;
   timeZone: string;
-  /** 1 = Monday â€¦ 7 = Sunday. */
+  /** 1 = Monday … 7 = Sunday. */
   startDay: number;
   nextWeek: number;
   weekendStartDay: number;
@@ -21,13 +21,13 @@ export interface SettingsResponse {
   smartDateRecognition: boolean;
   swipeLeft: SettingsSwipeAction;
   swipeRight: SettingsSwipeAction;
-  /** 3â€“5 keys, "BROWSE" last, at most one pinned project / label / filter. */
+  /** 3–5 keys, "BROWSE" last, at most one pinned project / label / filter. */
   navTabs: string[];
   /** M4 (spec 12.1.1). Optional: a settings cache written before M4 does not have them (never read that as "off"). */
   remindersEnabled?: boolean;
   /** Minutes before a timed task's due time; null = automatic reminders off. */
   autoReminderMinutes?: number | null;
-  /** M6c: reopen the completed direct sub-tasks (â‰¤ 30) when a repeating task moves to its next due. Default false. */
+  /** M6c: reopen the completed direct sub-tasks (≤ 30) when a repeating task moves to its next due. Default false. */
   resetSubtasks?: boolean;
   /**
    * M6b (contract 2 / 8.2): Quick Add chips in display order (PROJECT always present, no duplicates; absent = hidden).
@@ -42,7 +42,7 @@ export interface SettingsResponse {
 
 /**
  * Backend DTO UpdateSettingsRequest: only the fields that change. Open to fields later milestones add (M4 reminders,
- * M6 Quick Add chipsâ€¦): they pass through untouched, `null` included (M4 `autoReminderMinutes: null` = off).
+ * M6 Quick Add chips…): they pass through untouched, `null` included (M4 `autoReminderMinutes: null` = off).
  */
 export type UpdateSettingsRequest = Partial<SettingsResponse> & Record<string, unknown>;
 

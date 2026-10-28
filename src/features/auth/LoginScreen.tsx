@@ -9,7 +9,9 @@ import { AuthLogo } from './AuthLogo';
 import { AuthTextField, type TextInputHandle } from './AuthTextField';
 import { describeAuthError, type AuthErrorView } from './authErrors';
 import { GoogleSignInButton, OrDivider } from './GoogleSignInButton';
+import { providerName } from '../social/socialErrors';
 import { useSession } from './session';
+import { SocialSignInButtons } from './SocialSignInButtons';
 import { useAuthStyles } from './styles';
 import { useFinishGoogleLink } from './useFinishGoogleLink';
 import { hasErrors, validateLogin, type LoginValues } from './validation';
@@ -94,7 +96,11 @@ export function LoginScreen() {
       ) : null}
       {pendingGoogleLink ? (
         <View testID="login-google-link-notice" accessibilityRole="alert" accessibilityLiveRegion="polite">
-          <Text style={styles.info}>{t('google.linkRequired')}</Text>
+          <Text style={styles.info}>
+            {pendingGoogleLink.provider
+              ? t('social.linkRequired', { provider: providerName(pendingGoogleLink.provider) })
+              : t('google.linkRequired')}
+          </Text>
           <Pressable testID="login-google-link-cancel" accessibilityRole="button" onPress={cancelGoogleLink}>
             <Text style={styles.link}>{t('google.cancelLink')}</Text>
           </Pressable>
@@ -108,6 +114,9 @@ export function LoginScreen() {
         onLinkRequired={() => undefined}
         onTwoFactorRequired={goToTwoFactor}
       />
+      <View style={{ marginTop: 12 }}>
+        <SocialSignInButtons testID="login-social" disabled={submitting} />
+      </View>
       <OrDivider />
       <AuthTextField
         testID="login-email"

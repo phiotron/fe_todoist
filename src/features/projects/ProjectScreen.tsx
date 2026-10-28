@@ -1,4 +1,4 @@
-﻿import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -83,7 +83,7 @@ function ProjectBody({
   const [displayOpen, setDisplayOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
-  const templateMenu = useProjectTemplateMenu(project, readOnly); // M11: Duplicate · Save as template · Apply a template
+  const templateMenu = useProjectTemplateMenu(project, readOnly); // M11: Duplicate � Save as template � Apply a template
   const [emailOpen, setEmailOpen] = useState(false);
 
   const showCompleted = display.options.showCompleted === true;
@@ -250,7 +250,7 @@ function ProjectBody({
   );
 }
 
-/** Waits for the saved Display, so the open tasks are fetched once with the right parameters (Quyáº¿t Ä‘á»‹nh 14). */
+/** Waits for the saved Display, so the open tasks are fetched once with the right parameters (Quyết định 14). */
 function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: boolean; onLeave: () => void }) {
   const styles = useThemedStyles(createProjectScreenStyles);
   const { palette } = useTheme();
@@ -261,7 +261,7 @@ function ProjectWithDisplay({ project, tab, onLeave }: { project: Project; tab: 
   return <ProjectBody project={project} tab={tab} onLeave={onLeave} display={display} />;
 }
 
-/** Project / Inbox screen (spec 9.2 "MÃ n dá»± Ã¡n / Inbox (List)"): header, menu â‹¯, sections, Completed tasks, read-only when archived. */
+/** Project / Inbox screen (spec 9.2 "Màn dự án / Inbox (List)"): header, menu ⋯, sections, Completed tasks, read-only when archived. */
 export function ProjectScreen({ projectId, tab = false }: ProjectScreenProps) {
   const styles = useThemedStyles(createProjectScreenStyles);
   const queryClient = useQueryClient();

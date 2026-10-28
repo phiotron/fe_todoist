@@ -6,6 +6,7 @@ import { PasswordSection } from './PasswordSection';
 import { ProfileSection } from './ProfileSection';
 import { SettingsLinkRow } from './SettingsLinkRow';
 import { SettingsPage } from './SettingsPage';
+import { SocialLinkSection } from './SocialLinkSection';
 import { SettingsSection } from './ui';
 import { useTwoFactorStatus } from '../two-factor/useTwoFactorStatus';
 
@@ -26,6 +27,8 @@ export function AccountSettingsScreen() {
       <ProfileSection />
       <PasswordSection />
       <GoogleLinkSection />
+      <SocialLinkSection provider="APPLE" />
+      <SocialLinkSection provider="FACEBOOK" />
       <SettingsSection testID="settings-section-twoFactor">
         <SettingsLinkRow
           testID="settings-row-two-factor"

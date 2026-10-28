@@ -1,4 +1,4 @@
-﻿import { router } from 'expo-router';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
@@ -56,6 +56,7 @@ export function SettingsScreen() {
       <SettingsLinkRow testID="settings-row-general" icon="sliders" label={t('settings.pages.general')} href="/settings/general" />
       <SettingsLinkRow testID="settings-row-date-time" icon="calendar" label={t('settings.pages.dateTime')} href="/settings/date-time" />
       <SettingsLinkRow testID="settings-row-reminders" icon="bell" label={t('reminders.settings.title')} href="/settings/reminders" />
+      <SettingsLinkRow testID="settings-row-calendar" icon="link" label={t('calendar.title')} href="/settings/calendar" />
       <SettingsLinkRow
         testID="settings-row-theme"
         icon="droplet"
