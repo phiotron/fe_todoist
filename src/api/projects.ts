@@ -1,6 +1,23 @@
 import { apiFetch, buildQuery } from './client';
 import type { CreateProjectRequest, MoveProjectRequest, Project, UpdateProjectRequest } from './models';
 
+/**
+ * PERM (rule chosen by the user on 28/10, differs from Todoist): what the caller may do in a project — ProjectResponse
+ * `capabilities` (hand-written until types.gen.ts is regenerated). Team project: Admin → all true; joined Member /
+ * Guest → only canCompleteTasks; preview → all false. Personal project (shared too) → all true.
+ */
+export interface ProjectCapabilities {
+  canEditTasks: boolean;
+  canCompleteTasks: boolean;
+  canManageSections: boolean;
+  canComment: boolean;
+}
+
+/** Older cached responses / fixtures lack the field: read it through features/projects/projectCapabilities.ts. */
+export interface ProjectCapabilityFields {
+  capabilities?: ProjectCapabilities | null;
+}
+
 const base = (projectId: string) => `/api/v1/projects/${encodeURIComponent(projectId)}`;
 
 /** Spec 12.2. Project and section writes are "last write wins" (no version). */

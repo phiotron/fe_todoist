@@ -122,6 +122,8 @@ export function describeError(error: unknown): ErrorView {
     case 401:
       return view(i18n.t('auth.errors.sessionExpired'));
     case 403:
+      // PERM: a Member / Guest of a team project tried a write other than completing a task
+      if (error.code === 'team-admin-only') return view(i18n.t('team.adminOnly.error'));
       return view(i18n.t('errors.forbidden'));
     case 404:
       return view(i18n.t('errors.notFound'));
