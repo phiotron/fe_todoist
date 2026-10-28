@@ -10,13 +10,24 @@ import {
   type SyncStatus,
 } from './types';
 
+/** What the server reported as changed, so the caller refreshes only what can show it (PERF). */
+export interface ServerChange {
+  /** Keys of `changes` that carry records ('tasks', 'labels'...) then the types of `deleted` ('TASK', 'LABEL'...). */
+  resources: string[];
+  /** The cache may be wrong in a way the lists above cannot tell (a refused / dropped command, no change list): refresh all. */
+  everything: boolean;
+}
+
+/** How a run ended: the scheduler backs off after 'failed' and waits for the connection after 'offline'. */
+export type SyncRunOutcome = 'done' | 'failed' | 'offline';
+
 export interface SyncEngineDeps {
   queue: CommandQueue;
   /** POST /api/v1/sync. Rejects with NetworkError (offline / timeout) or ApiError (whole-request failure). */
   send(request: SyncRequest): Promise<SyncResponse>;
   isOnline(): boolean;
   /** The server state may differ from the caches: refresh them (a sent command, a `changes` entry or a tombstone). */
-  onServerChanged(): void;
+  onServerChanged(change: ServerChange): void;
   storage: QueueStorage;
   maxAttempts?: number;
   tokenKey?: string;
@@ -24,7 +35,7 @@ export interface SyncEngineDeps {
 
 export interface SyncEngine {
   /** Sends the queued commands (≤ 100 per request, in order) until the queue is empty or a send fails; one at a time. */
-  run(): Promise<void>;
+  run(): Promise<SyncRunOutcome>;
   status(): SyncStatus;
   subscribe(listener: () => void): () => void;
   /** Forget the token (sign-out / new account). */
@@ -45,9 +56,10 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   let syncing = false;
   let rejected = 0;
   let token: string | null | undefined; // undefined = not read from disk yet
-  let running: Promise<void> | null = null;
+  let running: Promise<SyncRunOutcome> | null = null;
   let again = false;
   let generation = 0;
+  let failed = false; // the current run hit a send error or a temporary refusal
 
   const emit = () => [...listeners].forEach((l) => l());
   queue.subscribe(emit);
@@ -92,12 +104,13 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         writeToken(null); // a broken token: start over with a fresh one
         return true;
       }
+      failed = true;
       if (!(error instanceof NetworkError) && !(error instanceof ApiError && error.status >= 500)) {
         // The server refused the whole request for a reason a retry cannot fix (e.g. 400 on a malformed command):
         // count it against the batch so one poison command cannot block the queue for ever.
         const dropped = queue.recordFailure(new Set(batch.map((c) => c.uuid)), maxAttempts);
         rejected += dropped.length;
-        if (dropped.length > 0) deps.onServerChanged();
+        if (dropped.length > 0) deps.onServerChanged({ resources: [], everything: true });
       }
       return false;
     }
@@ -107,6 +120,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     const byUuid = new Map(response.results.map((r) => [r.uuid, r]));
     const finished = new Set<string>();
     const retry = new Set<string>();
+    let refused = 0;
     for (const command of batch) {
       const result = byUuid.get(command.uuid);
       if (!result || result.status === 'ok') {
@@ -115,31 +129,43 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         retry.add(command.uuid);
       } else {
         finished.add(command.uuid);
-        rejected += 1; // refused for good: the record goes back to the server's state on the refresh below
+        refused += 1; // refused for good: the record goes back to the server's state on the refresh below
       }
     }
     queue.remove(finished);
     const dropped = queue.recordFailure(retry, maxAttempts);
-    rejected += dropped.length;
+    rejected += refused + dropped.length;
+    if (retry.size > 0) failed = true;
 
-    const hasChanges =
-      Object.values(response.changes).some((list) => list.length > 0) || response.deleted.length > 0;
-    if (batch.length > 0 || hasChanges) deps.onServerChanged();
-    // A temporary failure stops this run (the next trigger retries); otherwise go on while commands remain.
+    const resources = [
+      ...Object.entries(response.changes)
+        .filter(([, list]) => list.length > 0)
+        .map(([key]) => key),
+      ...new Set(response.deleted.map((d) => d.type)),
+    ];
+    // Commands sent with the first-contact request come back with no change list: the caches cannot be narrowed.
+    const everything = refused + dropped.length > 0 || (batch.length > 0 && syncToken === null);
+    if (everything || resources.length > 0) deps.onServerChanged({ resources, everything });
+    // A temporary failure stops this run (the scheduler retries later); otherwise go on while commands remain.
     return retry.size === 0 && queue.size() > 0;
   }
 
-  async function loop(): Promise<void> {
+  async function loop(): Promise<SyncRunOutcome> {
     syncing = true;
+    failed = false;
     emit();
     try {
+      let first = true;
       do {
         again = false;
-        let more = true;
+        // A run asked for meanwhile only needs to send what was queued since: no empty pull right after one.
+        let more = first || queue.size() > 0;
+        first = false;
         while (more && deps.isOnline()) {
           more = await step();
         }
-      } while (again && deps.isOnline());
+      } while (again && !failed && deps.isOnline());
+      return failed ? 'failed' : deps.isOnline() ? 'done' : 'offline';
     } finally {
       syncing = false;
       running = null;
@@ -149,7 +175,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
 
   return {
     run() {
-      if (!deps.isOnline()) return Promise.resolve();
+      if (!deps.isOnline()) return Promise.resolve('offline');
       if (running) {
         again = true;
         return running;

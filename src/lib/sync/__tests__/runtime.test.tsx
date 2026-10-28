@@ -168,7 +168,8 @@ describe('M9 runtime', () => {
       syncQueue.enqueue({ type: 'label_add', tempId: 'a', args: { id: 'a', name: 'n' } });
     });
 
-    await waitFor(() => expect(screen.getByTestId('sync-status')).toBeOnTheScreen());
+    // PERF: the pill waits ~1 s (a short run never flashes it), then shows while the change still waits.
+    await waitFor(() => expect(screen.getByTestId('sync-status')).toBeOnTheScreen(), { timeout: 3000 });
   });
 });
 
