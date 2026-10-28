@@ -58,7 +58,12 @@ interface M2TaskWriteFields {
   labelIds?: string[];
 }
 
-export type Task = Strict<Schemas['TaskResponse']> & M2TaskFields;
+/** M8b: number of comments on the task (backend TaskResponse.commentCount; optional until types.gen.ts is regenerated). */
+interface M8bTaskFields {
+  commentCount?: number;
+}
+
+export type Task = Strict<Schemas['TaskResponse']> & M2TaskFields & M8bTaskFields;
 export type Project = Strict<Schemas['ProjectResponse']>;
 export type Section = Strict<Schemas['SectionResponse']>;
 export type Favorite = Strict<Schemas['FavoriteResponse']>;

@@ -10,6 +10,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { gutter, size, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
+import { NotificationBell } from '../notifications/NotificationBell';
 import { useProjects } from '../projects/useProjects';
 import { AccountDialog } from './AccountDialog';
 import { BROWSE_EXTRA_BLOCKS, BROWSE_SHORTCUTS } from './browseBlocks';
@@ -38,12 +39,13 @@ export function BrowseScreen() {
             onPress={() => setAccountOpen(true)}
             hitSlop={(size.touch - size.avatarL) / 2}
           >
-            <Avatar name={me.data?.displayName ?? '?'} seed={me.data?.id ?? 'me'} size="l" />
+            <Avatar name={me.data?.displayName ?? '?'} seed={me.data?.id ?? 'me'} size="l" uri={me.data?.avatarUrl} />
           </Pressable>
         }
         right={
           <View style={styles.headerActions}>
             <IconButton icon="search" label={t('search.open')} onPress={() => router.push('/search')} testID="browse-search" />
+            <NotificationBell />
             <IconButton icon="settings" label={t('settings.title')} testID="browse-settings" onPress={() => router.push('/settings')} />
           </View>
         }

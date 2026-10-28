@@ -29,7 +29,7 @@ export function SettingsScreen() {
     <SettingsPage testID="settings-screen" title={t('settings.title')}>
       {me.data ? (
         <View style={styles.hero}>
-          <Avatar name={me.data.displayName} seed={me.data.id} size="xl" testID="settings-avatar" />
+          <Avatar name={me.data.displayName} seed={me.data.id} size="xl" testID="settings-avatar" uri={me.data.avatarUrl} />
           <View style={styles.heroTexts}>
             <Text style={styles.name} numberOfLines={1}>
               {me.data.displayName}
@@ -56,6 +56,12 @@ export function SettingsScreen() {
       <SettingsLinkRow testID="settings-row-general" icon="sliders" label={t('settings.pages.general')} href="/settings/general" />
       <SettingsLinkRow testID="settings-row-date-time" icon="calendar" label={t('settings.pages.dateTime')} href="/settings/date-time" />
       <SettingsLinkRow testID="settings-row-reminders" icon="bell" label={t('reminders.settings.title')} href="/settings/reminders" />
+      <SettingsLinkRow
+        testID="settings-row-notifications"
+        icon="inbox"
+        label={t('notifications.settings.title')}
+        href="/settings/notifications"
+      />
       <SettingsLinkRow
         testID="settings-row-theme"
         icon="droplet"

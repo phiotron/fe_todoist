@@ -1,0 +1,34 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "open": "Notifications",
+    "openWithUnread": "Notifications, {{n}} unread",
+    "tabAll": "All",
+    "tabUnread": "Unread",
+    "tabUnreadCount": "Unread · {{n}}",
+    "markAllRead": "Mark all as read",
+    "emptyAll": "No notifications yet",
+    "emptyUnread": "You have read everything",
+    "someone": "Someone",
+    "mention": "{{name}} mentioned you in a comment",
+    "inProject": "Project {{project}}",
+    "onTask": "{{task}} · {{project}}",
+    "unreadDot": "Unread",
+    "settings": {
+      "title": "Notifications",
+      "hint": "Choose which notifications you want in your notification inbox.",
+      "projectTitle": "Project notifications",
+      "workspaceTitle": "Workspace notifications",
+      "saveFailed": "Could not save the setting",
+      "events": {
+        "COMMENT_MENTION": "Someone mentions me in a comment",
+        "COMMENT_ADDED": "A new comment on my task",
+        "TASK_ASSIGNED": "A task is assigned to me",
+        "TASK_COMPLETED": "A task I assigned is completed",
+        "MEMBER_JOINED": "A new member joins",
+        "INVITATION_ACCEPTED": "My invitation is accepted"
+      },
+      "notYet": "Not active yet"
+    }
+  }
+}

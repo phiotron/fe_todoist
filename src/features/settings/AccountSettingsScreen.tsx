@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { AvatarSection } from './AvatarSection';
 import { DeleteAccountSection } from './DeleteAccountSection';
 import { GoogleLinkSection } from './GoogleLinkSection';
 import { LogoutAllSection } from './LogoutAllSection';
@@ -23,6 +24,7 @@ export function AccountSettingsScreen() {
     : undefined;
   return (
     <SettingsPage testID="account-settings-screen" title={t('settings.pages.account')}>
+      <AvatarSection />
       <ProfileSection />
       <PasswordSection />
       <GoogleLinkSection />

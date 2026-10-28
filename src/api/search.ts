@@ -1,4 +1,5 @@
 import { apiFetch, buildQuery } from './client';
+import type { CommentSearchItem } from './comments';
 import type { Filter } from './filters';
 import type { Label } from './labels';
 import type { Page, Project, Task } from './models';
@@ -17,6 +18,8 @@ export interface SearchObjects {
   sections: SectionSearchItem[];
   labels: Label[];
   filters: Filter[];
+  /** M8b: matching comments, newest first (absent from servers older than M8b). */
+  comments?: CommentSearchItem[];
 }
 
 /** Open tasks by default; completed=true only for "search completed tasks". */

@@ -62,6 +62,17 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
         <Text style={styles.text}>{progress}</Text>
       </View>
     ) : null,
+    (task.commentCount ?? 0) > 0 ? (
+      <View
+        key="comments"
+        style={styles.item}
+        testID={`task-comments-${task.id}`}
+        accessibilityLabel={t('comments.count', { n: task.commentCount })}
+      >
+        <Feather name="message-circle" size={size.iconSmall - 2} color={palette.mute} />
+        <Text style={styles.text}>{task.commentCount}</Text>
+      </View>
+    ) : null,
     (task.labelIds?.length ?? 0) > 0 ? (
       <TaskLabels key="labels" labelIds={task.labelIds} testID={`task-labels-${task.id}`} />
     ) : null,

@@ -116,6 +116,8 @@ function ProjectBody({
     });
   }
   items.push({ key: 'display', label: t('projectScreen.menuDisplay'), icon: 'sliders', onPress: () => setDisplayOpen(true) });
+  // M8b: comments of the project (also of an archived one: reading is allowed, the composer hides itself).
+  items.push({ key: 'comments', label: t('comments.projectMenu'), icon: 'message-circle', onPress: () => router.push(`/project-comments/${project.id}`) });
   if (!readOnly) {
     items.push({ key: 'select', label: t('views.selectTasks'), icon: 'check-square', onPress: () => selection?.start() });
     items.push({ key: 'reorder-tasks', label: t('projectScreen.menuReorderTasks'), icon: 'move', requiresOnline: true, disabled: !body.manualOrder || noSectionRoots < 2, onPress: () => body.actions.reorderTasks(null) });

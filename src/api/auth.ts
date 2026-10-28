@@ -7,7 +7,12 @@ type Schemas = components['schemas'];
 /** springdoc may mark response fields optional; the M0 contract guarantees they are always present. */
 type Strict<T> = { [K in keyof T]-?: Exclude<T[K], undefined> };
 
-export type UserResponse = Strict<Schemas['UserResponse']>;
+/** M8b: avatarUrl = path of the avatar image (GET, needs Bearer) or null (backend UserResponse.avatarUrl). */
+interface M8bUserFields {
+  avatarUrl?: string | null;
+}
+
+export type UserResponse = Strict<Schemas['UserResponse']> & M8bUserFields;
 export type AuthResponse = Strict<Omit<Schemas['AuthResponse'], 'user'>> & { user: UserResponse };
 export type LoginRequest = Schemas['LoginRequest'];
 export type RegisterRequest = Schemas['RegisterRequest'];

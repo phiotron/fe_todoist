@@ -2,7 +2,9 @@ import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enCore from './locales/en.json';
+import enAvatar from './locales/en/avatar.json';
 import enBrowse from './locales/en/browse.json';
+import enComments from './locales/en/comments.json';
 import enCommon from './locales/en/common.json';
 import enDates from './locales/en/dates.json';
 import enDisplay from './locales/en/display.json';
@@ -11,6 +13,7 @@ import enFiltersLabels from './locales/en/filtersLabels.json';
 import enGoogle from './locales/en/google.json';
 import enLabels from './locales/en/labels.json';
 import enNav from './locales/en/nav.json';
+import enNotifications from './locales/en/notifications.json';
 import enPasswordReset from './locales/en/passwordReset.json';
 import enProjectScreen from './locales/en/projectScreen.json';
 import enProjects from './locales/en/projects.json';
@@ -26,7 +29,9 @@ import enTaskList from './locales/en/taskList.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
 import viCore from './locales/vi.json';
+import viAvatar from './locales/vi/avatar.json';
 import viBrowse from './locales/vi/browse.json';
+import viComments from './locales/vi/comments.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
 import viDisplay from './locales/vi/display.json';
@@ -35,6 +40,7 @@ import viFiltersLabels from './locales/vi/filtersLabels.json';
 import viGoogle from './locales/vi/google.json';
 import viLabels from './locales/vi/labels.json';
 import viNav from './locales/vi/nav.json';
+import viNotifications from './locales/vi/notifications.json';
 import viPasswordReset from './locales/vi/passwordReset.json';
 import viProjectScreen from './locales/vi/projectScreen.json';
 import viProjects from './locales/vi/projects.json';
@@ -57,7 +63,9 @@ import viViews from './locales/vi/views.json';
  */
 export const viTranslation = {
   ...viCore,
+  ...viAvatar,
   ...viBrowse,
+  ...viComments,
   ...viCommon,
   ...viDates,
   ...viDisplay,
@@ -66,6 +74,7 @@ export const viTranslation = {
   ...viGoogle,
   ...viLabels,
   ...viNav,
+  ...viNotifications,
   ...viPasswordReset,
   ...viProjectScreen,
   ...viProjects,
@@ -85,7 +94,9 @@ export const viTranslation = {
 /** English strings: same files and keys as viTranslation, under locales/en/. */
 export const enTranslation = {
   ...enCore,
+  ...enAvatar,
   ...enBrowse,
+  ...enComments,
   ...enCommon,
   ...enDates,
   ...enDisplay,
@@ -94,6 +105,7 @@ export const enTranslation = {
   ...enGoogle,
   ...enLabels,
   ...enNav,
+  ...enNotifications,
   ...enPasswordReset,
   ...enProjectScreen,
   ...enProjects,
