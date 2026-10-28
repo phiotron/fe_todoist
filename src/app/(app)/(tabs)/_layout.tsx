@@ -26,8 +26,8 @@ function TabsFab() {
   const placement = useAddButtonPlacement();
   const params = fabParamsFor(pathname, { today: dateKeyInZone(now, timeZone), upcomingDay });
   if (selecting) return null; // multi-select: the + would cover the right end of the action bar
-  // One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar; M3x: left / centre / right.
-  return <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} placement={placement} testID="tab-fab" />;
+  // One + for every tab (spec 9.2), a fixed gap above the real tab bar (100 from the bottom on a gesture phone); M3x: left / centre / right.
+  return <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} placement={placement} aboveTabBar testID="tab-fab" />;
 }
 
 export default function TabsLayout() {

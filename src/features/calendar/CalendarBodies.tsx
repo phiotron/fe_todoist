@@ -6,6 +6,7 @@ import type { Task } from '../../api/models';
 import { formatDayHeader, weekdayShort } from '../../lib/dates/format';
 import { formatTime } from '../../lib/dates/displayFormat';
 import { useIsOnline } from '../../lib/useIsOnline';
+import { FAB_CLEARANCE } from '../../components/tabBarMetrics';
 import { radius, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { Draggable, DropZone, useDragState, type DragPayload, type DropPoint } from '../dnd/dnd';
@@ -249,7 +250,7 @@ function createStyles(palette: Palette) {
     over: { backgroundColor: palette.soft },
     done: { textDecorationLine: 'line-through', color: palette.mute },
     empty: { ...type.meta, color: palette.mute, paddingVertical: 4 },
-    agenda: { paddingHorizontal: 16, paddingBottom: 168 },
+    agenda: { paddingHorizontal: 16, paddingBottom: FAB_CLEARANCE },
     agendaDay: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: palette.line, gap: 6 },
     agendaTitle: { color: palette.ink },
     chip: {
@@ -272,7 +273,7 @@ function createStyles(palette: Palette) {
     gutterCell: { justifyContent: 'center', paddingHorizontal: 2 },
     gutterText: { color: palette.mute },
     allDay: { minHeight: 32, padding: 2, gap: 2, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: palette.line },
-    gridBody: { paddingBottom: 168 },
+    gridBody: { paddingBottom: FAB_CLEARANCE },
     gridRow: { flexDirection: 'row' },
     hourLabel: { height: HOUR_HEIGHT, paddingHorizontal: 2 },
     dayColumn: { height: 24 * HOUR_HEIGHT, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: palette.line },

@@ -31,7 +31,7 @@ export function SectionHeader({ title, count, tone, collapsed, onToggle, right, 
       {collapsible ? (
         <Feather name={collapsed ? 'chevron-right' : 'chevron-down'} size={size.iconSmall} color={palette.ink2} />
       ) : null}
-      <Text style={[type.section, { color }]} numberOfLines={1}>
+      <Text style={[type.section, styles.title, { color }]} numberOfLines={1}>
         {title}
       </Text>
       {count !== undefined ? <Text style={styles.count}>{count}</Text> : null}
@@ -70,6 +70,8 @@ function createSectionHeaderStyles(palette: Palette) {
       borderBottomColor: palette.line,
     },
     label: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: size.touch },
+    /** A long title (Vietnamese, large system font) ends in "…" instead of pushing the count / actions off the row. */
+    title: { flexShrink: 1 },
     count: { ...type.metaStrong, color: palette.mute },
   });
 }

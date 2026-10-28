@@ -8,6 +8,7 @@ import { AddRow } from '../../components/AddRow';
 import { ErrorText } from '../../components/ErrorText';
 import { QueryStateView } from '../../components/QueryStateView';
 import { SectionHeader } from '../../components/SectionHeader';
+import { FAB_CLEARANCE } from '../../components/tabBarMetrics';
 import { useIsOnline } from '../../lib/useIsOnline';
 import type { PagedQuery } from '../../lib/usePagedList';
 import { useNow } from '../../lib/useNow';
@@ -206,7 +207,7 @@ function createBoardStyles(palette: Palette) {
   return StyleSheet.create({
     fill: { flex: 1, backgroundColor: palette.bg },
     pad: { paddingHorizontal: gutter },
-    board: { paddingHorizontal: gutter / 2, paddingBottom: 168, gap: 12 },
+    board: { paddingHorizontal: gutter / 2, paddingBottom: FAB_CLEARANCE, gap: 12 },
     column: {
       width: COLUMN_WIDTH,
       paddingHorizontal: 8,

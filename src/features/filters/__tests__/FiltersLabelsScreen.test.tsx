@@ -119,6 +119,48 @@ describe('FiltersLabelsScreen (M-Filters)', () => {
   });
 });
 
+describe('FiltersLabelsScreen task counts (design M-Filters, as Todoist)', () => {
+  const counts: ApiRoutes = {
+    'GET /api/v1/labels/counts': () =>
+      jsonResponse(200, [
+        { labelId: 'l-1', taskCount: 5 },
+        { labelId: 'l-2', taskCount: 0 },
+      ]),
+    'GET /api/v1/filters/counts': () => jsonResponse(200, [{ filterId: 'f-1', taskCount: 12 }]),
+  };
+
+  it('shows the open-task count at the right of each row and hides a zero', async () => {
+    await open(counts);
+    expect((await screen.findByTestId('fl-label-l-1-count')).props.children).toBe('5');
+    expect((await screen.findByTestId('fl-filter-f-1-count')).props.children).toBe('12');
+    expect(screen.queryByTestId('fl-label-l-2-count')).toBeNull();
+    // the favourite heart and the count share the right side
+    expect(screen.getByTestId('fl-label-l-2-favorite')).toBeTruthy();
+  });
+
+  it('keeps the rows (without numbers) when the counts cannot be loaded', async () => {
+    await open({
+      'GET /api/v1/labels/counts': () => jsonResponse(500, {}),
+      'GET /api/v1/filters/counts': () => jsonResponse(500, {}),
+    });
+    expect(await screen.findByTestId('fl-label-l-1')).toBeTruthy();
+    expect(screen.queryByTestId('fl-label-l-1-count')).toBeNull();
+    expect(screen.queryByTestId('fl-filter-f-1-count')).toBeNull();
+  });
+
+  it('refreshes the counts after a write (task / label / filter change)', async () => {
+    const { fetchMock } = await open({
+      ...counts,
+      'PUT /api/v1/labels/l-1/favorite': () => jsonResponse(200, { ...labels[0], isFavorite: true }),
+    });
+    await screen.findByTestId('fl-label-l-1-count');
+    const before = requestsTo(fetchMock, 'GET', '/api/v1/labels/counts').length;
+    await fireEvent(screen.getByTestId('fl-label-l-1'), 'longPress');
+    await fireEvent.press(screen.getByTestId('fl-actions-favorite'));
+    await waitFor(() => expect(requestsTo(fetchMock, 'GET', '/api/v1/labels/counts').length).toBeGreaterThan(before));
+  });
+});
+
 describe('FiltersLabelsScreen layout (no overlapping on a phone)', () => {
   // The swipe's heart action is drawn with absoluteFill under the row; a see-through row shows it on top of the icon + name.
   it('paints every row opaque over the swipe action (light)', async () => {

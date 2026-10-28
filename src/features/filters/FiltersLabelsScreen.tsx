@@ -15,13 +15,15 @@ import { QueryStateView } from '../../components/QueryStateView';
 import { ReorderModal } from '../../components/ReorderModal';
 import { SectionHeader } from '../../components/SectionHeader';
 import { SubHeader } from '../../components/SubHeader';
-import { gutter, layout, size, space, type, useTheme } from '../../theme';
+import { FAB_CLEARANCE } from '../../components/tabBarMetrics';
+import { gutter, space, type, useTheme } from '../../theme';
 import { SwipeToFavorite } from '../browse/SwipeToFavorite';
 import { LabelFormSheet } from '../labels/LabelFormSheet';
 import { useDeleteLabel, useLabels, useReorderLabel, useSetLabelFavorite } from '../labels/useLabels';
 import { projectColorHex } from '../projects/appearance';
 import { FilterFormSheet } from './FilterFormSheet';
 import { useDeleteFilter, useFilters, useReorderFilter, useSetFilterFavorite } from './useFilters';
+import { useTaskCounts } from './useTaskCounts';
 
 type Kind = 'label' | 'filter';
 type Target = { kind: 'label'; item: Label } | { kind: 'filter'; item: Filter };
@@ -32,6 +34,7 @@ export function FiltersLabelsScreen() {
   const { palette } = useTheme();
   const { query: filtersQuery, filters } = useFilters();
   const { query: labelsQuery, labels } = useLabels();
+  const { labelCounts, filterCounts } = useTaskCounts();
   const setLabelFavorite = useSetLabelFavorite();
   const setFilterFavorite = useSetFilterFavorite();
   const deleteLabel = useDeleteLabel();
@@ -112,6 +115,7 @@ export function FiltersLabelsScreen() {
   function row(target: Target) {
     const { item } = target;
     const prefix = `fl-${target.kind}-${item.id}`;
+    const count = (target.kind === 'label' ? labelCounts : filterCounts)[item.id] ?? 0;
     return (
       <SwipeToFavorite
         key={prefix}
@@ -127,9 +131,18 @@ export function FiltersLabelsScreen() {
             icon={target.kind === 'label' ? 'tag' : 'filter'}
             iconColor={projectColorHex(item.color)}
             right={
-              item.isFavorite ? (
-                <View testID={`${prefix}-favorite`} accessibilityLabel={t('filtersLabels.favoriteMark')}>
-                  <Feather name="heart" size={16} color={palette.mute} />
+              item.isFavorite || count > 0 ? (
+                <View style={styles.right}>
+                  {item.isFavorite ? (
+                    <View testID={`${prefix}-favorite`} accessibilityLabel={t('filtersLabels.favoriteMark')}>
+                      <Feather name="heart" size={16} color={palette.mute} />
+                    </View>
+                  ) : null}
+                  {count > 0 ? (
+                    <Text testID={`${prefix}-count`} style={[styles.count, { color: palette.mute }]}>
+                      {String(count)}
+                    </Text>
+                  ) : null}
                 </View>
               ) : undefined
             }
@@ -229,16 +242,14 @@ export function FiltersLabelsScreen() {
   );
 }
 
-/**
- * The tab layout's + floats `layout.fabBottom` above the screen bottom (left / centre / right, M3x): the list ends this
- * far below its last row so that row can scroll clear of the button whatever the tab bar / navigation bar height.
- */
-const FAB_CLEARANCE = layout.fabBottom + size.fab + space.m;
-
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   // No side padding here: rows pad themselves so the swipe action spans the full width (as Browse → Favorites).
+  // The bottom lets the last row scroll clear of the tab layout's + (left / centre / right, M3x).
   content: { paddingBottom: FAB_CLEARANCE },
+  /** Favourite heart then the open-task count (design M-Filters: "sm mute" number at the right). */
+  right: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  count: { ...type.meta },
   pad: { paddingHorizontal: gutter },
   /** Design M-Filters: 24 above the Labels heading. */
   laterBlock: { marginTop: space.xl },

@@ -5,7 +5,8 @@ import { tokenStore } from '../../../lib/tokenStore';
 import { mockFetch } from '../../../test/http';
 import { renderWithSettings } from '../../../test/renderSettings';
 import { serveSettings } from '../../../test/settingsFixtures';
-import { lightPalette as palette } from '../../../theme';
+import { tabBarHeight } from '../../../components/tabBarMetrics';
+import { lightPalette as palette, size } from '../../../theme';
 import { AppTabBar, type AppTabBarProps } from '../AppTabBar';
 
 function setup(index: number, emitPrevented = false, extraRoutes: { key: string; name: string }[] = []) {
@@ -82,6 +83,15 @@ describe('AppTabBar', () => {
     await render(<AppTabBar {...props} />);
     await fireEvent.press(screen.getByTestId('tab-inbox'));
     expect(navigateToTab).not.toHaveBeenCalled();
+  });
+
+  it('is exactly as tall as tabBarHeight says (the + is placed from it)', async () => {
+    const { props } = setup(1);
+    await render(<AppTabBar {...props} />);
+    const barView = screen.getByTestId('tab-inbox').parent;
+    expect(barView?.props.accessibilityRole).toBe('tablist');
+    const bar = StyleSheet.flatten(barView?.props.style);
+    expect(bar.paddingTop + size.tabItem + bar.borderTopWidth + bar.paddingBottom).toBe(tabBarHeight(0));
   });
 
   it('a route that is not in the bar (M2 search opened from Browse) selects no tab', async () => {
