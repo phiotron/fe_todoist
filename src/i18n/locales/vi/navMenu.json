@@ -1,0 +1,32 @@
+{
+  "navMenu": {
+    "title": "Menu điều hướng",
+    "intro": "Các mục hiện ở màn Duyệt. Mục đã có trên thanh tab không hiện lại ở đó.",
+    "showTaskCount": "Hiện số task",
+    "showTaskCountHint": "Hiện số task cạnh các mục menu ở màn Duyệt.",
+    "itemsTitle": "Mục menu",
+    "items": {
+      "INBOX": "Inbox",
+      "TODAY": "Hôm nay",
+      "UPCOMING": "Sắp tới",
+      "FILTERS_LABELS": "Bộ lọc & Nhãn",
+      "REPORTING": "Báo cáo",
+      "BROWSE_TEMPLATES": "Duyệt mẫu"
+    },
+    "onTabBar": "Đang ở thanh tab nên không hiện trong menu",
+    "comingLater": "Có ở bản sau",
+    "moveUp": "Đưa {{name}} lên",
+    "moveDown": "Đưa {{name}} xuống",
+    "toggle": "Hiện {{name}} trong menu",
+    "addButton": {
+      "title": "Vị trí nút +",
+      "LEFT": "Trái",
+      "CENTER": "Giữa",
+      "RIGHT": "Phải"
+    },
+    "syncHomeView": {
+      "title": "Đồng bộ trang mở đầu",
+      "hint": "Bật: dùng cùng trang mở đầu trên mọi thiết bị của bạn. Tắt: trang mở đầu chỉ đổi trên máy này."
+    }
+  }
+}

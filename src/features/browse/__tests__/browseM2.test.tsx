@@ -34,16 +34,11 @@ describe('Browse (M2 parts of M-Browse)', () => {
     expect(router.push).toHaveBeenCalledWith('/filters-labels');
   });
 
-  it('puts Filters & Labels between Today and Completed (M-Browse)', async () => {
+  it('puts Filters & Labels before Completed (M-Browse; Inbox / Today are on the default tab bar since M3x)', async () => {
     await renderSignedIn(<BrowseScreen />, routes);
     await screen.findByTestId('browse-shortcut-filters-labels');
     const order = screen.getAllByTestId(/^browse-shortcut-/).map((node) => node.props.testID);
-    expect(order).toEqual([
-      'browse-shortcut-inbox',
-      'browse-shortcut-today',
-      'browse-shortcut-filters-labels',
-      'browse-shortcut-completed',
-    ]);
+    expect(order).toEqual(['browse-shortcut-filters-labels', 'browse-shortcut-completed']);
   });
 
   it('lists favorite labels and filters with the projects and opens them', async () => {

@@ -26,13 +26,15 @@ function routes(extra: ApiRoutes = {}): ApiRoutes {
 }
 
 describe('BrowseScreen', () => {
-  it('shows the shortcuts with the Inbox count, favorites in the order added, and the project tree', async () => {
+  it('shows the shortcuts, favorites in the order added, and the project tree', async () => {
     await renderSignedIn(<BrowseScreen />, routes());
 
     expect(await screen.findByText('Công ty')).toBeOnTheScreen();
     expect(screen.getByText(viBrowse.browse.favorites)).toBeOnTheScreen();
     expect(screen.getByText(viBrowse.browse.myProjects)).toBeOnTheScreen();
-    expect(screen.getByTestId('browse-shortcut-inbox')).toHaveTextContent(/3$/);
+    // M3x Navigation menu: Inbox is on the default tab bar, so Browse does not repeat it (count: BrowseNavMenu.test).
+    expect(screen.queryByTestId('browse-shortcut-inbox')).toBeNull();
+    expect(screen.getByTestId('browse-shortcut-completed')).toBeOnTheScreen();
     const favorites = screen.getAllByTestId(/^favorite-project-p\d$/).map((node) => node.props.testID);
     expect(favorites).toEqual(['favorite-project-p3', 'favorite-project-p2']);
     expect(screen.getByTestId('browse-project-p1a')).toBeOnTheScreen();
@@ -50,7 +52,7 @@ describe('BrowseScreen', () => {
     expect(screen.getByTestId('browse-project-p1a')).toBeOnTheScreen();
   });
 
-  it('opens a project, the Completed screen and the Inbox tab', async () => {
+  it('opens a project and the Completed screen (the Inbox shortcut: BrowseNavMenu.test)', async () => {
     await renderSignedIn(<BrowseScreen />, routes());
     await screen.findByText('Công ty');
 
@@ -58,8 +60,6 @@ describe('BrowseScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/project/p1');
     await fireEvent.press(screen.getByTestId('browse-shortcut-completed'));
     expect(router.push).toHaveBeenCalledWith('/completed');
-    await fireEvent.press(screen.getByTestId('browse-shortcut-inbox'));
-    expect(router.navigate).toHaveBeenCalledWith('/inbox');
   });
 
   it('swiping a project right adds it to the favorites; swiping a favorite removes it', async () => {

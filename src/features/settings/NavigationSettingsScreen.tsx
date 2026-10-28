@@ -7,6 +7,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { ErrorText } from '../../components/ErrorText';
 import { IconButton } from '../../components/IconButton';
 import { ListRow } from '../../components/ListRow';
+import { AddButtonPlacementSection } from '../navMenu/AddButtonPlacementSection';
 import { SettingsPage } from './SettingsPage';
 import {
   DEFAULT_NAV_TABS,
@@ -65,6 +66,7 @@ export function NavigationSettingsScreen() {
 
   return (
     <SettingsPage testID="navigation-settings-screen" title={t('settings.pages.navigation')}>
+      <AddButtonPlacementSection />
       <Text style={styles.hint}>{t('settings.navigation.intro')}</Text>
       <SettingsSection testID="settings-section-navCurrent" title={t('settings.navigation.current')}>
         {tabs.map((key, index) => {

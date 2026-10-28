@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { Fab } from '../../../components/Fab';
 import { useUserTimeZone } from '../../../features/auth/useUserTimeZone';
+import { useAddButtonPlacement } from '../../../features/navMenu/useNavigationSettings';
 import { AppTabBar } from '../../../features/navigation/AppTabBar';
 import { fabParamsFor } from '../../../features/navigation/fabTarget';
 import { TAB_DEFS } from '../../../features/navigation/navTabs';
@@ -22,10 +23,11 @@ function TabsFab() {
   const timeZone = useUserTimeZone();
   const upcomingDay = useUpcomingDay();
   const selecting = useAnySelectionActive();
+  const placement = useAddButtonPlacement();
   const params = fabParamsFor(pathname, { today: dateKeyInZone(now, timeZone), upcomingDay });
   if (selecting) return null; // multi-select: the + would cover the right end of the action bar
-  // One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar.
-  return <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} testID="tab-fab" />;
+  // One + for every tab (spec 9.2), 100 above the bottom edge = above the tab bar; M3x: left / centre / right.
+  return <Fab label={t('views.addTask')} onPress={() => openQuickAdd(params)} placement={placement} testID="tab-fab" />;
 }
 
 export default function TabsLayout() {

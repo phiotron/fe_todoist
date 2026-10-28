@@ -16,10 +16,14 @@ export interface BrowseShortcut {
   count?: 'inbox';
 }
 
-/** Shortcuts of M-Browse: Inbox, Today, Filters & Labels (M2, pushed screen), Completed. */
+/**
+ * Shortcuts of M-Browse: Inbox, Today, Upcoming (M3x), Filters & Labels (M2, pushed screen), Completed. Which ones
+ * show, and in which order, follows Settings › Navigation menu (features/navMenu/browseShortcuts).
+ */
 export const BROWSE_SHORTCUTS: readonly BrowseShortcut[] = [
   { key: 'inbox', title: () => i18n.t('views.inbox.title'), icon: 'inbox', kind: 'tab', href: '/inbox', count: 'inbox' },
   { key: 'today', title: () => i18n.t('views.today.title'), icon: 'calendar', kind: 'tab', href: '/today' },
+  { key: 'upcoming', title: () => i18n.t('views.upcoming.title'), icon: 'grid', kind: 'tab', href: '/upcoming' },
   { key: 'filters-labels', title: () => i18n.t('filtersLabels.title'), icon: 'filter', kind: 'push', href: '/filters-labels', chevron: true },
   { key: 'completed', title: () => i18n.t('views.completed.title'), icon: 'check-circle', kind: 'push', href: '/completed', chevron: true },
 ];
