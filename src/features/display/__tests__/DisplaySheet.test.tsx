@@ -36,6 +36,8 @@ describe('DisplaySheet', () => {
       sortBy: 'PRIORITY',
       sortDirection: 'ASC',
       groupBy: 'NONE',
+      showCompleted: false,
+      layout: 'LIST',
     });
   });
 
@@ -68,7 +70,7 @@ describe('DisplaySheet', () => {
 
     await fireEvent.press(screen.getByTestId('display-completed'));
     await waitFor(() => expect(puts()).toHaveLength(2));
-    expect(puts()[1].body).toEqual({ sortBy: 'NAME', sortDirection: 'ASC', groupBy: 'NONE', showCompleted: true });
+    expect(puts()[1].body).toEqual({ sortBy: 'NAME', sortDirection: 'ASC', groupBy: 'NONE', showCompleted: true, layout: 'LIST' });
   });
 
   it('filters by priority, due and label', async () => {
@@ -91,6 +93,7 @@ describe('DisplaySheet', () => {
       filterPriority: 1,
       filterDue: 'NEXT_7_DAYS',
       filterLabelId: 'l-2',
+      layout: 'LIST',
     });
   });
 
@@ -115,6 +118,37 @@ describe('DisplaySheet', () => {
     expect(await screen.findByTestId('display-error')).toBeTruthy();
     await waitFor(() => expect(requestsTo(fetchMock, 'GET', '/api/v1/view-options').length).toBeGreaterThan(1));
     await waitFor(() => expect(selected('display-sort-date')).toBe(true));
+  });
+
+  it('M7: switches the layout at once and saves it', async () => {
+    const { fetchMock } = await openSheet('label:l-1');
+    const puts = () => requestsTo(fetchMock, 'PUT', '/api/v1/view-options/label:l-1');
+    await waitFor(() => expect(selected('display-layout-list')).toBe(true));
+    expect(screen.getByText('Bảng')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('display-layout-board'));
+
+    expect(selected('display-layout-board')).toBe(true);
+    await waitFor(() => expect(puts()).toHaveLength(1));
+    expect(puts()[0].body).toMatchObject({ layout: 'BOARD' });
+    await fireEvent.press(screen.getByTestId('display-layout-calendar'));
+    await waitFor(() => expect(puts()).toHaveLength(2));
+    expect(puts()[1].body).toMatchObject({ layout: 'CALENDAR' });
+  });
+
+  it('M7: offers Completed tasks on Today and Upcoming, the Added date grouping on Today, and hides Future occurrences until M6c', async () => {
+    const { fetchMock } = await openSheet('TODAY');
+    await fireEvent.press(await screen.findByTestId('display-completed'));
+    await waitFor(() => expect(requestsTo(fetchMock, 'PUT', '/api/v1/view-options/TODAY')).toHaveLength(1));
+    expect(requestsTo(fetchMock, 'PUT', '/api/v1/view-options/TODAY')[0].body).toMatchObject({ showCompleted: true });
+    expect(screen.getByTestId('display-group-added')).toBeTruthy();
+    expect(screen.queryByTestId('display-future-occurrences')).toBeNull();
+  });
+
+  it('M7: Upcoming has the Completed tasks switch but no Future occurrences switch yet', async () => {
+    await openSheet('UPCOMING');
+    expect(await screen.findByTestId('display-completed')).toBeTruthy();
+    expect(screen.queryByTestId('display-future-occurrences')).toBeNull();
   });
 
   it('locks every choice while offline', async () => {

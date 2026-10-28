@@ -17,6 +17,14 @@ const base = (taskId: string) => `/api/v1/tasks/${encodeURIComponent(taskId)}`;
 /** Display parameters of GET tasks; empty for the lists that do not take them (the server answers 400 otherwise). */
 export function displayQuery(params: TaskListParams): DisplayParams {
   if (params.view === 'overdue' || params.view === 'completed' || params.completed) return {};
+  // M7: the calendar order is fixed by the server (due, priority): only the filters of Display apply.
+  if (params.view === 'calendar') {
+    return {
+      filterPriority: params.filterPriority,
+      filterLabelId: params.filterLabelId,
+      filterDue: params.filterDue,
+    };
+  }
   return {
     sort: params.sort,
     order: params.order,

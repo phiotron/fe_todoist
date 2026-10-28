@@ -292,6 +292,7 @@ export function useProjectRows({ projectId, readOnly, display }: Options) {
   return {
     rows,
     query,
+    tasks,
     groups,
     sections,
     manualOrder,

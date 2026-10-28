@@ -16,6 +16,8 @@ interface WeekStripProps {
   onSelectDay: (day: string) => void;
   /** Horizontal swipe: +1 = next week, -1 = previous week. */
   onShiftWeek: (delta: 1 | -1) => void;
+  /** M7: press and hold a day to add a task on it. */
+  onLongPressDay?: (day: string) => void;
   testID?: string;
 }
 
@@ -23,7 +25,7 @@ interface WeekStripProps {
  * M-Upcoming strip: weekday letters over day numbers; today = accent circle, past days muted (disabled), the selected
  * day gets an accent ring. Swipe left / right changes the week.
  */
-export function WeekStrip({ days, today, maxDate, selected, onSelectDay, onShiftWeek, testID = 'week-strip' }: WeekStripProps) {
+export function WeekStrip({ days, today, maxDate, selected, onSelectDay, onShiftWeek, onLongPressDay, testID = 'week-strip' }: WeekStripProps) {
   const styles = useThemedStyles(createWeekStripStyles);
   // Redraw when the user changes the date / time format (the formatting functions read the same store).
   useDisplayPrefs();
@@ -58,6 +60,7 @@ export function WeekStrip({ days, today, maxDate, selected, onSelectDay, onShift
             accessibilityState={{ selected: isSelected, disabled: locked }}
             disabled={locked}
             onPress={() => onSelectDay(day)}
+            onLongPress={onLongPressDay ? () => onLongPressDay(day) : undefined}
             style={styles.cell}
           >
             <Text style={styles.weekday}>{weekdayShort(day)}</Text>

@@ -12,5 +12,5 @@ export function useGroupContext(groupBy: GroupBy): GroupContext {
   const now = useNow();
   const labels = useLabelMap(groupBy === 'LABEL');
   const todayKey = dateKeyInZone(now, timeZone);
-  return useMemo(() => ({ todayKey, labels }), [todayKey, labels]);
+  return useMemo(() => ({ todayKey, labels, timeZone }), [todayKey, labels, timeZone]);
 }

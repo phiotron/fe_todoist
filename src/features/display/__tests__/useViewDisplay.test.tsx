@@ -58,6 +58,7 @@ describe('useViewDisplay', () => {
       sortDirection: 'ASC',
       groupBy: 'NONE',
       showCompleted: true,
+      layout: 'LIST',
     });
     await waitFor(() => expect(result.current.options.showCompleted).toBe(true));
   });

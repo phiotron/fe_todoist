@@ -1,7 +1,9 @@
 import { makeViewOptions } from '../../../test/m2Fixtures';
 import {
   DUE_FILTERS,
+  LAYOUTS,
   VIEW_RULES,
+  layoutOf,
   defaultViewOptions,
   filterViewKey,
   isDefaultViewOptions,
@@ -36,17 +38,17 @@ describe('VIEW_RULES (spec 12.7 table)', () => {
   });
 
   it('allows grouping per view as in the spec', () => {
-    expect(VIEW_RULES.today.groups).toEqual(['NONE', 'PRIORITY', 'PROJECT', 'LABEL', 'DEADLINE']);
+    expect(VIEW_RULES.today.groups).toEqual(['NONE', 'PRIORITY', 'PROJECT', 'LABEL', 'DEADLINE', 'ADDED']);
     expect(VIEW_RULES.upcoming.groups).toEqual(['NONE']);
-    expect(VIEW_RULES.project.groups).toEqual(['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'LABEL']);
-    expect(VIEW_RULES.label.groups).toEqual(['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'PROJECT', 'LABEL']);
+    expect(VIEW_RULES.project.groups).toEqual(['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'LABEL', 'ADDED']);
+    expect(VIEW_RULES.label.groups).toEqual(['NONE', 'DATE', 'DEADLINE', 'PRIORITY', 'PROJECT', 'LABEL', 'ADDED']);
     expect(VIEW_RULES.project.sorts).not.toContain('PROJECT');
     expect(VIEW_RULES.today.sorts).not.toContain('MANUAL');
   });
 
-  it('has the Completed tasks switch only on projects', () => {
-    expect(VIEW_RULES.project.hasCompleted).toBe(true);
-    expect(VIEW_RULES.today.hasCompleted || VIEW_RULES.label.hasCompleted).toBe(false);
+  it('has the Completed tasks switch on projects, Today and Upcoming (M7), not on labels / filters', () => {
+    expect(VIEW_RULES.project.hasCompleted && VIEW_RULES.today.hasCompleted && VIEW_RULES.upcoming.hasCompleted).toBe(true);
+    expect(VIEW_RULES.label.hasCompleted || VIEW_RULES.filter.hasCompleted).toBe(false);
   });
 
   it('offers only the due filters the server accepts: no "no date" at Today, neither it nor "overdue" at Upcoming (400)', () => {
@@ -58,7 +60,7 @@ describe('VIEW_RULES (spec 12.7 table)', () => {
 
 describe('defaults and saved options', () => {
   it('gives the default of each view', () => {
-    expect(defaultViewOptions('TODAY')).toEqual(makeViewOptions('TODAY'));
+    expect(defaultViewOptions('TODAY')).toEqual(makeViewOptions('TODAY', { showCompleted: false }));
     expect(defaultViewOptions('project:p-1')).toEqual(
       makeViewOptions('project:p-1', { sortBy: 'MANUAL', showCompleted: false }),
     );
@@ -67,7 +69,7 @@ describe('defaults and saved options', () => {
   it('returns the saved options of the view', () => {
     const saved = [
       makeViewOptions('UPCOMING', { sortBy: 'NAME' }),
-      makeViewOptions('TODAY', { sortBy: 'PRIORITY', sortDirection: 'DESC', groupBy: 'PROJECT', filterDue: 'OVERDUE' }),
+      makeViewOptions('TODAY', { sortBy: 'PRIORITY', sortDirection: 'DESC', groupBy: 'PROJECT', filterDue: 'OVERDUE', showCompleted: false }),
     ];
     expect(resolveViewOptions('TODAY', saved)).toEqual(saved[1]);
   });
@@ -80,7 +82,7 @@ describe('defaults and saved options', () => {
       filterPriority: 9,
       showCompleted: true,
     });
-    expect(resolveViewOptions('UPCOMING', [odd])).toEqual(defaultViewOptions('UPCOMING'));
+    expect(resolveViewOptions('UPCOMING', [odd])).toEqual({ ...defaultViewOptions('UPCOMING'), showCompleted: true });
   });
 
   it('drops a saved due filter the view does not accept, keeps one it does', () => {
@@ -99,6 +101,37 @@ describe('defaults and saved options', () => {
   it('tells whether the options are the defaults', () => {
     expect(isDefaultViewOptions('TODAY', defaultViewOptions('TODAY'))).toBe(true);
     expect(isDefaultViewOptions('TODAY', makeViewOptions('TODAY', { filterPriority: 1 }))).toBe(false);
+  });
+});
+
+describe('M7 layout and future occurrences', () => {
+  it('offers the three layouts, List first, and reads an unknown / absent layout as List', () => {
+    expect(LAYOUTS).toEqual(['LIST', 'BOARD', 'CALENDAR']);
+    expect(layoutOf({ layout: 'BOARD' })).toBe('BOARD');
+    expect(layoutOf({})).toBe('LIST');
+    expect(layoutOf({ layout: 'TIMELINE' as never })).toBe('LIST');
+  });
+
+  it('keeps the saved layout of the view and sends it in the body', () => {
+    const saved = [makeViewOptions('label:l-1', { layout: 'CALENDAR' })];
+    const options = resolveViewOptions('label:l-1', saved);
+    expect(options.layout).toBe('CALENDAR');
+    expect(isDefaultViewOptions('label:l-1', options)).toBe(false);
+    expect(toViewOptionsBody(options).layout).toBe('CALENDAR');
+  });
+
+  it('has Future occurrences on Upcoming only, false by default', () => {
+    expect(VIEW_RULES.upcoming.hasFutureOccurrences).toBe(true);
+    expect(VIEW_RULES.today.hasFutureOccurrences || VIEW_RULES.project.hasFutureOccurrences).toBe(false);
+    expect(defaultViewOptions('UPCOMING').showFutureOccurrences).toBe(false);
+    expect(defaultViewOptions('TODAY').showFutureOccurrences).toBeNull();
+    expect(resolveViewOptions('TODAY', [makeViewOptions('TODAY', { showFutureOccurrences: true })]).showFutureOccurrences).toBeNull();
+    expect(toViewOptionsBody({ ...defaultViewOptions('UPCOMING'), showFutureOccurrences: true }).showFutureOccurrences).toBe(true);
+    expect(toViewOptionsBody(defaultViewOptions('TODAY'))).not.toHaveProperty('showFutureOccurrences');
+  });
+
+  it('sends group=added for the Added date grouping', () => {
+    expect(toDisplayParams(makeViewOptions('TODAY', { groupBy: 'ADDED' })).group).toBe('added');
   });
 });
 
@@ -131,8 +164,10 @@ describe('to query parameters and to the PUT body', () => {
       sortBy: 'DATE',
       sortDirection: 'ASC',
       groupBy: 'NONE',
+      showCompleted: false,
+      layout: 'LIST',
     });
     expect(toViewOptionsBody(makeViewOptions('project:p-1', { sortBy: 'MANUAL', showCompleted: true, filterDue: 'TODAY' })))
-      .toEqual({ sortBy: 'MANUAL', sortDirection: 'ASC', groupBy: 'NONE', filterDue: 'TODAY', showCompleted: true });
+      .toEqual({ sortBy: 'MANUAL', sortDirection: 'ASC', groupBy: 'NONE', filterDue: 'TODAY', showCompleted: true, layout: 'LIST' });
   });
 });

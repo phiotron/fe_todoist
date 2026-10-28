@@ -15,7 +15,12 @@ import { gutter, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { DisplaySheet } from '../display/DisplaySheet';
-import { TODAY_VIEW_KEY } from '../display/displayRules';
+import { BoardView } from '../board/BoardView';
+import { todayBoardColumns } from '../board/boardColumns';
+import { CalendarView } from '../calendar/CalendarView';
+import { calendarFilters, todayScope } from '../calendar/useCalendarTasks';
+import { CompletedTodayBlock } from '../display/CompletedTodayBlock';
+import { TODAY_VIEW_KEY, layoutOf } from '../display/displayRules';
 import { displayRows } from '../display/groupTasks';
 import { useGroupContext } from '../display/useGroupContext';
 import { useViewDisplay, type ViewDisplay } from '../display/useViewDisplay';
@@ -56,6 +61,10 @@ function TodayBody({ display }: { display: ViewDisplay }) {
       // Counts follow the Overdue block: a task completed a moment ago keeps its (struck) row until the refetch but is not counted.
       result.push(sectionRow('today', { title: formatDayHeader(today, today), count: openCount(groups.today) }), ...displayRows(groups.today, groupBy, ctx));
     }
+    // M7: Display → Completed tasks also shows what was completed today.
+    if (display.options.showCompleted === true) {
+      result.push(nodeRow('completed-today', <CompletedTodayBlock today={today} />));
+    }
     if (result.length > 0) {
       result.push(
         nodeRow(
@@ -68,7 +77,15 @@ function TodayBody({ display }: { display: ViewDisplay }) {
     }
     return result;
     // overdue.start is a fresh closure each render, but only opens the sheet.
-  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t, palette, displayPrefs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tasks, now, timeZone, collapsed, today, groupBy, ctx, t, palette, displayPrefs, display.options.showCompleted]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // M7: List / Board / Calendar of Today (saved with the Display).
+  const layout = layoutOf(display.options);
+  const boardColumns = useMemo(
+    () => todayBoardColumns(tasks, now, timeZone, today, groupBy, ctx),
+    [tasks, now, timeZone, today, groupBy, ctx],
+  );
+  const calendarScope = useMemo(() => todayScope(), []);
 
   const subtitle = query.isPending
     ? undefined
@@ -84,23 +101,29 @@ function TodayBody({ display }: { display: ViewDisplay }) {
       <View style={styles.error}>
         <ErrorText message={overdue.errorMessage} testID="today-error" />
       </View>
-      <TaskListView
-        rows={rows}
-        query={query}
-        showProject
-        testID="today-list"
-        empty={
-          <StateView
-            tone="ok"
-            icon="check-circle"
-            title={t('views.today.emptyTitle')}
-            message={t('views.today.emptyText')}
-            actionLabel={t('views.addTask')}
-            onAction={() => openQuickAdd({ dueDate: today })}
-            testID="today-empty"
-          />
-        }
-      />
+      {layout === 'BOARD' ? (
+        <BoardView columns={boardColumns} query={query} showProject testID="today-board" />
+      ) : layout === 'CALENDAR' ? (
+        <CalendarView scope={calendarScope} filters={calendarFilters(display.params)} testID="today-calendar" />
+      ) : (
+        <TaskListView
+          rows={rows}
+          query={query}
+          showProject
+          testID="today-list"
+          empty={
+            <StateView
+              tone="ok"
+              icon="check-circle"
+              title={t('views.today.emptyTitle')}
+              message={t('views.today.emptyText')}
+              actionLabel={t('views.addTask')}
+              onAction={() => openQuickAdd({ dueDate: today })}
+              testID="today-empty"
+            />
+          }
+        />
+      )}
       {overdue.sheet}
       <ActionMenu
         visible={menuOpen}

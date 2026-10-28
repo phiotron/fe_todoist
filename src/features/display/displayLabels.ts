@@ -1,4 +1,4 @@
-import type { DueFilter, GroupBy, SortBy } from '../../api/viewOptions';
+import type { DueFilter, GroupBy, Layout, SortBy } from '../../api/viewOptions';
 import i18n from '../../i18n';
 
 export function sortLabel(sort: SortBy): string {
@@ -31,8 +31,21 @@ export function groupLabel(group: GroupBy, inProject: boolean): string {
       return i18n.t('display.group.priority');
     case 'PROJECT':
       return i18n.t('display.group.project');
+    case 'ADDED':
+      return i18n.t('display.group.added');
     default:
       return i18n.t('display.group.label');
+  }
+}
+
+export function layoutLabel(layout: Layout): string {
+  switch (layout) {
+    case 'BOARD':
+      return i18n.t('display.layout.board');
+    case 'CALENDAR':
+      return i18n.t('display.layout.calendar');
+    default:
+      return i18n.t('display.layout.list');
   }
 }
 

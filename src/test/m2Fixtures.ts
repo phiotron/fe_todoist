@@ -39,6 +39,9 @@ export function makeViewOptions(viewKey: string, overrides: Partial<ViewOptions>
     filterLabelId: null,
     filterDue: null,
     showCompleted: null,
+    // M7
+    layout: 'LIST',
+    showFutureOccurrences: null,
     ...overrides,
   };
 }

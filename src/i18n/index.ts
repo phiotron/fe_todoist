@@ -2,7 +2,9 @@ import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enCore from './locales/en.json';
+import enBoard from './locales/en/board.json';
 import enBrowse from './locales/en/browse.json';
+import enCalendar from './locales/en/calendar.json';
 import enCommon from './locales/en/common.json';
 import enDates from './locales/en/dates.json';
 import enDisplay from './locales/en/display.json';
@@ -26,7 +28,9 @@ import enTaskList from './locales/en/taskList.json';
 import enTwoFactor from './locales/en/twoFactor.json';
 import enViews from './locales/en/views.json';
 import viCore from './locales/vi.json';
+import viBoard from './locales/vi/board.json';
 import viBrowse from './locales/vi/browse.json';
+import viCalendar from './locales/vi/calendar.json';
 import viCommon from './locales/vi/common.json';
 import viDates from './locales/vi/dates.json';
 import viDisplay from './locales/vi/display.json';
@@ -57,7 +61,9 @@ import viViews from './locales/vi/views.json';
  */
 export const viTranslation = {
   ...viCore,
+  ...viBoard,
   ...viBrowse,
+  ...viCalendar,
   ...viCommon,
   ...viDates,
   ...viDisplay,
@@ -85,7 +91,9 @@ export const viTranslation = {
 /** English strings: same files and keys as viTranslation, under locales/en/. */
 export const enTranslation = {
   ...enCore,
+  ...enBoard,
   ...enBrowse,
+  ...enCalendar,
   ...enCommon,
   ...enDates,
   ...enDisplay,

@@ -1,0 +1,12 @@
+{
+  "board": {
+    "noSection": "No Section",
+    "overdue": "Overdue",
+    "all": "All",
+    "empty": "No tasks",
+    "addTask": "Add task",
+    "dragHint": "Long press, then drag to move a task",
+    "moved": "Moved {{n}} task(s)",
+    "openTask": "Open {{name}}"
+  }
+}
