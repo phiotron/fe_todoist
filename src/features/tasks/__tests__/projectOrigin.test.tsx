@@ -55,12 +55,21 @@ describe('TaskMeta project origin (aggregated views)', () => {
     expect(screen.getByTestId('task-origin-t2')).toBeOnTheScreen();
   });
 
-  it('keeps a personal task as before, and never fetches the lists itself', async () => {
+  it('keeps a personal task as before, and loads each list at most once for many rows (cold start)', async () => {
     const fetchMock = mockFetch();
-    const task = makeTask({ id: 't3', projectId: 'p-own', projectName: 'Riêng' });
-    await renderWithProviders(<TaskMeta task={task} now={NOW} timeZone="Asia/Ho_Chi_Minh" showProject />);
+    const tasks = ['t3', 't4', 't5'].map((id) => makeTask({ id, projectId: 'p-own', projectName: 'Riêng' }));
+    await renderWithProviders(
+      <>
+        {tasks.map((task) => (
+          <TaskMeta key={task.id} task={task} now={NOW} timeZone="Asia/Ho_Chi_Minh" showProject />
+        ))}
+      </>,
+    );
     expect(screen.getByTestId('task-project-t3')).toHaveTextContent('Riêng');
     expect(screen.queryByTestId('task-origin-t3')).toBeNull();
-    expect(fetchMock).not.toHaveBeenCalled();
+    // Cold start: the rows fetch the shared lists themselves, deduplicated to one request per list.
+    const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+    expect(urls.filter((url) => /\/projects(\?|$)/.test(url)).length).toBeLessThanOrEqual(1);
+    expect(urls.filter((url) => /\/workspaces(\?|$)/.test(url)).length).toBeLessThanOrEqual(1);
   });
 });

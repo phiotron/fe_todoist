@@ -30,20 +30,23 @@ export function projectOrigin(
 }
 
 /**
- * Reads the projects / workspaces lists from the CACHE only (never fetches: the tab bar and the drawer keep them
- * loaded), so a long list does not start requests per row and nothing changes for screens without those lists.
+ * Reads the projects / workspaces lists through the shared query keys. Every row uses the same two keys, so React
+ * Query sends at most one request per list (deduplicated, then served from cache for ORIGIN_STALE_MS); a cold start
+ * no longer shows team tasks without their team name until another screen happens to load the lists.
  */
+const ORIGIN_STALE_MS = 5 * 60 * 1000;
+
 export function useProjectOrigin(projectId: string): ProjectOrigin {
   const project = useQuery({
     queryKey: queryKeys.projects.list(false),
     queryFn: () => projectsApi.list(false),
-    enabled: false,
+    staleTime: ORIGIN_STALE_MS,
     select: (list: Project[]) => list.find((item) => item.id === projectId) as ProjectLike | undefined,
   });
   const workspaces = useQuery({
     queryKey: queryKeys.workspaces.list(),
     queryFn: () => workspacesApi.list(),
-    enabled: false,
+    staleTime: ORIGIN_STALE_MS,
   });
   return projectOrigin(project.data, workspaces.data);
 }
