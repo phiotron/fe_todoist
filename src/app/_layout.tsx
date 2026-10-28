@@ -14,8 +14,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SessionProvider } from '../features/auth/session';
 import { SettingsProvider } from '../features/settings/SettingsProvider';
 import { SettingsThemeProvider } from '../features/settings/SettingsThemeProvider';
+import { installNativeGoogleSignIn } from '../lib/googleSignInAdapter';
 import { persistOptions, queryClient } from '../lib/queryClient';
 import { useTheme } from '../theme';
+
+// Once per app start: the real Google Sign-In behind the GoogleSignInPlatform port (tests install a fake instead).
+installNativeGoogleSignIn();
 
 /**
  * Status bar icons and every header / tab / sheet background of the navigators follow the active theme (the navigation

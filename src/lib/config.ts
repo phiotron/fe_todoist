@@ -17,5 +17,5 @@ export function resolveGoogleWebClientId(value: string | undefined): string | nu
   return trimmed ? trimmed : null;
 }
 
-// Dot notation on purpose: Expo inlines EXPO_PUBLIC_* only in this form. Read by the native Google adapter (not yet installed).
+// Dot notation on purpose: Expo inlines EXPO_PUBLIC_* only in this form. Read by the native Google adapter (src/lib/googleSignInAdapter.ts).
 export const GOOGLE_WEB_CLIENT_ID = resolveGoogleWebClientId(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);

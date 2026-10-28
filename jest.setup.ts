@@ -110,3 +110,35 @@ jest.mock('@react-native-community/datetimepicker', () => ({
   default: () => null,
   DateTimePickerAndroid: { open: jest.fn(), dismiss: jest.fn() },
 }));
+
+// Google Sign-In v16 is native-only. Each test can override these with jest.mocked(...).mockResolvedValueOnce(...).
+jest.mock('@react-native-google-signin/google-signin', () => {
+  const statusCodes = {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+    SIGN_IN_REQUIRED: 'SIGN_IN_REQUIRED',
+    NULL_PRESENTER: 'NULL_PRESENTER',
+  };
+  return {
+    statusCodes,
+    GoogleSignin: {
+      configure: jest.fn(),
+      hasPlayServices: jest.fn(async () => true),
+      signIn: jest.fn(async () => ({
+        type: 'success',
+        data: {
+          idToken: 'google-id-token',
+          serverAuthCode: null,
+          scopes: [],
+          user: { id: 'g-1', email: 'an@example.com', name: 'An', photo: null, familyName: null, givenName: 'An' },
+        },
+      })),
+      signOut: jest.fn(async () => null),
+    },
+    isSuccessResponse: (response: { type: string }) => response.type === 'success',
+    isCancelledResponse: (response: { type: string }) => response.type === 'cancelled',
+    isErrorWithCode: (error: unknown) =>
+      error instanceof Error && typeof (error as Error & { code?: unknown }).code === 'string',
+  };
+});

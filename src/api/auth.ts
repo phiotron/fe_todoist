@@ -12,22 +12,11 @@ export type AuthResponse = Strict<Omit<Schemas['AuthResponse'], 'user'>> & { use
 export type LoginRequest = Schemas['LoginRequest'];
 export type RegisterRequest = Schemas['RegisterRequest'];
 
-/** Hand-written (like the M5 backend contract, spec 12.1) until `npm run gen:api` runs against the merged backend. */
-export interface GoogleAuthRequest {
-  idToken: string;
-}
+/** POST auth/google body (generated: GoogleSignInRequest). */
+export type GoogleAuthRequest = Schemas['GoogleSignInRequest'];
 
-/**
- * GET me fields added in M5. Optional on purpose: AuthResponse.user and older servers may omit them,
- * and the UI must not crash on a cached user from before M5.
- */
-export interface IdentityFields {
-  hasPassword?: boolean;
-  /** Provider names, e.g. "GOOGLE". */
-  linkedProviders?: string[];
-}
-
-export type MeResponse = UserResponse & IdentityFields;
+/** GET me. UserResponse carries hasPassword / linkedProviders since backend M5 (generated). */
+export type MeResponse = UserResponse;
 
 export const authApi = {
   login: (body: LoginRequest) =>
