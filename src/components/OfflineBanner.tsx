@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useIsOnline } from '../lib/useIsOnline';
+import { useSyncStatus } from '../lib/sync/runtime';
+import { useIsConnected, useOfflineWritesEnabled } from '../lib/useIsOnline';
 import { radius, size, type, useThemedStyles, useTheme } from '../theme';
 import type { Palette } from '../theme/palette';
 
@@ -14,14 +15,22 @@ export function OfflineBanner() {
   const styles = useThemedStyles(createOfflineBannerStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
-  const online = useIsOnline();
+  const online = useIsConnected();
+  const queueing = useOfflineWritesEnabled();
+  const { pending } = useSyncStatus();
   const insets = useSafeAreaInsets();
   if (online) return null;
+  // M9: while the queue is on, offline edits are kept; say how many still wait for the network.
+  const message = !queueing
+    ? t('common.offlineBanner')
+    : pending > 0
+      ? t('sync.offlinePending', { n: pending })
+      : t('sync.offline');
   return (
     <View style={{ paddingTop: insets.top, backgroundColor: palette.bg }}>
       <View testID="offline-banner" accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.banner}>
         <Feather name="wifi-off" size={size.iconSmall} color={palette.p2} />
-        <Text style={styles.text}>{t('common.offlineBanner')}</Text>
+        <Text style={styles.text}>{message}</Text>
       </View>
     </View>
   );

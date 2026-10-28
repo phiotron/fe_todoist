@@ -5,6 +5,8 @@ import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
+import { SyncHost } from '../../features/sync/SyncHost';
+import { SyncStatusPill } from '../../features/sync/SyncStatusPill';
 import { TimeZoneBanner } from '../../features/settings/TimeZoneBanner';
 import { useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -31,6 +33,9 @@ export default function SignedInLayout() {
           <TimeZoneBanner />
           {/* M4: schedules the local reminders and handles the notification buttons; renders nothing. */}
           <ReminderHost />
+          {/* M9: offline queue + sync engine (renders nothing) and the "syncing" pill. */}
+          <SyncHost />
+          <SyncStatusPill />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />

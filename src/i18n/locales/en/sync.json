@@ -1,0 +1,14 @@
+{
+  "sync": {
+    "offline": "You are offline — changes are saved and sync when you are back online",
+    "offlinePending": "You are offline — {{n}} changes not synced yet",
+    "syncing": "Syncing…",
+    "pending": "{{n}} changes not synced yet",
+    "discard": {
+      "title": "Discard unsynced changes?",
+      "message": "{{n}} changes have not been synced to the server yet. Signing out now will lose them.",
+      "cancel": "Stay",
+      "confirm": "Sign out and discard"
+    }
+  }
+}

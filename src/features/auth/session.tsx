@@ -6,6 +6,8 @@ import { ApiError } from '../../api/errors';
 import { identitiesApi } from '../../api/identities';
 import { twoFactorApi } from '../../api/twoFactor';
 import { queryPersister } from '../../lib/queryClient';
+import { clearSyncData } from '../../lib/sync/runtime';
+import { confirmDiscardUnsynced } from '../sync/confirmDiscard';
 import { tokenStore } from '../../lib/tokenStore';
 import {
   TwoFactorExpiredError,
@@ -82,6 +84,12 @@ async function wipeCaches(clearMemory: () => void): Promise<void> {
   clearMemory();
   // The previous user's reminders must never fire after sign-out / session end / another sign-in (spec 5.8).
   await cancelAllReminders();
+  try {
+    // M9: the previous user's unsynced changes must never be sent under the next session.
+    await clearSyncData();
+  } catch {
+    // Storage failure must not block signing out.
+  }
   try {
     await queryPersister.removeClient();
   } catch {
@@ -350,6 +358,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [clearTwoFactor, setPendingGoogleLink, queryClient, nextGeneration]);
 
   const signOut = useCallback(async () => {
+    // M9: signing out loses changes that are not on the server yet — the user must agree first.
+    if (!(await confirmDiscardUnsynced())) return;
     try {
       const refreshToken = await tokenStore.getRefreshToken();
       if (refreshToken) await authApi.logout();

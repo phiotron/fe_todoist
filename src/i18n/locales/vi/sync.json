@@ -1,0 +1,14 @@
+{
+  "sync": {
+    "offline": "Bạn đang offline — thay đổi sẽ được lưu và đồng bộ khi có mạng",
+    "offlinePending": "Bạn đang offline — {{n}} thay đổi chưa đồng bộ",
+    "syncing": "Đang đồng bộ…",
+    "pending": "{{n}} thay đổi chưa đồng bộ",
+    "discard": {
+      "title": "Bỏ thay đổi chưa đồng bộ?",
+      "message": "Còn {{n}} thay đổi chưa được đồng bộ lên máy chủ. Đăng xuất bây giờ sẽ làm mất chúng.",
+      "cancel": "Ở lại",
+      "confirm": "Đăng xuất và bỏ"
+    }
+  }
+}

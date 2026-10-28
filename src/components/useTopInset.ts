@@ -1,6 +1,6 @@
 import { createContext, createElement, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useIsOnline } from '../lib/useIsOnline';
+import { useIsConnected } from '../lib/useIsOnline';
 
 interface TopBannerState {
   /** true while an online banner (the time zone one) already pads itself for the status bar. */
@@ -36,7 +36,7 @@ export function useCoverStatusBar(active: boolean): void {
  */
 export function useBannerTopInset(): number {
   const insets = useSafeAreaInsets();
-  return useIsOnline() ? insets.top : 0;
+  return useIsConnected() ? insets.top : 0;
 }
 
 /**
