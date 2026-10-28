@@ -255,6 +255,78 @@ describe('sync engine', () => {
     expect(requests).toHaveLength(0);
   });
 
+  // ---- PERF: what the runtime needs to refresh narrowly and to back off ----
+
+  it('tells which resources the server reported changed (changes keys and tombstone types)', async () => {
+    const { engine, state, onServerChanged } = setup();
+    await engine.run();
+    state.reply = () =>
+      response({ changes: { tasks: [{ id: 'x' }], labels: [], projects: [] }, deleted: [{ type: 'LABEL', id: 'l' }] });
+
+    await engine.run();
+
+    expect(onServerChanged).toHaveBeenCalledWith({ resources: ['tasks', 'LABEL'], everything: false });
+  });
+
+  it('asks for a full refresh when a command was refused (the optimistic patch must go)', async () => {
+    const { queue, engine, state, onServerChanged } = setup();
+    await engine.run();
+    queue.enqueue({ type: 'task_update', args: { id: 'gone' } });
+    state.reply = (req) => response({ results: [failed(req.commands[0].uuid, 404)] });
+
+    await engine.run();
+
+    expect(onServerChanged).toHaveBeenCalledWith(expect.objectContaining({ everything: true }));
+  });
+
+  it('asks for a full refresh when commands went out with the first-contact request (no change list)', async () => {
+    const { queue, engine, onServerChanged } = setup();
+    queue.enqueue(add('a'));
+    await engine.run();
+    expect(onServerChanged).toHaveBeenCalledWith(expect.objectContaining({ everything: true }));
+  });
+
+  it('answers how the run ended: done, failed or offline', async () => {
+    const { queue, engine, state } = setup();
+    await expect(engine.run()).resolves.toBe('done');
+
+    queue.enqueue(add('a'));
+    state.reply = () => {
+      throw new NetworkError();
+    };
+    await expect(engine.run()).resolves.toBe('failed');
+
+    state.reply = (req) => response({ results: [failed(req.commands[0].uuid, 409, 'version-conflict')] });
+    await expect(engine.run()).resolves.toBe('failed');
+
+    state.online = false;
+    await expect(engine.run()).resolves.toBe('offline');
+  });
+
+  it('a run asked for while one is on the wire sends the new commands but no extra empty pull', async () => {
+    const { queue, engine, state, requests } = setup();
+    await engine.run(); // token
+    queue.enqueue(add('a'));
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    state.reply = async (req) => {
+      calls += 1;
+      if (calls === 1) await gate;
+      return response({ results: req.commands.map((c) => ok(c.uuid)) });
+    };
+
+    const first = engine.run();
+    queue.enqueue(add('b'));
+    const second = engine.run();
+    release();
+    await Promise.all([first, second]);
+
+    expect(requests.slice(1).map((r) => r.commands.length)).toEqual([1, 1]);
+  });
+
   it('reports status changes to subscribers', async () => {
     const { queue, engine } = setup();
     const seen: number[] = [];

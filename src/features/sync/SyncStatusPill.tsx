@@ -6,6 +6,7 @@ import { useSyncStatus } from '../../lib/sync/runtime';
 import { useIsConnected } from '../../lib/useIsOnline';
 import { radius, size, type, useThemedStyles, useTheme } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { useSyncPill } from './useSyncPill';
 
 /**
  * M9 sync indicator while CONNECTED ("Đang đồng bộ…" / "N thay đổi chưa đồng bộ" when a retry is waiting). Offline the
@@ -17,9 +18,11 @@ export function SyncStatusPill() {
   const { palette } = useTheme();
   const { t } = useTranslation();
   const connected = useIsConnected();
-  const { pending, syncing } = useSyncStatus();
+  // PERF: only a run that lasts (> 1 s) or changes still waiting show it; a short background sync never flashes it.
+  const view = useSyncPill(useSyncStatus(), connected);
   const insets = useSafeAreaInsets();
-  if (!connected || (!syncing && pending === 0)) return null;
+  if (!view) return null;
+  const { pending, syncing } = view;
   const label = syncing ? t('sync.syncing') : t('sync.pending', { n: pending });
   return (
     <View pointerEvents="none" style={[styles.host, { top: insets.top + 4 }]}>
