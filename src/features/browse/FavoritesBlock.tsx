@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { gutter, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useFilters } from '../filters/useFilters';
 import { useLabels } from '../labels/useLabels';
-import { useProjects } from '../projects/useProjects';
+import type { Project } from '../../api/models';
+import { useProjects, useSetProjectFavorite } from '../projects/useProjects';
 import { BrowseProjectRow } from './BrowseProjectRow';
 import { FavoriteItemRow } from './FavoriteItemRow';
 import { resolveFavorites } from './resolveFavorites';
@@ -17,6 +18,11 @@ export function FavoritesBlock() {
   const { t } = useTranslation();
   const favorites = useFavoriteTargets();
   const { all } = useProjects();
+  const mutateFavorite = useSetProjectFavorite().mutate;
+  const toggleFavorite = useCallback(
+    (project: Project) => mutateFavorite({ projectId: project.id, favorite: !project.isFavorite }),
+    [mutateFavorite],
+  );
   const wantsLabels = favorites.some((favorite) => favorite.targetType === 'LABEL');
   const wantsFilters = favorites.some((favorite) => favorite.targetType === 'FILTER');
   const { labels } = useLabels(wantsLabels);
@@ -30,7 +36,7 @@ export function FavoritesBlock() {
       </Text>
       {entries.map((entry) =>
         entry.type === 'PROJECT' ? (
-          <BrowseProjectRow key={`PROJECT-${entry.id}`} project={entry.project} idPrefix="favorite-project" />
+          <BrowseProjectRow key={`PROJECT-${entry.id}`} project={entry.project} idPrefix="favorite-project" onToggleFavorite={toggleFavorite} />
         ) : (
           <FavoriteItemRow key={`${entry.type}-${entry.id}`} entry={entry} />
         ),
