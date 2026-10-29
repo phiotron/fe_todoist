@@ -1,18 +1,41 @@
 import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 
 export function isOnlineState(state: Pick<NetInfoState, 'isConnected'>): boolean {
   return state.isConnected !== false;
 }
 
+// PERF4: ONE NetInfo listener for the whole app. A card / row / chip that asks `useIsOnline` used to open its own
+// listener (300+ on a board), each one setState-ing every component on every connectivity event.
+let connected = true;
+const connectedListeners = new Set<() => void>();
+let releaseNetInfo: (() => void) | undefined;
+
+function subscribeConnected(listener: () => void): () => void {
+  connectedListeners.add(listener);
+  if (connectedListeners.size === 1) {
+    const stop = NetInfo.addEventListener((state) => {
+      const next = isOnlineState(state);
+      if (next === connected) return;
+      connected = next;
+      [...connectedListeners].forEach((notify) => notify());
+    });
+    releaseNetInfo = () => stop?.();
+  }
+  return () => {
+    connectedListeners.delete(listener);
+    if (connectedListeners.size === 0) {
+      releaseNetInfo?.();
+      releaseNetInfo = undefined;
+      connected = true; // like a fresh useState(true): a released subscription keeps nothing
+    }
+  };
+}
+const getConnected = () => connected;
+
 /** true while the device has a network connection (the raw state; the offline banner and insets use this one). */
 export function useIsConnected(): boolean {
-  const [online, setOnline] = useState(true);
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => setOnline(isOnlineState(state)));
-    return () => unsubscribe?.();
-  }, []);
-  return online;
+  return useSyncExternalStore(subscribeConnected, getConnected, getConnected);
 }
 
 // ---- M9: while the offline queue is running (signed in) a queueable write may start without a connection ----

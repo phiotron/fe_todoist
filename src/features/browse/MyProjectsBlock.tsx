@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { describeError } from '../../api/describeError';
+import type { Project } from '../../api/models';
 import { ActionMenu } from '../../components/ActionMenu';
 import { IconButton } from '../../components/IconButton';
 import { ReorderModal } from '../../components/ReorderModal';
@@ -10,7 +11,7 @@ import { gutter, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { projectDisplayName } from '../projects/appearance';
 import { projectTreeRows } from '../projects/projectTree';
-import { useProjects, useReorderProject } from '../projects/useProjects';
+import { useProjects, useReorderProject, useSetProjectFavorite } from '../projects/useProjects';
 import { BrowseProjectRow } from './BrowseProjectRow';
 
 /** "Dự án của tôi": the project tree (collapsible), + creates a project, ⋯ → archived projects / sort. */
@@ -19,6 +20,12 @@ export function MyProjectsBlock() {
   const { t } = useTranslation();
   const { all } = useProjects();
   const reorder = useReorderProject();
+  const setFavorite = useSetProjectFavorite();
+  const mutateFavorite = setFavorite.mutate;
+  const toggleFavorite = useCallback(
+    (project: Project) => mutateFavorite({ projectId: project.id, favorite: !project.isFavorite }),
+    [mutateFavorite],
+  );
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
@@ -26,14 +33,14 @@ export function MyProjectsBlock() {
   // Spec 12.4: one container at a time — here the root projects; sub-projects are sorted from their parent's menu.
   const roots = useMemo(() => projectTreeRows(all).filter((row) => row.depth === 1), [all]);
 
-  function toggle(id: string) {
+  const toggle = useCallback((id: string) => {
     setCollapsed((current) => {
       const next = new Set(current);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }
+  }, []);
 
   return (
     <View>
@@ -52,7 +59,8 @@ export function MyProjectsBlock() {
           depth={depth}
           hasChildren={hasChildren}
           collapsed={collapsed.has(project.id)}
-          onToggleCollapse={() => toggle(project.id)}
+          onToggleCollapse={toggle}
+          onToggleFavorite={toggleFavorite}
           idPrefix="browse-project"
         />
       ))}

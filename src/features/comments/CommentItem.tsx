@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { CommentResponse } from '../../api/comments';
@@ -20,7 +21,7 @@ interface CommentItemProps {
 }
 
 /** One comment: avatar + name + time, text with accent @mentions, file card, reaction chips; long press = actions. */
-export function CommentItem({ comment, now, timeZone, mentionNames, readOnly, onLongPress, onToggleReaction }: CommentItemProps) {
+export const CommentItem = memo(function CommentItem({ comment, now, timeZone, mentionNames, readOnly, onLongPress, onToggleReaction }: CommentItemProps) {
   const styles = useThemedStyles(createCommentItemStyles);
   const { t } = useTranslation();
   const author = comment.author;
@@ -74,7 +75,7 @@ export function CommentItem({ comment, now, timeZone, mentionNames, readOnly, on
       </View>
     </Pressable>
   );
-}
+});
 
 function createCommentItemStyles(palette: Palette) {
   return StyleSheet.create({

@@ -22,6 +22,16 @@ export const REFRESH_TOKEN_KEY = 'taskly.refreshToken';
  * written only through this object, so the last value read or written is kept in memory: a read hits the Keystore once
  * per process, a write / clear updates the memory first, a failed read is never remembered.
  */
+// PERF4: readers that keep a copy of the access token (useAuthImageSource) drop it when the tokens change.
+const changeListeners = new Set<() => void>();
+export function onTokensChanged(listener: () => void): () => void {
+  changeListeners.add(listener);
+  return () => {
+    changeListeners.delete(listener);
+  };
+}
+const announceChange = () => changeListeners.forEach((listener) => listener());
+
 type Slot = { value: string | null } | null;
 
 export function createTokenStore(): TokenStore {
@@ -57,6 +67,7 @@ export function createTokenStore(): TokenStore {
       await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
       access = { value: accessToken };
       refresh = { value: refreshToken };
+      announceChange();
     },
     async clear() {
       accessRead = null;
@@ -66,6 +77,7 @@ export function createTokenStore(): TokenStore {
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
       access = { value: null };
       refresh = { value: null };
+      announceChange();
     },
   };
 }

@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ACTIVITY_EVENT_TYPES, type ActivityEventType, type ActivityItem, type ActivityParams } from '../../api/activity';
 import { AppButton } from '../../components/AppButton';
 import { BottomSheet } from '../../components/BottomSheet';
@@ -37,6 +37,41 @@ interface ActivityLogViewProps {
 }
 
 const ALL = 'ALL';
+const rowKey = (row: Row) => row.key;
+
+interface ActivityItemRowProps {
+  item: ActivityItem;
+  who: string | undefined;
+  /** Project name to show under the sentence, undefined = none. */
+  inProject: string | undefined;
+  testID: string;
+}
+
+const ActivityItemRow = memo(function ActivityItemRow({ item, who, inProject, testID }: ActivityItemRowProps) {
+  const styles = useThemedStyles(createStyles);
+  const { palette } = useTheme();
+  const { t } = useTranslation();
+  const openable = item.objectType === 'TASK' && item.eventType !== 'DELETED';
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole={openable ? 'button' : 'text'}
+      disabled={!openable}
+      onPress={() => router.push(`/task/${item.objectId}`)}
+      style={styles.item}
+    >
+      <Feather name={iconFor(item.eventType)} size={size.icon} color={palette.acc} />
+      <View style={styles.itemTexts}>
+        <Text style={styles.itemTitle}>
+          {who !== undefined
+            ? t(`activity.eventBy.${item.objectType}.${item.eventType}`, { who, name: item.objectName })
+            : t(`activity.event.${item.objectType}.${item.eventType}`, { name: item.objectName })}
+        </Text>
+        {inProject !== undefined ? <Text style={styles.itemMeta}>{t('activity.inProject', { project: inProject })}</Text> : null}
+      </View>
+    </Pressable>
+  );
+});
 
 /**
  * Activity log list (M10 plan F5, design M-Completed tab "Activity log"): events newest first, grouped by day in the
@@ -65,7 +100,8 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
   // A shared project (team project or one with collaborators) that I have joined: its members can be told apart.
   const sharedProjectId = effectiveSharing && (effectiveSharing.isTeamProject || effectiveSharing.memberCount > 1) && effectiveSharing.joined ? effectiveProjectId : undefined;
   const members = useProjectMembers(sharedProjectId);
-  const people = sharedProjectId ? (members.data ?? []) : [];
+  const memberList = members.data;
+  const people = useMemo(() => (sharedProjectId ? (memberList ?? []) : []), [sharedProjectId, memberList]);
   const personId = chosenPerson && chosenPerson.projectId === effectiveProjectId ? chosenPerson.id : undefined;
   const chosenMember = people.find((person) => person.userId === personId);
 
@@ -142,41 +178,27 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
     </View>
   ) : null;
 
-  function renderRow({ item: row }: { item: Row }) {
-    if (row.type === 'header') {
-      return (
-        <View style={styles.section}>
-          <SectionHeader title={row.title} count={row.count} testID={`${testID}-${row.key}`} />
-        </View>
-      );
-    }
-    const { item } = row;
-    const openable = item.objectType === 'TASK' && item.eventType !== 'DELETED';
-    // In a shared project the line names who did it ("Bạn" only for my own events).
-    const byOther = people.length > 0 && me.data !== undefined && item.initiatorId !== me.data.id;
-    const who = byOther ? (people.find((person) => person.userId === item.initiatorId)?.displayName ?? t('activity.someone')) : undefined;
-    return (
-      <Pressable
-        testID={`${testID}-item-${item.id}`}
-        accessibilityRole={openable ? 'button' : 'text'}
-        disabled={!openable}
-        onPress={() => router.push(`/task/${item.objectId}`)}
-        style={styles.item}
-      >
-        <Feather name={iconFor(item.eventType)} size={size.icon} color={palette.acc} />
-        <View style={styles.itemTexts}>
-          <Text style={styles.itemTitle}>
-            {who !== undefined
-              ? t(`activity.eventBy.${item.objectType}.${item.eventType}`, { who, name: item.objectName })
-              : t(`activity.event.${item.objectType}.${item.eventType}`, { name: item.objectName })}
-          </Text>
-          {item.projectName && item.objectType !== 'PROJECT' ? (
-            <Text style={styles.itemMeta}>{t('activity.inProject', { project: projectLabel(item.projectId, item.projectName) })}</Text>
-          ) : null}
-        </View>
-      </Pressable>
-    );
-  }
+  const meId = me.data?.id;
+  const meLoaded = me.data !== undefined;
+  // PERF4: stable renderItem + a memoised row: a tick or a sheet opening does not redraw the rows that are mounted.
+  const renderRow = useCallback(
+    ({ item: row }: { item: Row }) => {
+      if (row.type === 'header') {
+        return (
+          <View style={styles.section}>
+            <SectionHeader title={row.title} count={row.count} testID={`${testID}-${row.key}`} />
+          </View>
+        );
+      }
+      const { item } = row;
+      // In a shared project the line names who did it ("Bạn" only for my own events).
+      const byOther = people.length > 0 && meLoaded && item.initiatorId !== meId;
+      const who = byOther ? (people.find((person) => person.userId === item.initiatorId)?.displayName ?? t('activity.someone')) : undefined;
+      const inProject = item.projectName && item.objectType !== 'PROJECT' ? projectLabel(item.projectId, item.projectName) : undefined;
+      return <ActivityItemRow item={item} who={who} inProject={inProject} testID={`${testID}-item-${item.id}`} />;
+    },
+    [styles, testID, people, meLoaded, meId, t, projectLabel],
+  );
 
   return (
     <View style={styles.fill} testID={testID}>
@@ -186,8 +208,12 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
       ) : (
         <FlatList
           data={rows}
-          keyExtractor={(row) => row.key}
+          keyExtractor={rowKey}
           renderItem={renderRow}
+          initialNumToRender={12}
+          maxToRenderPerBatch={8}
+          windowSize={7}
+          removeClippedSubviews={Platform.OS === 'android'}
           contentContainerStyle={styles.content}
           onEndReached={() => {
             if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();

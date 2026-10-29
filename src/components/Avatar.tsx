@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { useAuthImageSource } from '../lib/useAuthImageSource';
 import { AVATAR_COLORS, fonts, size, useThemedStyles, useTheme } from '../theme';
@@ -23,7 +23,7 @@ function colorFor(seed: string): string {
 }
 
 /** .av: round initials on one of the 5 avatar colours (stable per user). Read as an image named after the user, not as the bare initials. */
-export function Avatar({
+export const Avatar = memo(function Avatar({
   name,
   seed,
   size: avatarSize = 'm',
@@ -63,7 +63,7 @@ export function Avatar({
       ) : null}
     </View>
   );
-}
+});
 
 function createAvatarStyles(palette: Palette) {
   return StyleSheet.create({ circle: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } });

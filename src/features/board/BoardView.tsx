@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { describeError } from '../../api/describeError';
 import type { Task } from '../../api/models';
 import { AddRow } from '../../components/AddRow';
@@ -18,7 +18,7 @@ import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { DragProvider, Draggable, DropZone, useDragState, type DragPayload } from '../dnd/dnd';
 import { openQuickAdd } from '../quickAdd/quickAddTarget';
 import { Checkbox } from '../tasks/Checkbox';
-import { useTaskSelection } from '../tasks/selection';
+import { useTaskSelection, type TaskSelection } from '../tasks/selection';
 import { TaskMeta } from '../tasks/TaskMeta';
 import { useToggleTask } from '../tasks/useTaskActions';
 import { isDraggable, planColumnDrop, type BoardColumn } from './boardColumns';
@@ -46,34 +46,59 @@ export function dragTaskIds(task: Task, selection: { active: boolean; ids: Reado
   return [...selection.ids].filter((id) => draggable.has(id));
 }
 
-function BoardCard({ task, readOnly, showProject, allTasks }: { task: Task; readOnly: boolean; showProject: boolean; allTasks: readonly Task[] }) {
+interface BoardCardProps {
+  task: Task;
+  readOnly: boolean;
+  showProject: boolean;
+  now: Date;
+  timeZone: string;
+  online: boolean;
+  selecting: boolean;
+  selected: boolean;
+  /** This card's own checkbox is waiting for its request. */
+  pending: boolean;
+  toggle: (task: Task) => void;
+  /** Read when a drag starts / the card is tapped: the selection may have changed since the last render. */
+  selectionRef: RefObject<TaskSelection | null>;
+  allTasksRef: RefObject<readonly Task[]>;
+}
+
+/**
+ * PERF4: a card owns NO hook that talks to the network or a store (it used to run useToggleTask = 4 mutations,
+ * useIsOnline = a NetInfo listener, useUserTimeZone, useTaskSelection... 320 times on an 8 x 40 board). Everything
+ * shared comes in as props, so React.memo keeps a card still while a drag starts or another card is selected.
+ */
+const BoardCard = memo(function BoardCard({ task, readOnly, showProject, now, timeZone, online, selecting, selected, pending, toggle, selectionRef, allTasksRef }: BoardCardProps) {
   const styles = useThemedStyles(createBoardStyles);
   const { t } = useTranslation();
-  const online = useIsOnline();
-  const now = useNow();
-  const timeZone = useUserTimeZone();
-  const selection = useTaskSelection();
-  const { toggle, pendingId } = useToggleTask();
-  const selecting = selection?.active === true;
-  const selected = selection?.ids.has(task.id) === true;
   const canDrag = online && isDraggable(task, readOnly);
+  const payload = useCallback(
+    (): DragPayload => ({ taskIds: dragTaskIds(task, selectionRef.current, allTasksRef.current ?? []), task }),
+    [task, selectionRef, allTasksRef],
+  );
+  const open = useCallback(() => {
+    const selection = selectionRef.current;
+    if (selection?.active) selection.toggle(task.id);
+    else router.push(`/task/${task.id}`);
+  }, [task.id, selectionRef]);
+  const complete = useCallback(() => toggle(task), [toggle, task]);
 
   return (
     <Draggable
       testID={`board-card-${task.id}`}
       accessibilityLabel={t('board.openTask', { name: task.content })}
       enabled={canDrag}
-      payload={(): DragPayload => ({ taskIds: dragTaskIds(task, selection, allTasks), task })}
-      onPress={() => (selecting ? selection?.toggle(task.id) : router.push(`/task/${task.id}`))}
-      style={[styles.card, selected && styles.cardSelected]}
+      payload={payload}
+      onPress={open}
+      style={selected ? [styles.card, styles.cardSelected] : styles.card}
     >
       <Checkbox
         testID={`board-toggle-${task.id}`}
         priority={task.priority}
         checked={task.completedAt !== null}
         label={t('taskList.complete', { name: task.content })}
-        disabled={readOnly || selecting || !online || pendingId === task.id}
-        onPress={() => toggle(task)}
+        disabled={readOnly || selecting || !online || pending}
+        onPress={complete}
       />
       <View style={styles.cardBody}>
         <Text style={[type.taskTitle, styles.cardTitle]} numberOfLines={3}>
@@ -83,62 +108,117 @@ function BoardCard({ task, readOnly, showProject, allTasks }: { task: Task; read
       </View>
     </Draggable>
   );
-}
+});
 
-function Column({ column, readOnly, showProject, allTasks, onDrop }: {
+interface ColumnProps {
   column: BoardColumn;
   readOnly: boolean;
   showProject: boolean;
-  allTasks: readonly Task[];
+  now: Date;
+  timeZone: string;
+  online: boolean;
+  selecting: boolean;
+  selectedIds: ReadonlySet<string> | null;
+  pendingId: unknown;
+  toggle: (task: Task) => void;
+  selectionRef: RefObject<TaskSelection | null>;
+  allTasksRef: RefObject<readonly Task[]>;
   onDrop: (column: BoardColumn, payload: DragPayload) => void;
-}) {
+}
+
+const keyOfTask = (task: Task) => task.id;
+
+/**
+ * A column is a FlatList: only the cards near the screen exist (a board of 320 cards used to mount all of them at once,
+ * inside nested ScrollViews). The header / empty text / "+ Add task" ride along as list parts.
+ */
+const Column = memo(function Column({ column, readOnly, showProject, now, timeZone, online, selecting, selectedIds, pendingId, toggle, selectionRef, allTasksRef, onDrop }: ColumnProps) {
   const styles = useThemedStyles(createBoardStyles);
   const { t } = useTranslation();
   const { dragging } = useDragState();
-  const open = column.tasks.filter((task) => task.completedAt === null).length;
+  const open = useMemo(() => column.tasks.filter((task) => task.completedAt === null).length, [column.tasks]);
   const add = column.add;
+  const renderItem = useCallback(
+    ({ item: task }: { item: Task }) => (
+      <BoardCard
+        task={task}
+        readOnly={readOnly}
+        showProject={showProject}
+        now={now}
+        timeZone={timeZone}
+        online={online}
+        selecting={selecting}
+        selected={selectedIds?.has(task.id) === true}
+        pending={pendingId === task.id}
+        toggle={toggle}
+        selectionRef={selectionRef}
+        allTasksRef={allTasksRef}
+      />
+    ),
+    [readOnly, showProject, now, timeZone, online, selecting, selectedIds, pendingId, toggle, selectionRef, allTasksRef],
+  );
+  const accepts = useCallback(() => column.drop !== null, [column.drop]);
+  const drop = useCallback((payload: DragPayload) => onDrop(column, payload), [onDrop, column]);
   return (
     <DropZone
       id={column.key}
       testID={`board-column-${column.key}`}
-      accepts={() => column.drop !== null}
-      onDrop={(payload) => onDrop(column, payload)}
+      accepts={accepts}
+      onDrop={drop}
       style={styles.column}
       overStyle={styles.columnOver}
     >
       <SectionHeader title={column.title} count={open} tone={column.tone} testID={`board-column-header-${column.key}`} />
-      <ScrollView scrollEnabled={!dragging} contentContainerStyle={styles.columnContent} nestedScrollEnabled>
-        {column.tasks.length === 0 ? <Text style={styles.empty}>{t('board.empty')}</Text> : null}
-        {column.tasks.map((task) => (
-          <BoardCard key={task.id} task={task} readOnly={readOnly} showProject={showProject} allTasks={allTasks} />
-        ))}
-        {add && !readOnly ? (
-          <AddRow
-            label={t('board.addTask')}
-            requiresOnline
-            onPress={() => openQuickAdd(add)}
-            testID={`board-add-${column.key}`}
-          />
-        ) : null}
-      </ScrollView>
+      <FlatList
+        data={column.tasks}
+        keyExtractor={keyOfTask}
+        renderItem={renderItem}
+        extraData={renderItem}
+        scrollEnabled={!dragging}
+        contentContainerStyle={styles.columnContent}
+        nestedScrollEnabled
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
+        ListEmptyComponent={<Text style={styles.empty}>{t('board.empty')}</Text>}
+        ListFooterComponent={
+          add && !readOnly ? (
+            <AddRow label={t('board.addTask')} requiresOnline onPress={() => openQuickAdd(add)} testID={`board-add-${column.key}`} />
+          ) : undefined
+        }
+      />
     </DropZone>
   );
-}
+});
 
 function Columns({ columns, readOnly, showProject, testID, onNearEnd }: Required<Pick<BoardViewProps, 'readOnly' | 'showProject' | 'testID'>> & { columns: readonly BoardColumn[]; onNearEnd?: () => void }) {
   const styles = useThemedStyles(createBoardStyles);
   const { dragging } = useDragState();
   const selection = useTaskSelection();
   const drop = useTaskDrop();
-  const allTasks = columns.flatMap((column) => column.tasks);
+  const online = useIsOnline();
+  const now = useNow();
+  const timeZone = useUserTimeZone();
+  const { toggle, pendingId } = useToggleTask();
+  const allTasks = useMemo(() => columns.flatMap((column) => column.tasks), [columns]);
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+  const allTasksRef = useRef<readonly Task[]>(allTasks);
+  allTasksRef.current = allTasks;
+  const dropRef = useRef({ sendBatch: drop.sendBatch, selection });
+  dropRef.current = { sendBatch: drop.sendBatch, selection };
 
-  function onDrop(column: BoardColumn, payload: DragPayload) {
+  const onDrop = useCallback((column: BoardColumn, payload: DragPayload) => {
     const body = planColumnDrop(column, payload.taskIds);
     if (!body) return;
-    void drop.sendBatch(body).then(() => {
-      if (payload.taskIds.length > 1) selection?.clear();
+    void dropRef.current.sendBatch(body).then(() => {
+      if (payload.taskIds.length > 1) dropRef.current.selection?.clear();
     });
-  }
+  }, []);
+
+  const selecting = selection?.active === true;
+  const selectedIds = selecting ? (selection?.ids ?? null) : null;
 
   return (
     <ScrollView
@@ -162,7 +242,15 @@ function Columns({ columns, readOnly, showProject, testID, onNearEnd }: Required
           column={column}
           readOnly={readOnly}
           showProject={showProject}
-          allTasks={allTasks}
+          now={now}
+          timeZone={timeZone}
+          online={online}
+          selecting={selecting}
+          selectedIds={selectedIds}
+          pendingId={pendingId}
+          toggle={toggle}
+          selectionRef={selectionRef}
+          allTasksRef={allTasksRef}
           onDrop={onDrop}
         />
       ))}

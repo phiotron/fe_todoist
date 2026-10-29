@@ -268,3 +268,19 @@ describe('zone formatter cache', () => {
     }
   });
 });
+
+describe('PERF4: nowLocal / dateKeyInZone remember what they computed', () => {
+  it('the same instant and zone is formatted by Intl once, not once per row', () => {
+    const spy = jest.spyOn(Intl.DateTimeFormat.prototype, 'formatToParts');
+    const instant = new Date('2031-05-06T07:08:09Z');
+    const first = nowLocal(instant, 'Asia/Ho_Chi_Minh');
+    const calls = spy.mock.calls.length;
+    for (let i = 0; i < 50; i += 1) {
+      expect(nowLocal(new Date(instant.getTime()), 'Asia/Ho_Chi_Minh')).toBe(first);
+      dateKeyInZone(instant, 'Asia/Ho_Chi_Minh');
+    }
+    expect(spy.mock.calls.length).toBe(calls);
+    expect(nowLocal(instant, 'UTC')).toBe('2031-05-06T07:08:09'); // another zone is another entry
+    spy.mockRestore();
+  });
+});
