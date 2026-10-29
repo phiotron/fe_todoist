@@ -9,7 +9,7 @@ import { queryKeys } from '../../api/queryKeys';
  * field (old cache, personal fixtures) or unknown (`undefined`) allows everything — the server still answers 403
  * `team-admin-only` and describeError explains it.
  */
-const ALL: ProjectCapabilities = { canEditTasks: true, canCompleteTasks: true, canManageSections: true, canComment: true };
+const ALL: ProjectCapabilities = { canEditTasks: true, canCompleteTasks: true, canManageSections: true, canComment: true, canReview: false };
 
 type Capable = ProjectCapabilityFields | object | undefined | null;
 

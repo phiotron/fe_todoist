@@ -83,7 +83,16 @@ interface M8bTaskFields {
   commentCount?: number;
 }
 
-export type Task = Strict<Schemas['TaskResponse']> & M2TaskFields & M6cTaskFields & M8bTaskFields;
+/** REVIEW (Cho duyet, team projects): always present in TaskResponse; hand-written until types.gen.ts is regenerated. */
+export type ReviewStatus = 'NONE' | 'PENDING';
+interface ReviewTaskFields {
+  reviewStatus: ReviewStatus;
+  /** User id of the Member / Guest who asked; null when not pending. */
+  reviewRequestedBy: string | null;
+  reviewRequestedAt: string | null;
+}
+
+export type Task = Strict<Schemas['TaskResponse']> & M2TaskFields & M6cTaskFields & M8bTaskFields & ReviewTaskFields;
 export type Project = Strict<Schemas['ProjectResponse']>;
 export type Section = Strict<Schemas['SectionResponse']>;
 export type Favorite = Strict<Schemas['FavoriteResponse']>;
@@ -95,7 +104,7 @@ export type ReorderResponse = Strict<Schemas['ReorderResponse']>;
 export type AffectedTasksResponse = Strict<Schemas['AffectedTasksResponse']>;
 
 /** M7 adds 'calendar': GET tasks?view=calendar&from=&to= (both required, ≤ 42 days; may carry ONE of projectId / labelId / filter). */
-export type TaskView = 'today' | 'upcoming' | 'overdue' | 'completed' | 'calendar';
+export type TaskView = 'today' | 'upcoming' | 'overdue' | 'completed' | 'calendar' | 'review';
 
 /** Display query parameters of task lists (spec 12.7); query enums are lowercase. */
 export type DisplaySortParam = 'manual' | 'date' | 'deadline' | 'priority' | 'name' | 'added';

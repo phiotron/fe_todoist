@@ -11,6 +11,8 @@ export interface ProjectCapabilities {
   canCompleteTasks: boolean;
   canManageSections: boolean;
   canComment: boolean;
+  /** REVIEW: Admin of a team project (approve / return tasks asked for review). Absent in older answers = false. */
+  canReview?: boolean;
 }
 
 /** Older cached responses / fixtures lack the field: read it through features/projects/projectCapabilities.ts. */

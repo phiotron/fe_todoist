@@ -44,6 +44,9 @@ export function makeTask(overrides: Partial<Task> = {}): Task {
     recurrenceFromCompletion: false,
     dueTimezone: null,
     isRecurring: false,
+    reviewStatus: 'NONE',
+    reviewRequestedBy: null,
+    reviewRequestedAt: null,
     ...overrides,
   };
 }
