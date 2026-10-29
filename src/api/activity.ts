@@ -3,7 +3,19 @@ import type { Page } from './models';
 
 /** M10 (hand-written; backend DTO ActivityResponse). Enums are upper-case in JSON, lower-case in the query string. */
 export type ActivityObjectType = 'TASK' | 'PROJECT' | 'SECTION';
-export type ActivityEventType = 'ADDED' | 'UPDATED' | 'COMPLETED' | 'UNCOMPLETED' | 'DELETED' | 'ARCHIVED' | 'UNARCHIVED';
+export type ActivityEventType =
+  | 'ADDED'
+  | 'UPDATED'
+  | 'COMPLETED'
+  | 'UNCOMPLETED'
+  | 'DELETED'
+  | 'ARCHIVED'
+  | 'UNARCHIVED'
+  // REVIEW (Cho duyet, team projects): names guessed from the contract (review_requested|approved|rejected|cancelled)
+  | 'REVIEW_REQUESTED'
+  | 'REVIEW_APPROVED'
+  | 'REVIEW_REJECTED'
+  | 'REVIEW_CANCELLED';
 
 export const ACTIVITY_EVENT_TYPES: readonly ActivityEventType[] = [
   'ADDED',
@@ -13,6 +25,10 @@ export const ACTIVITY_EVENT_TYPES: readonly ActivityEventType[] = [
   'DELETED',
   'ARCHIVED',
   'UNARCHIVED',
+  'REVIEW_REQUESTED',
+  'REVIEW_APPROVED',
+  'REVIEW_REJECTED',
+  'REVIEW_CANCELLED',
 ];
 
 export interface ActivityItem {

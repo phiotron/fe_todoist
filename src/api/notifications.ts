@@ -3,7 +3,7 @@ import type { CommentAuthor } from './comments';
 import type { Page } from './models';
 
 /** Hand-written from the backend M8b DTOs (names match). */
-export type NotificationType = 'COMMENT_MENTION';
+export type NotificationType = 'COMMENT_MENTION' | 'REVIEW_REQUESTED' | 'REVIEW_APPROVED' | 'REVIEW_REJECTED';
 
 export interface NotificationResponse {
   id: string;

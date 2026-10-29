@@ -278,7 +278,9 @@ export function ActivityLogView({ scope = {}, filters = true, testID = 'activity
   );
 }
 
-function iconFor(event: ActivityEventType): 'plus' | 'edit-2' | 'check-circle' | 'rotate-ccw' | 'trash-2' | 'archive' | 'inbox' {
+function iconFor(
+  event: ActivityEventType,
+): 'plus' | 'edit-2' | 'check-circle' | 'rotate-ccw' | 'trash-2' | 'archive' | 'inbox' | 'clock' | 'x-circle' {
   switch (event) {
     case 'ADDED':
       return 'plus';
@@ -292,6 +294,13 @@ function iconFor(event: ActivityEventType): 'plus' | 'edit-2' | 'check-circle' |
       return 'trash-2';
     case 'ARCHIVED':
       return 'archive';
+    case 'REVIEW_REQUESTED':
+      return 'clock';
+    case 'REVIEW_APPROVED':
+      return 'check-circle';
+    case 'REVIEW_REJECTED':
+    case 'REVIEW_CANCELLED':
+      return 'x-circle';
     default:
       return 'inbox';
   }

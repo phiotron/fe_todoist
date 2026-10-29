@@ -19,6 +19,7 @@ import { StateView } from '../../components/StateView';
 import { TextField } from '../../components/TextField';
 import { gutter, type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
+import { ReviewCard } from '../review/ReviewCard';
 import { projectColorHex, projectDisplayName } from '../projects/appearance';
 import { useProjects } from '../projects/useProjects';
 import { sharingOf } from '../sharing/sharingRules';
@@ -81,6 +82,7 @@ export function TeamScreen({ initialWorkspaceId }: { initialWorkspaceId?: string
           ))}
         </ScrollView>
       ) : null}
+      <ReviewCard isAdmin={workspace.role === 'ADMIN'} />
       {canBrowseTeam(workspace.role) ? (
         <Discovery key={workspace.id} workspaceId={workspace.id} canCreate={canCreateInTeam(workspace.role)} />
       ) : (

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NotificationResponse } from '../../api/notifications';
@@ -35,7 +36,7 @@ export const NotificationRow = memo(function NotificationRow({ item, now, timeZo
     >
       <Avatar name={name} seed={item.actor?.id ?? item.id} size="l" uri={item.actor?.avatarUrl} />
       <View style={styles.body}>
-        <Text style={[styles.title, !item.isRead && styles.unread]}>{t('notifications.mention', { name })}</Text>
+        <Text style={[styles.title, !item.isRead && styles.unread]}>{sentence(item.type, name, t)}</Text>
         {item.commentExcerpt ? (
           <Text style={styles.excerpt} numberOfLines={2}>
             {item.commentExcerpt}
@@ -49,6 +50,20 @@ export const NotificationRow = memo(function NotificationRow({ item, now, timeZo
     </Pressable>
   );
 });
+
+/** REVIEW types have their own sentence; anything else (a later type) falls back to the mention one. */
+function sentence(type: NotificationResponse['type'], name: string, t: TFunction): string {
+  switch (type) {
+    case 'REVIEW_REQUESTED':
+      return t('notifications.review.requested', { name });
+    case 'REVIEW_APPROVED':
+      return t('notifications.review.approved', { name });
+    case 'REVIEW_REJECTED':
+      return t('notifications.review.rejected', { name });
+    default:
+      return t('notifications.mention', { name });
+  }
+}
 
 function createNotificationRowStyles(palette: Palette) {
   return StyleSheet.create({
