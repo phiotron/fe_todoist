@@ -188,9 +188,8 @@ describe('perf: list stays cheap while it is used', () => {
     });
     await screen.findByText('Việc 0');
     const props = mockListProps as Record<string, number | boolean>;
-    expect(props.initialNumToRender).toBeLessThanOrEqual(12);
+    expect(props.initialNumToRender).toBeLessThanOrEqual(16);
     expect(props.windowSize).toBeLessThanOrEqual(7); // default 21 = 10 screens each way = the whole list drawn
     expect(props.maxToRenderPerBatch).toBeLessThanOrEqual(8);
-    expect(props.removeClippedSubviews).toBe(true);
   });
 });

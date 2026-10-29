@@ -50,6 +50,15 @@ export interface ListDnd {
   onDrop: (task: Task, target: ListDropTarget) => void;
 }
 
+/**
+ * FlatList window: its defaults (10 first rows, windowSize 21 = ten screens drawn each way) end up drawing a whole
+ * 100-300 row list on a slow phone. A window of 3 screens each way keeps what is near the finger mounted (drag & drop
+ * only needs the rows around the lifted one: zones are measured when a drag starts and again while it auto-scrolls).
+ */
+export const LIST_INITIAL_ROWS = 14;
+export const LIST_WINDOW_SIZE = 7;
+export const LIST_BATCH_ROWS = 8;
+
 /** scrollToIndex retries after onScrollToIndexFailed, and the gap after which a new failure counts as a new jump. */
 export const MAX_SCROLL_RETRIES = 4;
 const SCROLL_RETRY_WINDOW_MS = 500;
@@ -228,7 +237,10 @@ function TaskListBody({
       ) : null}
       <FlatList
         ref={setListRef}
-        {...(initialNumToRender === undefined ? {} : { initialNumToRender })}
+        initialNumToRender={initialNumToRender ?? LIST_INITIAL_ROWS}
+        windowSize={LIST_WINDOW_SIZE}
+        maxToRenderPerBatch={LIST_BATCH_ROWS}
+        updateCellsBatchingPeriod={50}
         // DND: the finger moves the ghost, not the list (auto-scroll near the edges moves it instead)
         scrollEnabled={!dragging}
         onScroll={scroll.onScroll}
