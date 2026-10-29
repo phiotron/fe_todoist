@@ -1,9 +1,12 @@
 import { Redirect, Stack } from 'expo-router';
+import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { SnackbarProvider } from '../../components/Snackbar';
 import { TopBannerProvider } from '../../components/useTopInset';
 import { useSession } from '../../features/auth/session';
+import { purgeLegacyQueryCache } from '../../lib/queryClient';
+import { useAfterInteractions } from '../../lib/useAfterInteractions';
 import { PushTokenHost } from '../../features/push/PushTokenHost';
 import { GoalCelebrationHost } from '../../features/productivity/GoalCelebrationHost';
 import { ReminderHost } from '../../features/reminders/ReminderHost';
@@ -19,6 +22,12 @@ export default function SignedInLayout() {
   const styles = useThemedStyles(createSignedInLayoutStyles);
   const { palette } = useTheme();
   const { status } = useSession();
+  // PERF3: the hosts that only serve the background wait until the first screen is drawn (see useAfterInteractions).
+  const settled = useAfterInteractions();
+  // Frees the disk of the unbudgeted cache an older version wrote (a 2+ MB row); one cheap remove, once the app is settled.
+  useEffect(() => {
+    if (settled) void purgeLegacyQueryCache();
+  }, [settled]);
   if (status === 'loading') {
     return (
       <View style={styles.center}>
@@ -36,18 +45,22 @@ export default function SignedInLayout() {
           {/* Spec 5.2: the device time zone differs from the account one. */}
           <TimeZoneBanner />
           {/* M4: schedules the local reminders and handles the notification buttons; renders nothing. */}
-          <ReminderHost />
+          <ReminderHost settled={settled} />
           {/* M9: offline queue + sync engine (renders nothing) and the "syncing" pill. */}
           <SyncHost />
           <SyncStatusPill />
-          {/* M13c: registers this device's push token with the server; renders nothing. */}
-          <PushTokenHost />
-          {/* M10: congratulates when a daily / weekly goal is reached; renders nothing. */}
-          <GoalCelebrationHost />
           {/* M12: text shared into Taskly from another app opens Quick Add. */}
           <ShareIntentHandler />
-          {/* M12: the picture the home-screen widgets draw (Today's tasks). */}
-          <WidgetSnapshotWriter />
+          {settled ? (
+            <>
+              {/* M13c: registers this device's push token with the server; renders nothing. */}
+              <PushTokenHost />
+              {/* M10: congratulates when a daily / weekly goal is reached; renders nothing. */}
+              <GoalCelebrationHost />
+              {/* M12: the picture the home-screen widgets draw (Today's tasks). */}
+              <WidgetSnapshotWriter />
+            </>
+          ) : null}
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="project/[id]" />
