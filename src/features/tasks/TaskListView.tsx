@@ -21,6 +21,7 @@ import { ScheduleSheet } from '../schedule/ScheduleSheet';
 import { NO_DUE, dueValueOf, type DueValue } from '../schedule/dueValue';
 import type { TaskListRow } from './taskRows';
 import { TaskRow } from './TaskRow';
+import { TaskRowEnvProvider } from './taskRowEnv';
 import { useToggleTask, useUpdateTask } from './useTaskActions';
 
 export interface TaskListViewProps {
@@ -218,6 +219,7 @@ function TaskListBody({
 
   const message = errorMessage ?? (update.error ? describeError(update.error).message : undefined);
   return (
+    <TaskRowEnvProvider fetchLists={showProject}>
     <View style={styles.fill} ref={wrapperRef} collapsable={false}>
       {message ? (
         <View style={styles.error}>
@@ -264,6 +266,7 @@ function TaskListBody({
         testID="schedule"
       />
     </View>
+    </TaskRowEnvProvider>
   );
 }
 

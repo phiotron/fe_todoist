@@ -6,6 +6,7 @@ import { SectionHeader } from '../../components/SectionHeader';
 import { useNow } from '../../lib/useNow';
 import { gutter, useTheme } from '../../theme';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
+import { TaskRowEnvProvider } from '../tasks/taskRowEnv';
 import { TaskRow } from '../tasks/TaskRow';
 import { useToggleTask } from '../tasks/useTaskActions';
 import { useTaskList } from '../tasks/useTaskList';
@@ -25,6 +26,7 @@ export function CompletedTodayBlock({ today, testID = 'completed-today' }: { tod
   if (query.isError) return <QueryStateView query={query} testID={`${testID}-state`} />;
   if (tasks.length === 0) return null;
   return (
+    <TaskRowEnvProvider fetchLists>
     <View testID={testID}>
       <View style={styles.pad}>
         <SectionHeader title={t('display.completedToday')} count={tasks.length} tone="muted" testID={`${testID}-header`} />
@@ -53,6 +55,7 @@ export function CompletedTodayBlock({ today, testID = 'completed-today' }: { tod
         </View>
       ) : null}
     </View>
+    </TaskRowEnvProvider>
   );
 }
 

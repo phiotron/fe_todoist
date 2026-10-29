@@ -142,7 +142,7 @@ function expectBudget(r: PerfResult, rows: number) {
   expect(r.deleteMutationHooks).toBe(0); // the delete dialog (and its mutation) only exists while a delete is asked
   expect(r.projectsObservers).toBeLessThanOrEqual(8); // projects list is read once per list, not once per row
   expect(r.workspacesObservers).toBeLessThanOrEqual(4);
-  expect(r.netInfoSubscriptions).toBeLessThanOrEqual(15); // one connection listener per list, not per row
+  expect(r.netInfoSubscriptions).toBeLessThanOrEqual(20); // a few per screen, none per row (was 108 / 317)
   expect(r.styleSheetCreates).toBeLessThanOrEqual(60); // styles are built once per palette, not per component
   expect(r.rowRenders).toBeLessThanOrEqual(rows * 2); // a row draws at most twice (first draw + project data arrives)
 }

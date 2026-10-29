@@ -8,6 +8,7 @@ import { gutter, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { treeRows } from '../tasks/taskRows';
+import { TaskRowEnvProvider } from '../tasks/taskRowEnv';
 import { TaskRow } from '../tasks/TaskRow';
 import { useToggleTask } from '../tasks/useTaskActions';
 import { useTaskList } from '../tasks/useTaskList';
@@ -23,6 +24,7 @@ export function CompletedTasksBlock({ projectId, readOnly }: { projectId: string
   const { toggle, pendingId } = useToggleTask();
 
   return (
+    <TaskRowEnvProvider fetchLists={false}>
     <View testID="completed-block">
       <View style={styles.pad}>
         <SectionHeader title={t('projectScreen.completedBlock.title')} count={tasks.length} tone="muted" testID="completed-block-header" />
@@ -58,6 +60,7 @@ export function CompletedTasksBlock({ projectId, readOnly }: { projectId: string
         </View>
       ) : null}
     </View>
+    </TaskRowEnvProvider>
   );
 }
 

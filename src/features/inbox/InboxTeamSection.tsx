@@ -19,6 +19,7 @@ import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { projectDisplayName } from '../projects/appearance';
 import { useProjects } from '../projects/useProjects';
 import { projectOrigin } from '../tasks/projectOrigin';
+import { TaskRowEnvProvider } from '../tasks/taskRowEnv';
 import { TaskRow } from '../tasks/TaskRow';
 import { useToggleTask } from '../tasks/useTaskActions';
 import { useWorkspaces } from '../team/useTeam';
@@ -161,6 +162,7 @@ export function InboxTeamSection() {
         <Text style={styles.count}>{t('views.inboxTeam.count', { n: count })}</Text>
       </Pressable>
       {sectionCollapsed ? null : (
+        <TaskRowEnvProvider fetchLists>
         <ScrollView style={{ maxHeight: Math.round(height * 0.45) }} testID="inbox-team-list" nestedScrollEnabled>
           {errorMessage ? (
             <View style={styles.pad}>
@@ -236,6 +238,7 @@ export function InboxTeamSection() {
             </View>
           ) : null}
         </ScrollView>
+        </TaskRowEnvProvider>
       )}
     </View>
   );
