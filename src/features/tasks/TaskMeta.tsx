@@ -9,10 +9,9 @@ import { parseInstant } from '../../lib/dates/instant';
 import { size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { TaskLabels } from '../labels/TaskLabels';
-import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { progressLabel } from '../subtasks/tree';
 import { dueTone } from './dueTone';
-import { useProjectOrigin } from './projectOrigin';
+import { TaskRowEnvProvider, useTaskRowEnv, type TaskRowEnv } from './taskRowEnv';
 
 interface TaskMetaProps {
   task: Task;
@@ -102,12 +101,27 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
  * cache lookup (react-query) only runs where the project is shown.
  */
 function TaskProjectLabel({ task }: { task: Task }) {
+  const env = useTaskRowEnv();
+  if (env) return <TaskProjectLabelView task={task} env={env} />;
+  // Outside a list (board card): look the lists up for this one label.
+  return (
+    <TaskRowEnvProvider fetchLists>
+      <TaskProjectLabelWithEnv task={task} />
+    </TaskRowEnvProvider>
+  );
+}
+
+function TaskProjectLabelWithEnv({ task }: { task: Task }) {
+  const env = useTaskRowEnv();
+  return env ? <TaskProjectLabelView task={task} env={env} /> : null;
+}
+
+function TaskProjectLabelView({ task, env }: { task: Task; env: TaskRowEnv }) {
   const styles = useThemedStyles(createTaskMetaStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
-  const origin = useProjectOrigin(task.projectId);
-  const projectLabel = useProjectNameLabel();
-  const projectName = projectLabel(task.projectId, task.projectName);
+  const origin = env.originOf(task.projectId);
+  const projectName = env.nameLabel(task.projectId, task.projectName);
   return (
     <View style={styles.item}>
       {origin.kind === 'personal' ? null : (

@@ -26,7 +26,11 @@ export function useProjectNameLabel(): (projectId: string | null | undefined, pr
           client.getQueryCache().subscribe((event) => {
             if (event.query.queryHash !== PROJECTS_HASH) return;
             if (event.type === 'updated' || event.type === 'removed' || (event.type === 'added' && event.query.state.data !== undefined)) {
-              onChange();
+              // Deferred out of whatever is rendering right now: ANY component may write the projects list during its
+              // render (setQueryData in a render, hydration, a select), and a synchronous setState here then reads
+              // "Cannot update a component (TodayBody) while rendering …". useSyncExternalStore re-checks the snapshot at
+              // commit, so a microtask later is still before the user sees a stale name.
+              queueMicrotask(onChange);
             }
           })
         : noSubscription()),

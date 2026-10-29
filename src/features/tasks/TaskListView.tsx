@@ -21,6 +21,7 @@ import { ScheduleSheet } from '../schedule/ScheduleSheet';
 import { NO_DUE, dueValueOf, type DueValue } from '../schedule/dueValue';
 import type { TaskListRow } from './taskRows';
 import { TaskRow } from './TaskRow';
+import { TaskRowEnvProvider } from './taskRowEnv';
 import { useToggleTask, useUpdateTask } from './useTaskActions';
 
 export interface TaskListViewProps {
@@ -48,6 +49,15 @@ export interface ListDnd {
   canDrag: (task: Task) => boolean;
   onDrop: (task: Task, target: ListDropTarget) => void;
 }
+
+/**
+ * FlatList window: its defaults (10 first rows, windowSize 21 = ten screens drawn each way) end up drawing a whole
+ * 100-300 row list on a slow phone. A window of 3 screens each way keeps what is near the finger mounted (drag & drop
+ * only needs the rows around the lifted one: zones are measured when a drag starts and again while it auto-scrolls).
+ */
+export const LIST_INITIAL_ROWS = 14;
+export const LIST_WINDOW_SIZE = 7;
+export const LIST_BATCH_ROWS = 8;
 
 /** scrollToIndex retries after onScrollToIndexFailed, and the gap after which a new failure counts as a new jump. */
 export const MAX_SCROLL_RETRIES = 4;
@@ -218,6 +228,7 @@ function TaskListBody({
 
   const message = errorMessage ?? (update.error ? describeError(update.error).message : undefined);
   return (
+    <TaskRowEnvProvider fetchLists={showProject}>
     <View style={styles.fill} ref={wrapperRef} collapsable={false}>
       {message ? (
         <View style={styles.error}>
@@ -226,7 +237,10 @@ function TaskListBody({
       ) : null}
       <FlatList
         ref={setListRef}
-        {...(initialNumToRender === undefined ? {} : { initialNumToRender })}
+        initialNumToRender={initialNumToRender ?? LIST_INITIAL_ROWS}
+        windowSize={LIST_WINDOW_SIZE}
+        maxToRenderPerBatch={LIST_BATCH_ROWS}
+        updateCellsBatchingPeriod={50}
         // DND: the finger moves the ghost, not the list (auto-scroll near the edges moves it instead)
         scrollEnabled={!dragging}
         onScroll={scroll.onScroll}
@@ -264,6 +278,7 @@ function TaskListBody({
         testID="schedule"
       />
     </View>
+    </TaskRowEnvProvider>
   );
 }
 

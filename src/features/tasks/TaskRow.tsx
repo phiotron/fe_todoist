@@ -1,18 +1,17 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { Task } from '../../api/models';
 import type { IconName } from '../../components/IconButton';
-import { useProjectCapabilities } from '../projects/projectCapabilities';
 import { openTaskReminders } from '../reminders/openTaskReminders';
-import { useIsOnline } from '../../lib/useIsOnline';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { Draggable, useDragState } from '../dnd/dnd';
 import { Checkbox } from './Checkbox';
+import { TaskRowEnvProvider, useTaskRowEnv, type TaskRowEnv } from './taskRowEnv';
 import { useTaskSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
 import { TaskMeta } from './TaskMeta';
@@ -61,8 +60,27 @@ function swipeLookFor(palette: Palette): Partial<Record<SwipeAction, SwipeLook>>
   };
 }
 
-/** .task row: checkbox, 16/500 title, one line of description, meta; swipe actions; long press = multi-select. */
-export function TaskRow({
+/**
+ * .task row: checkbox, 16/500 title, one line of description, meta; swipe actions; long press = multi-select.
+ * Memoised (the list passes stable props, so a refetch / minute tick only redraws rows that changed) and reads shared
+ * data from the list's TaskRowEnv; a row outside a list builds its own.
+ */
+export const TaskRow = memo(function TaskRow(props: TaskRowProps) {
+  const env = useTaskRowEnv();
+  if (env) return <TaskRowView {...props} env={env} />;
+  return (
+    <TaskRowEnvProvider fetchLists={props.showProject ?? false}>
+      <TaskRowWithEnv {...props} />
+    </TaskRowEnvProvider>
+  );
+});
+
+function TaskRowWithEnv(props: TaskRowProps) {
+  const env = useTaskRowEnv();
+  return env ? <TaskRowView {...props} env={env} /> : null;
+}
+
+function TaskRowView({
   task,
   depth = 1,
   now,
@@ -74,17 +92,18 @@ export function TaskRow({
   readOnly = false,
   showCompletedTime = false,
   draggable = false,
-}: TaskRowProps) {
+  env,
+}: TaskRowProps & { env: TaskRowEnv }) {
   const styles = useThemedStyles(createTaskRowStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
-  const online = useIsOnline();
+  const online = env.online;
   const selection = useTaskSelection();
   const swipe = useSwipeSettings();
   const { requestDelete, dialog } = useDeleteTaskSwipe();
   const swipeRef = useRef<SwipeableMethods>(null);
   // PERM: task of a team project where I am a Member / Guest → tick only (no other swipe; selection offers only Complete)
-  const capabilities = useProjectCapabilities(task.projectId);
+  const capabilities = env.capabilitiesOf(task.projectId);
   const completeOnly = capabilities.canCompleteTasks && !capabilities.canEditTasks;
   const selectOptions = completeOnly ? { completeOnly: true } : undefined;
   const completed = task.completedAt !== null;

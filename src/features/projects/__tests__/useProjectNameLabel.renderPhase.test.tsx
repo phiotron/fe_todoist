@@ -35,3 +35,33 @@ describe('useProjectNameLabel and the query cache events fired while rendering',
     expect(screen.getByTestId('label')).toBeOnTheScreen();
   });
 });
+
+/** A component that writes the projects list WHILE rendering (a screen that seeds the cache from props / a select). */
+function RenderPhaseWriter() {
+  const client = useQueryClient();
+  client.setQueryData(queryKeys.projects.list(false), [inboxProject, makeProject({ id: 'p9', name: 'Ghi khi render' })]);
+  return null;
+}
+
+describe('useProjectNameLabel when another component writes the projects list while rendering', () => {
+  it('does not update the label user while rendering, and still shows the new list', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const queryClient = createTestQueryClient();
+    function Both({ write }: { write: boolean }) {
+      const label = useProjectNameLabel();
+      return (
+        <>
+          <Text testID="named">{label('p9', 'Tên máy chủ')}</Text>
+          {write ? <RenderPhaseWriter /> : null}
+        </>
+      );
+    }
+    const view = await render(<Both write={false} />, { wrapper: createWrapper(queryClient) });
+    await view.rerender(<Both write />);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    const warned = spy.mock.calls.filter((call) => String(call[0]).includes('while rendering a different component'));
+    spy.mockRestore();
+    expect(warned).toEqual([]);
+    expect(screen.getByTestId('named')).toHaveTextContent('Tên máy chủ');
+  });
+});
