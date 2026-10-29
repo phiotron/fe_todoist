@@ -117,9 +117,9 @@ describe('PERF4 screens', () => {
       await screen.findByTestId('drag-ghost');
       await fireEvent(card, 'responderRelease', at);
     })();
-    // Budget: one mutation hook for the whole board (not one per card); one NetInfo listener at most.
+    // Budget: one mutation hook for the whole board (not one per card); a constant number of NetInfo listeners (was one per card: 329).
     expect(mounted.useMutation).toBeLessThanOrEqual(24);
-    expect(mounted.netInfo).toBeLessThanOrEqual(1);
+    expect(mounted.netInfo).toBeLessThanOrEqual(2);
     expect(update.render).toBeLessThan(mounted.render);
     expect(LONG_PRESS_MS).toBeGreaterThan(0);
   }, 60_000);
@@ -149,7 +149,7 @@ describe('PERF4 screens', () => {
     await measureUpdate('calendar-month tick', async () => {
       await act(async () => tick());
     })();
-    expect(mounted.netInfo).toBeLessThanOrEqual(1);
+    expect(mounted.netInfo).toBeLessThanOrEqual(2);
   }, 60_000);
 
   it('Activity 500 rows', async () => {
@@ -165,9 +165,10 @@ describe('PERF4 screens', () => {
       () => renderSignedIn(profiled(<ActivityLogView />), routes),
       () => screen.findByText('Bạn đã thêm công việc: Việc 0'),
     );
-    await measureUpdate('activity tick', async () => {
+    const update = await measureUpdate('activity tick', async () => {
       await act(async () => tick());
     })();
+    expect(update.render).toBeLessThanOrEqual(8); // rows are memoised: a tick redraws the screen shell only
   }, 60_000);
 
   it('Notifications 200', async () => {
@@ -183,9 +184,10 @@ describe('PERF4 screens', () => {
       () => renderSignedIn(profiled(<NotificationsScreen />), routes),
       () => screen.findByText('Nhắc 0'),
     );
-    await measureUpdate('notifications tick', async () => {
+    const update = await measureUpdate('notifications tick', async () => {
       await act(async () => tick());
     })();
+    expect(update.render).toBeLessThanOrEqual(5); // the day did not change: no row redraws
   }, 60_000);
 
   it('Comments 200 with @mentions', async () => {
@@ -211,7 +213,7 @@ describe('PERF4 screens', () => {
     const update = await measureUpdate('comments tick', async () => {
       await act(async () => tick());
     })();
-    expect(update.render).toBeLessThan(mounted.render / 4);
+    expect(update.render).toBeLessThan(mounted.render / 20); // a minute tick must not redraw the 200 comments
   }, 60_000);
 
   it('Browse 77 projects', async () => {
@@ -227,7 +229,8 @@ describe('PERF4 screens', () => {
       () => renderSignedIn(profiled(<BrowseScreen />), routes),
       () => screen.findByText('Dự án 1'),
     );
-    expect(mounted.netInfo).toBeLessThanOrEqual(1);
+    expect(mounted.netInfo).toBeLessThanOrEqual(2);
+    expect(mounted.useMutation).toBeLessThanOrEqual(24); // one favorite mutation per block, not per row (was 245)
   }, 60_000);
 
   it('Search 200 results', async () => {

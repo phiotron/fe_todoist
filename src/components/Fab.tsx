@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { memo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { layout, shadow, size, useThemedStyles, useTheme } from '../theme';
@@ -19,7 +20,7 @@ interface FabProps {
 }
 
 /** .fab: 56 round accent button, 100 from the bottom (above the tab bar); 20 from the right by default (M3x: left / centre). */
-export function Fab({ label, onPress, bottom, aboveTabBar = false, placement = 'RIGHT', testID = 'fab' }: FabProps) {
+export const Fab = memo(function Fab({ label, onPress, bottom, aboveTabBar = false, placement = 'RIGHT', testID = 'fab' }: FabProps) {
   const styles = useThemedStyles(createFabStyles);
   const { palette } = useTheme();
   const insets = useSafeAreaInsets();
@@ -35,7 +36,7 @@ export function Fab({ label, onPress, bottom, aboveTabBar = false, placement = '
       <Feather name="plus" size={size.iconLarge} color={palette.onacc} />
     </Pressable>
   );
-}
+});
 
 const PLACEMENT_STYLES = StyleSheet.create({
   LEFT: { left: layout.fabRight },
