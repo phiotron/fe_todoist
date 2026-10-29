@@ -1,4 +1,4 @@
-import { QueryClientContext } from '@tanstack/react-query';
+import { QueryClientContext, hashKey } from '@tanstack/react-query';
 import { useCallback, useContext, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../api/models';
@@ -7,6 +7,7 @@ import { queryKeys } from '../../api/queryKeys';
 /** The fixed name the server gives every Inbox (spec 10.1). */
 const SERVER_INBOX_NAME = 'Inbox';
 const PROJECTS_KEY = queryKeys.projects.list(false);
+const PROJECTS_HASH = hashKey(PROJECTS_KEY);
 const noSubscription = () => () => undefined;
 
 /**
@@ -18,7 +19,17 @@ export function useProjectNameLabel(): (projectId: string | null | undefined, pr
   const { t } = useTranslation();
   const client = useContext(QueryClientContext);
   const subscribe = useCallback(
-    (onChange: () => void) => (client ? client.getQueryCache().subscribe(onChange) : noSubscription()),
+    (onChange: () => void) => (client
+        ? // Only events that really change the cached list. Events a render fires itself (a useQuery's `added` /
+          // `observerResultsUpdated`) must not reach React: with a committed snapshot that is already stale it
+          // would setState while another component renders ("Cannot update a component … while rendering").
+          client.getQueryCache().subscribe((event) => {
+            if (event.query.queryHash !== PROJECTS_HASH) return;
+            if (event.type === 'updated' || event.type === 'removed' || (event.type === 'added' && event.query.state.data !== undefined)) {
+              onChange();
+            }
+          })
+        : noSubscription()),
     [client],
   );
   const read = () => client?.getQueryData<Project[]>(PROJECTS_KEY);
