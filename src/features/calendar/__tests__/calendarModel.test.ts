@@ -9,6 +9,7 @@ import {
   shiftAnchor,
   slotMinutes,
   tasksOfDay,
+  tasksByDay,
   visibleDays,
   windowOf,
 } from '../calendarModel';
@@ -66,6 +67,21 @@ describe('tasksOfDay / placeTimed', () => {
     expect(day.timed.map((task) => task.id)).toEqual(['early', 'late']);
     expect(minutesOfDue(tasks[2])).toBe(510);
     expect(minutesOfDue(tasks[1])).toBeNull();
+  });
+
+  it('tasksByDay: one pass, the same split as tasksOfDay for every listed day (empty days included)', () => {
+    const tasks = [
+      makeTask({ id: 'late', dueDate: null, dueDatetime: '2026-11-04T15:00:00' }),
+      makeTask({ id: 'all', dueDate: '2026-11-04', dueDatetime: null }),
+      makeTask({ id: 'early', dueDate: null, dueDatetime: '2026-11-04T08:30:00' }),
+      makeTask({ id: 'next', dueDate: '2026-11-05', dueDatetime: null }),
+      makeTask({ id: 'outside', dueDate: '2026-12-25', dueDatetime: null }),
+    ];
+    const days = ['2026-11-04', '2026-11-05', '2026-11-06'];
+    const map = tasksByDay(tasks, days);
+    expect([...map.keys()]).toEqual(days);
+    for (const day of days) expect(map.get(day)).toEqual(tasksOfDay(tasks, day));
+    expect(map.get('2026-11-06')).toEqual({ allDay: [], timed: [] });
   });
 
   it('places by time and duration (30 minutes when none) and ends at midnight', () => {

@@ -87,6 +87,21 @@ export function tasksOfDay(tasks: readonly Task[], day: string): DayTasks {
   return { allDay, timed };
 }
 
+/**
+ * PERF4: every listed day split in ONE pass over the tasks (tasksOfDay per day was days x tasks: a month of 42 days
+ * over 300 events read every task 42 times). Same result as tasksOfDay for each day.
+ */
+export function tasksByDay(tasks: readonly Task[], days: readonly string[]): Map<string, DayTasks> {
+  const map = new Map<string, DayTasks>(days.map((day) => [day, { allDay: [], timed: [] }]));
+  for (const task of tasks) {
+    const day = taskDateKey(task);
+    const bucket = day === null ? undefined : map.get(day);
+    if (bucket) (task.dueDatetime ? bucket.timed : bucket.allDay).push(task);
+  }
+  for (const bucket of map.values()) bucket.timed.sort((a, b) => (minutesOfDue(a) ?? 0) - (minutesOfDue(b) ?? 0));
+  return map;
+}
+
 export interface Placement {
   task: Task;
   top: number;

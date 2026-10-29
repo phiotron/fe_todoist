@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Task } from '../../api/models';
@@ -17,7 +17,7 @@ import {
   clockLabel,
   minutesOfDue,
   placeTimed,
-  tasksOfDay,
+  tasksByDay,
 } from './calendarModel';
 
 export const GUTTER_WIDTH = 44;
@@ -33,19 +33,28 @@ export interface CalendarHandlers {
 }
 
 /** A task as a calendar block / chip: tap = open, long press + drag = move (completed tasks and read-only do not move). */
-export function CalendarChip({
-  task,
-  readOnly,
-  showTime = false,
-  compact = false,
-  style,
-}: {
+export const CalendarChip = memo(CalendarChipBase, sameChipProps);
+
+interface CalendarChipProps {
   task: Task;
   readOnly: boolean;
   showTime?: boolean;
   compact?: boolean;
   style?: object;
-}) {
+}
+
+/** PERF4: the placement style of a timed chip is a new object every render; compare it field by field. */
+function sameChipProps(a: CalendarChipProps, b: CalendarChipProps): boolean {
+  if (a.task !== b.task || a.readOnly !== b.readOnly || a.showTime !== b.showTime || a.compact !== b.compact) return false;
+  if (a.style === b.style) return true;
+  if (!a.style || !b.style) return false;
+  const left = a.style as Record<string, unknown>;
+  const right = b.style as Record<string, unknown>;
+  const keys = Object.keys(left);
+  return keys.length === Object.keys(right).length && keys.every((key) => left[key] === right[key]);
+}
+
+function CalendarChipBase({ task, readOnly, showTime = false, compact = false, style }: CalendarChipProps) {
   const styles = useThemedStyles(createStyles);
   const { palette } = useTheme();
   const online = useIsOnline();
@@ -71,14 +80,15 @@ export function CalendarChip({
 }
 
 /** Agenda: one block per day, every day shown (empty ones too); each block is a drop zone (schedule that day). */
-export function AgendaList({ days, tasks, today, handlers }: { days: readonly string[]; tasks: readonly Task[]; today: string; handlers: CalendarHandlers }) {
+export const AgendaList = memo(function AgendaList({ days, tasks, today, handlers }: { days: readonly string[]; tasks: readonly Task[]; today: string; handlers: CalendarHandlers }) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation();
   const { dragging } = useDragState();
+  const split = useMemo(() => tasksByDay(tasks, days), [tasks, days]);
   return (
     <ScrollView testID="calendar-agenda" scrollEnabled={!dragging} contentContainerStyle={styles.agenda}>
       {days.map((day) => {
-        const { allDay, timed } = tasksOfDay(tasks, day);
+        const { allDay, timed } = split.get(day) ?? { allDay: [], timed: [] };
         const list = [...allDay, ...timed];
         return (
           <DropZone
@@ -101,22 +111,26 @@ export function AgendaList({ days, tasks, today, handlers }: { days: readonly st
       })}
     </ScrollView>
   );
-}
+});
 
 /** Month: whole weeks of day cells, up to 3 names then "+N"; each cell is a drop zone. */
-export function MonthGrid({ days, tasks, today, anchor, handlers }: { days: readonly string[]; tasks: readonly Task[]; today: string; anchor: string; handlers: CalendarHandlers }) {
+export const MonthGrid = memo(function MonthGrid({ days, tasks, today, anchor, handlers }: { days: readonly string[]; tasks: readonly Task[]; today: string; anchor: string; handlers: CalendarHandlers }) {
   const styles = useThemedStyles(createStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
   const { dragging } = useDragState();
-  const weeks: string[][] = [];
-  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+  const split = useMemo(() => tasksByDay(tasks, days), [tasks, days]);
+  const weeks = useMemo(() => {
+    const result: string[][] = [];
+    for (let i = 0; i < days.length; i += 7) result.push(days.slice(i, i + 7));
+    return result;
+  }, [days]);
   return (
     <ScrollView testID="calendar-month" scrollEnabled={!dragging}>
       {weeks.map((week) => (
         <View key={week[0]} style={styles.weekRow}>
           {week.map((day) => {
-            const { allDay, timed } = tasksOfDay(tasks, day);
+            const { allDay, timed } = split.get(day) ?? { allDay: [], timed: [] };
             const list = [...allDay, ...timed];
             const outside = day.slice(0, 7) !== anchor.slice(0, 7);
             return (
@@ -152,17 +166,18 @@ export function MonthGrid({ days, tasks, today, anchor, handlers }: { days: read
       ))}
     </ScrollView>
   );
-}
+});
 
 /** 3 days / week: header + "All day" row (drop = schedule the day) + a 24 h grid per day (drop = day + 30-minute slot). */
-export function TimeGrid({ days, tasks, today, handlers }: { days: readonly string[]; tasks: readonly Task[]; today: string; handlers: CalendarHandlers }) {
+export const TimeGrid = memo(function TimeGrid({ days, tasks, today, handlers }: { days: readonly string[]; tasks: readonly Task[]; today: string; handlers: CalendarHandlers }) {
   const styles = useThemedStyles(createStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
   const { dragging } = useDragState();
   const [width, setWidth] = useState(0);
   const columnWidth = Math.max(0, (width - GUTTER_WIDTH) / days.length);
-  const split = days.map((day) => tasksOfDay(tasks, day));
+  const byDay = useMemo(() => tasksByDay(tasks, days), [tasks, days]);
+  const split = useMemo(() => days.map((day) => byDay.get(day) ?? { allDay: [], timed: [] }), [days, byDay]);
   return (
     <View style={styles.fill} onLayout={(event) => setWidth(event.nativeEvent.layout.width)} testID="calendar-grid">
       <View style={styles.headerRow}>
@@ -242,7 +257,7 @@ export function TimeGrid({ days, tasks, today, handlers }: { days: readonly stri
       </ScrollView>
     </View>
   );
-}
+});
 
 function createStyles(palette: Palette) {
   return StyleSheet.create({

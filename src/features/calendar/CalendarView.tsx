@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { describeError } from '../../api/describeError';
@@ -106,22 +106,28 @@ function CalendarInner({ scope, filters, readOnly = false }: CalendarViewProps) 
   const { tasks, query, noDateTasks, noDateQuery } = useCalendarTasks({ scope, from, to, filters, withNoDate: trayOpen });
   const undated = useMemo(() => noDateTasks.filter((task) => taskDateKey(task) === null && task.completedAt === null), [noDateTasks]);
 
-  const handlers: CalendarHandlers = {
-    readOnly,
-    onDropSlot: (day: string, payload: DragPayload, point: DropPoint) => {
-      void drop.sendUpdate(payload.task.id, planSlotDrop(payload.task, day, slotMinutes(point.y)));
-    },
-    onDropDay: (day: string, payload: DragPayload) => {
-      // Dropping on the day the task already has changes nothing (a timed task keeps its time anyway).
-      if (taskDateKey(payload.task) === day) return;
-      void drop.sendBatch(planDayDrop(payload.taskIds, day));
-    },
-    onAddOnDay: (day: string) => openQuickAdd({ dueDate: day }),
-    onOpenDay: (day: string) => {
-      setCalendarMode('THREE_DAYS');
-      setAnchor(day);
-    },
-  };
+  // PERF4: one stable handlers object (the bodies are memoised); what changes lives in a ref read when a handler runs.
+  const live = useRef({ drop, setAnchor });
+  live.current = { drop, setAnchor };
+  const handlers = useMemo<CalendarHandlers>(
+    () => ({
+      readOnly,
+      onDropSlot: (day: string, payload: DragPayload, point: DropPoint) => {
+        void live.current.drop.sendUpdate(payload.task.id, planSlotDrop(payload.task, day, slotMinutes(point.y)));
+      },
+      onDropDay: (day: string, payload: DragPayload) => {
+        // Dropping on the day the task already has changes nothing (a timed task keeps its time anyway).
+        if (taskDateKey(payload.task) === day) return;
+        void live.current.drop.sendBatch(planDayDrop(payload.taskIds, day));
+      },
+      onAddOnDay: (day: string) => openQuickAdd({ dueDate: day }),
+      onOpenDay: (day: string) => {
+        setCalendarMode('THREE_DAYS');
+        live.current.setAnchor(day);
+      },
+    }),
+    [readOnly],
+  );
 
   const title = mode === 'MONTH' || mode === 'WEEK' ? monthTitle(anchor) : monthTitle(days[0]);
   function changeMode(next: CalendarMode) {
