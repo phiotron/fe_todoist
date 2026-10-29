@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { setSelectionActive } from './selectionActiveStore';
 
 /** `tasks/batch` accepts 1–200 ids (spec 12.5); more → 400. */
@@ -21,6 +21,44 @@ export interface TaskSelection {
 }
 
 const SelectionContext = createContext<TaskSelection | null>(null);
+
+/**
+ * Perf: a row only needs to know whether the mode is on and whether ITS task is picked. Reading the whole TaskSelection
+ * through context redrew every row (299 on a project) on each tap; this store tells a row only when its own answer
+ * changes (useSyncExternalStore on a number: 2 = mode on, +1 = this task selected).
+ */
+interface RowSelectionStore {
+  set: (active: boolean, ids: ReadonlySet<string>) => void;
+  subscribe: (listener: () => void) => () => void;
+  snapshot: (taskId: string) => number;
+}
+interface RowSelectionValue {
+  store: RowSelectionStore;
+  start: TaskSelection['start'];
+  toggle: TaskSelection['toggle'];
+}
+const RowSelectionContext = createContext<RowSelectionValue | null>(null);
+
+function createRowSelectionStore(): RowSelectionStore {
+  let active = false;
+  let ids: ReadonlySet<string> = new Set();
+  const listeners = new Set<() => void>();
+  return {
+    set: (nextActive, nextIds) => {
+      if (nextActive === active && nextIds === ids) return;
+      active = nextActive;
+      ids = nextIds;
+      for (const listener of [...listeners]) listener();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    snapshot: (taskId) => (active ? 2 : 0) + (ids.has(taskId) ? 1 : 0),
+  };
+}
 
 /** Selection state of one screen (spec 9.2 multi-select). SelectionScope (Task 19) adds the action bars. */
 export function TaskSelectionProvider({ children }: { children: ReactNode }) {
@@ -63,10 +101,31 @@ export function TaskSelectionProvider({ children }: { children: ReactNode }) {
     () => ({ active, ids, completeOnly, start, toggle, clear }),
     [active, ids, completeOnly, start, toggle, clear],
   );
-  return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;
+  const store = useRef<RowSelectionStore | null>(null);
+  if (!store.current) store.current = createRowSelectionStore();
+  useLayoutEffect(() => store.current?.set(active, ids), [active, ids]);
+  const rowValue = useMemo(() => ({ store: store.current as RowSelectionStore, start, toggle }), [start, toggle]);
+  return (
+    <SelectionContext.Provider value={value}>
+      <RowSelectionContext.Provider value={rowValue}>{children}</RowSelectionContext.Provider>
+    </SelectionContext.Provider>
+  );
 }
 
 /** null outside a provider (lists that do not offer multi-select, e.g. the sub-tasks of the detail screen). */
 export function useTaskSelection(): TaskSelection | null {
   return useContext(SelectionContext);
+}
+
+const NO_SUBSCRIBE = () => () => undefined;
+
+/**
+ * What a TaskRow needs from the selection: `api` (null outside a provider), `selecting` (mode on) and `selected` (this
+ * task picked). Redraws the row only when `selecting` / `selected` change for it.
+ */
+export function useRowSelection(taskId: string): { api: Pick<TaskSelection, 'start' | 'toggle'> | null; selecting: boolean; selected: boolean } {
+  const value = useContext(RowSelectionContext);
+  const code = useSyncExternalStore(value ? value.store.subscribe : NO_SUBSCRIBE, () => (value ? value.store.snapshot(taskId) : 0));
+  const api = useMemo(() => (value ? { start: value.start, toggle: value.toggle } : null), [value]);
+  return { api, selecting: code >= 2, selected: code % 2 === 1 };
 }

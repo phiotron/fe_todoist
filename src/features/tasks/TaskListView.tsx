@@ -20,6 +20,7 @@ import { useListAutoScroll, type ViewRef } from '../dnd/useListAutoScroll';
 import { ScheduleSheet } from '../schedule/ScheduleSheet';
 import { NO_DUE, dueValueOf, type DueValue } from '../schedule/dueValue';
 import type { TaskListRow } from './taskRows';
+import { createSwipeArming } from './swipeArming';
 import { TaskRow } from './TaskRow';
 import { TaskRowEnvProvider } from './taskRowEnv';
 import { useToggleTask, useUpdateTask } from './useTaskActions';
@@ -58,6 +59,13 @@ export interface ListDnd {
 export const LIST_INITIAL_ROWS = 14;
 export const LIST_WINDOW_SIZE = 7;
 export const LIST_BATCH_ROWS = 8;
+
+/**
+ * A row gets its swipe gesture once it has been in view this long (SwipeArming): rows a fast scroll only brushes past
+ * stay plain, cheap rows.
+ */
+export const SWIPE_ARM_VIEW_MS = 250;
+const VIEWABILITY = { itemVisiblePercentThreshold: 1, minimumViewTime: SWIPE_ARM_VIEW_MS } as const;
 
 /** scrollToIndex retries after onScrollToIndexFailed, and the gap after which a new failure counts as a new jump. */
 export const MAX_SCROLL_RETRIES = 4;
@@ -111,6 +119,20 @@ function TaskListBody({
   useEffect(() => () => clearTimeout(retryTimer.current), []);
   const wrapperRef = useRef<ViewRef>(null);
   const scroll = useListAutoScroll(innerRef, wrapperRef, dnd !== undefined);
+  const [arming] = useState(createSwipeArming);
+  const onLayout = useCallback(
+    (event: Parameters<typeof scroll.onLayout>[0]) => {
+      arming.setLayoutKnown();
+      scroll.onLayout(event);
+    },
+    [arming, scroll],
+  );
+  const onViewableItemsChanged = useCallback(
+    (info: { viewableItems: readonly { key: string }[] }) => arming.setViewable(info.viewableItems.map((token) => String(token.key))),
+    [arming],
+  );
+  const onTouchStart = useCallback(() => arming.setTouching(true), [arming]);
+  const onTouchEnd = useCallback(() => arming.setTouching(false), [arming]);
   const setListRef = useCallback(
     (list: FlatList<TaskListRow> | null) => {
       innerRef.current = list;
@@ -228,7 +250,7 @@ function TaskListBody({
 
   const message = errorMessage ?? (update.error ? describeError(update.error).message : undefined);
   return (
-    <TaskRowEnvProvider fetchLists={showProject}>
+    <TaskRowEnvProvider fetchLists={showProject} arming={arming}>
     <View style={styles.fill} ref={wrapperRef} collapsable={false}>
       {message ? (
         <View style={styles.error}>
@@ -246,7 +268,12 @@ function TaskListBody({
         onScroll={scroll.onScroll}
         scrollEventThrottle={16}
         onContentSizeChange={scroll.onContentSizeChange}
-        onLayout={scroll.onLayout}
+        onLayout={onLayout}
+        viewabilityConfig={VIEWABILITY}
+        onViewableItemsChanged={onViewableItemsChanged}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
         testID={testID}
         data={rows}
         keyExtractor={(row) => row.key}

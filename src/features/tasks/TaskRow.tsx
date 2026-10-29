@@ -9,11 +9,12 @@ import type { IconName } from '../../components/IconButton';
 import { openTaskReminders } from '../reminders/openTaskReminders';
 import { gutter, size, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
-import { Draggable, useDragState } from '../dnd/dnd';
+import { Draggable, useDragSelect } from '../dnd/dnd';
 import { Checkbox } from './Checkbox';
 import { TaskRowEnvProvider, useTaskRowEnv, type TaskRowEnv } from './taskRowEnv';
-import { useTaskSelection } from './selection';
+import { useRowSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
+import { useSwipeArmed } from './swipeArming';
 import { TaskMeta } from './TaskMeta';
 import { displayContent, isUncompletable } from './uncompletable';
 import { useDeleteTaskSwipe } from './useDeleteTaskSwipe';
@@ -98,10 +99,11 @@ function TaskRowView({
   const { palette } = useTheme();
   const { t } = useTranslation();
   const online = env.online;
-  const selection = useTaskSelection();
+  const { api: selection, selecting, selected } = useRowSelection(task.id);
   const swipe = useSwipeSettings();
   const { requestDelete, dialog } = useDeleteTaskSwipe();
   const swipeRef = useRef<SwipeableMethods>(null);
+  const armed = useSwipeArmed(env.arming, task.id);
   // PERM: task of a team project where I am a Member / Guest → tick only (no other swipe; selection offers only Complete)
   const capabilities = env.capabilitiesOf(task.projectId);
   const completeOnly = capabilities.canCompleteTasks && !capabilities.canEditTasks;
@@ -113,17 +115,14 @@ function TaskRowView({
   const mineRequest = pending && env.meId !== null && task.reviewRequestedBy === env.meId;
   const lockedPending = completeOnly && pending && env.meId !== null && !mineRequest;
   const lockedDone = completeOnly && completed;
-  const selecting = selection?.active === true;
-  const selected = selection?.ids.has(task.id) === true;
   // Completed tasks (Completed tasks block) and read-only rows cannot be selected: batch SCHEDULE / MOVE would answer 409 task-completed.
   const selectable = selection && !readOnly && !completed ? selection : null;
   const swipeRight = completeOnly && swipe.right !== 'COMPLETE' ? 'NONE' : swipe.right;
   const swipeLeft = completeOnly && swipe.left !== 'COMPLETE' ? 'NONE' : swipe.left;
 
   const uncompletable = isUncompletable(task.content);
-  const drag = useDragState();
-  const dragging = drag.dragging;
-  const beingDragged = drag.payload?.task.id === task.id;
+  // Only the lifted row redraws when a drag starts / ends (the finger is on that row; the others are not swiped).
+  const beingDragged = useDragSelect((state) => state.payload?.task.id === task.id);
 
   function run(action: SwipeAction) {
     if (action === 'COMPLETE' && !completed) {
@@ -206,7 +205,7 @@ function TaskRowView({
     </Pressable>
   );
 
-  if (readOnly || completed || selecting || !online || (completeOnly && swipeRight === 'NONE' && swipeLeft === 'NONE')) return row;
+  if (!armed || readOnly || completed || selecting || !online || (completeOnly && swipeRight === 'NONE' && swipeLeft === 'NONE')) return row;
   const renderPanel = (action: SwipeAction) => {
     const look = swipeLookFor(palette)[action];
     if (!look) return null;
@@ -221,7 +220,7 @@ function TaskRowView({
       ref={swipeRef}
       testID={`task-swipe-${task.id}`}
       // a drag in progress must not turn into a swipe (same tree either way, so the lifted row keeps its touch)
-      enabled={!dragging}
+      enabled={!beingDragged}
       friction={2}
       leftThreshold={80}
       rightThreshold={80}
