@@ -69,8 +69,22 @@ export function useTheme(): Theme {
   return useContext(ThemeContext);
 }
 
+// One style set per (factory, palette), shared by every component instance: a task row used to run StyleSheet.create
+// again for each of its 300 instances (3 factories per row). Keys are weak, so a palette change / inline factory is freed.
+const styleCache = new WeakMap<object, WeakMap<object, unknown>>();
+
 /** Pass a module-level factory: a new function on every render would rebuild the styles each time. */
 export function useThemedStyles<T>(factory: (palette: Palette) => T): T {
   const { palette } = useTheme();
-  return useMemo(() => factory(palette), [factory, palette]);
+  return useMemo(() => {
+    let byPalette = styleCache.get(factory);
+    if (!byPalette) {
+      byPalette = new WeakMap();
+      styleCache.set(factory, byPalette);
+    }
+    if (byPalette.has(palette)) return byPalette.get(palette) as T;
+    const styles = factory(palette);
+    byPalette.set(palette, styles);
+    return styles;
+  }, [factory, palette]);
 }
