@@ -3,9 +3,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ComponentRef,
   type ReactNode,
   type RefObject,
@@ -119,6 +121,32 @@ export interface DragApi {
 const IDLE: DragState = { payload: null, overId: null, overAfter: false };
 const DragStateContext = createContext<DragState>(IDLE);
 const DragApiContext = createContext<DragApi | null>(null);
+interface DragStore {
+  get: () => DragState;
+  set: (state: DragState) => void;
+  subscribe: (listener: () => void) => () => void;
+}
+const DragStoreContext = createContext<DragStore | null>(null);
+const NO_SUBSCRIBE = () => () => undefined;
+
+function createDragStore(): DragStore {
+  let current = IDLE;
+  const listeners = new Set<() => void>();
+  return {
+    get: () => current,
+    set: (next) => {
+      if (next === current) return;
+      current = next;
+      for (const listener of [...listeners]) listener();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+}
 
 function measure(ref: RefObject<ViewRef | null>): Promise<Rect | null> {
   return new Promise((resolve) => {
@@ -140,6 +168,9 @@ export function DragProvider({ children, style }: { children: ReactNode; style?:
   const origin = useRef({ x: 0, y: 0 });
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const [state, setState] = useState<DragState>(IDLE);
+  const store = useRef<DragStore | null>(null);
+  if (!store.current) store.current = createDragStore();
+  useLayoutEffect(() => store.current?.set(state), [state]);
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastPoint = useRef({ x: 0, y: 0 });
@@ -251,6 +282,7 @@ export function DragProvider({ children, style }: { children: ReactNode; style?:
 
   return (
     <DragApiContext.Provider value={api}>
+      <DragStoreContext.Provider value={store.current}>
       <DragStateContext.Provider value={state}>
         <View ref={rootRef} style={[styles.fill, style]} collapsable={false}>
           {children}
@@ -271,11 +303,21 @@ export function DragProvider({ children, style }: { children: ReactNode; style?:
           ) : null}
         </View>
       </DragStateContext.Provider>
+      </DragStoreContext.Provider>
     </DragApiContext.Provider>
   );
 }
 
 /** `dragging` = a drag is in progress (turn scrolling off); `overId` = the zone under the finger. */
+/**
+ * Perf: rows ask a yes / no question of the drag state (is this the lifted row?) instead of reading all of it through
+ * context, so a drag start / end / hover change redraws the rows whose answer changed, not every row of the list.
+ */
+export function useDragSelect<T extends boolean | number | string | null>(select: (state: DragState) => T): T {
+  const store = useContext(DragStoreContext);
+  return useSyncExternalStore(store ? store.subscribe : NO_SUBSCRIBE, () => select(store ? store.get() : IDLE));
+}
+
 export function useDragState(): { dragging: boolean; overId: string | null; overAfter: boolean; payload: DragPayload | null } {
   const state = useContext(DragStateContext);
   return { dragging: state.payload !== null, overId: state.overId, overAfter: state.overAfter, payload: state.payload };

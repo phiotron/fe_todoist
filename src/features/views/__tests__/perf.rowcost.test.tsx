@@ -136,6 +136,10 @@ describe('PERF rowcost (project screen)', () => {
     };
     console.log(`ROWCOST ${JSON.stringify(result)}`);
     expect(rowsInTree).toBeGreaterThan(250);
+    // budgets: a row costs its own render only; a selection tap must not redraw the other rows
+    expect(mountRenders).toBeLessThanOrEqual(N);
+    expect(selectToggle).toBeLessThanOrEqual(3); // the toggled row (+ slack), was 299
+    expect(selectStart).toBeLessThanOrEqual(N); // entering the mode changes what every row offers (no swipe / drag): once
   });
 
   it('drag start', async () => {
@@ -144,6 +148,7 @@ describe('PERF rowcost (project screen)', () => {
     fireEvent(screen.getByTestId('task-row-t10'), 'responderGrant', { nativeEvent: { pageX: 50, pageY: 50 } });
     await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
     expect(screen.queryByTestId('drag-ghost')).not.toBeNull();
+    expect(mockCounts.rowRenders - before).toBeLessThanOrEqual(3); // only the lifted row redraws (was 299)
     console.log(`DRAGCOST ${JSON.stringify({ dragStartRenders: mockCounts.rowRenders - before })}`);
   });
 });
