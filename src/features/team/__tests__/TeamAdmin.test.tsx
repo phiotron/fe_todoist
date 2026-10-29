@@ -120,7 +120,7 @@ describe('People avatars (X2)', () => {
 });
 
 describe('Folders of a team (X2): rename', () => {
-  const team = makeWorkspace({ id: 'w1', name: 'Công ty', role: 'MEMBER' });
+  const team = makeWorkspace({ id: 'w1', name: 'Công ty', role: 'ADMIN' });
   const folder = makeFolder({ id: 'f1', workspaceId: 'w1', name: 'Marketing' });
   const project = makeTeamProject({ id: 'tp1', name: 'Website', folderId: 'f1' });
 

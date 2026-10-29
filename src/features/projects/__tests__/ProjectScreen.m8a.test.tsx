@@ -113,7 +113,7 @@ describe('ProjectScreen sharing (M8a)', () => {
   });
 
   it('Move to a team: only offered to the owner who has a team; chooses team + access and posts', async () => {
-    const team = makeWorkspace({ id: 'w1', name: 'Công ty', role: 'MEMBER' });
+    const team = makeWorkspace({ id: 'w1', name: 'Công ty', role: 'ADMIN' });
     const { fetchMock } = await open(
       {},
       {

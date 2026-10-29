@@ -1,7 +1,8 @@
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../../api/describeError';
+import { projectsApi } from '../../api/projects';
 import { queryKeys } from '../../api/queryKeys';
 import { reviewApi } from '../../api/review';
 import { workspacesApi, type WorkspaceMemberResponse } from '../../api/workspaces';
@@ -9,7 +10,7 @@ import { SNACKBAR_DURATION_MS, useSnackbar } from '../../components/Snackbar';
 import { useDataMutation } from '../../lib/useDataMutation';
 import { useReopenTask } from '../tasks/useTaskActions';
 import { useTaskList } from '../tasks/useTaskList';
-import { useWorkspaces } from '../team/useTeam';
+import { useTeamProjects, useWorkspaces } from '../team/useTeam';
 
 const REVIEW_LIST = { view: 'review' } as const;
 
@@ -21,13 +22,29 @@ export function useReviewList() {
   return useTaskList(REVIEW_LIST);
 }
 
+/** Ids of the projects of one team, from queries the Team tab already runs (Discovery / the guest's project list). */
+function useTeamProjectIds(workspaceId: string, isGuest: boolean): ReadonlySet<string> | undefined {
+  const discovery = useTeamProjects(workspaceId, !isGuest);
+  const mine = useQuery({ queryKey: queryKeys.projects.list(false), queryFn: () => projectsApi.list(false), enabled: isGuest });
+  return useMemo(() => {
+    if (isGuest) {
+      if (!mine.data) return undefined;
+      return new Set(mine.data.filter((project) => (project as { workspaceId?: string }).workspaceId === workspaceId).map((project) => project.id));
+    }
+    return discovery.data ? new Set(discovery.data.map((project) => project.id)) : undefined;
+  }, [isGuest, workspaceId, mine.data, discovery.data]);
+}
+
 /**
  * Number for the Team tab card. ADAPTER (one place to change): derived from the first pages of the review list, so no
- * extra endpoint is needed; `more` = there are further pages (show "n+"). Swap for the backend counts when it has one.
+ * extra endpoint is needed; `more` = there are further pages (show "n+"). The list spans every team of the user, so it
+ * is narrowed to the projects of the chosen team (unknown yet = still pending). Swap for the backend counts when it has one.
  */
-export function useReviewCount() {
+export function useReviewCount(workspaceId: string, isGuest = false) {
   const { query, tasks } = useReviewList();
-  return { count: tasks.length, more: query.hasNextPage === true, isPending: query.isPending, isError: query.isError };
+  const ids = useTeamProjectIds(workspaceId, isGuest);
+  const count = useMemo(() => (ids ? tasks.filter((task) => ids.has(task.projectId)).length : 0), [ids, tasks]);
+  return { count, more: query.hasNextPage === true, isPending: query.isPending || !ids, isError: query.isError };
 }
 
 /** user id to display name, for the teams I administer (one members query per team, for the whole screen). */

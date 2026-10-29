@@ -6,6 +6,7 @@
     "cancelTask": "Huỷ yêu cầu duyệt {{name}}",
     "pendingTask": "{{name}} đang chờ duyệt",
     "lockedDone": "{{name}} đã hoàn thành",
+    "lockedDoneToast": "Chỉ quản trị viên nhóm mới mở lại được việc đã hoàn thành",
     "approve": "Duyệt",
     "reject": "Trả lại",
     "approved": "Đã duyệt",

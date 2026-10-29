@@ -11,7 +11,7 @@ import { TeamScreen } from '../TeamScreen';
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), navigate: jest.fn() } }));
 
 const personal = makeWorkspace({ id: 'w-personal', name: 'Cá nhân', type: 'PERSONAL' });
-const team = makeWorkspace({ id: 'w1', name: 'Công ty', role: 'MEMBER', memberCount: 4 });
+const team = makeWorkspace({ id: 'w1', name: 'Công ty', role: 'ADMIN', memberCount: 4 });
 const mine = makeTeamProject({ id: 'tp1', name: 'Website', joined: true, folderId: 'f1', memberCount: 3, activeTaskCount: 5 });
 const open = makeTeamProject({ id: 'tp2', name: 'Chiến dịch', joined: false, memberCount: 1, activeTaskCount: 0 });
 const secret = makeTeamProject({ id: 'tp3', name: 'Kế hoạch kín', joined: true, access: 'RESTRICTED' });

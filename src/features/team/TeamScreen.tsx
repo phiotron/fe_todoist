@@ -82,7 +82,7 @@ export function TeamScreen({ initialWorkspaceId }: { initialWorkspaceId?: string
           ))}
         </ScrollView>
       ) : null}
-      <ReviewCard isAdmin={workspace.role === 'ADMIN'} />
+      <ReviewCard key={workspace.id} workspaceId={workspace.id} isAdmin={workspace.role === 'ADMIN'} isGuest={workspace.role === 'GUEST'} />
       {canBrowseTeam(workspace.role) ? (
         <Discovery key={workspace.id} workspaceId={workspace.id} canCreate={canCreateInTeam(workspace.role)} />
       ) : (

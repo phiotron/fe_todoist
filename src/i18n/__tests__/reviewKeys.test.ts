@@ -7,7 +7,7 @@ const placeholders = (text: string) => [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)
 
 const REVIEW_KEYS = [
   'review.pending', 'review.requested', 'review.cancelled', 'review.cancelTask', 'review.cancelRequest', 'review.pendingTask',
-  'review.lockedDone', 'review.approve', 'review.reject', 'review.approved', 'review.rejected', 'review.title', 'review.mineTitle',
+  'review.lockedDone', 'review.lockedDoneToast', 'review.approve', 'review.reject', 'review.approved', 'review.rejected', 'review.title', 'review.mineTitle',
   'review.cardCount', 'review.cardCountMore', 'review.cardNone', 'review.cardMine', 'review.requestedBy', 'review.requestedByMe',
   'review.unknownPerson', 'review.empty', 'review.emptyMine', 'review.readOnlyHint', 'review.notPending',
   'notifications.review.requested', 'notifications.review.approved', 'notifications.review.rejected',

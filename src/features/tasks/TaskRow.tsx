@@ -164,8 +164,8 @@ function TaskRowView({
                     ? t('review.pendingTask', { name: task.content })
                     : t('taskList.complete', { name: task.content })
           }
-          disabled={readOnly || selecting || toggleDisabled || !online || lockedPending || lockedDone}
-          onPress={() => onToggle(task)}
+          disabled={readOnly || selecting || toggleDisabled || !online || lockedPending}
+          onPress={() => (lockedDone ? env.explainLockedDone() : onToggle(task))}
         />
       )}
       <View style={styles.body}>

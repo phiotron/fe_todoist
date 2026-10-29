@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import type { Project } from '../../../api/models';
 import { queryKeys } from '../../../api/queryKeys';
 import { jsonResponse } from '../../../test/http';
@@ -84,7 +84,7 @@ describe('TaskRow / TaskMeta — task waiting for review', () => {
 
   it('Member cannot reopen a completed task of the team project; a personal one is untouched', async () => {
     await open(memberProject);
-    expect(screen.getByTestId('task-toggle-done').props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByTestId('task-toggle-done').props.accessibilityState.disabled).toBe(false);
     expect(screen.getByTestId('task-toggle-plain').props.accessibilityState.disabled).toBe(false);
   });
 
@@ -92,5 +92,14 @@ describe('TaskRow / TaskMeta — task waiting for review', () => {
     await open(adminProject);
     expect(screen.getByTestId('task-toggle-other').props.accessibilityState.disabled).toBe(false);
     expect(screen.getByTestId('task-toggle-done').props.accessibilityState.disabled).toBe(false);
+  });
+});
+
+describe('TaskRow — Member presses the circle of a completed team task', () => {
+  it('shows the toast and does not reopen; an Admin has no toast', async () => {
+    const { fetchMock } = await open(memberProject);
+    await fireEvent.press(screen.getByTestId('task-toggle-done'));
+    expect(await screen.findByText('Chỉ quản trị viên nhóm mới mở lại được việc đã hoàn thành')).toBeOnTheScreen();
+    expect(fetchMock.mock.calls.filter(([, init]) => (init as { method?: string } | undefined)?.method === 'POST')).toHaveLength(0);
   });
 });

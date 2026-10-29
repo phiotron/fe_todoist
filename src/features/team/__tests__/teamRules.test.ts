@@ -35,7 +35,7 @@ describe('groupByFolder', () => {
 describe('role rules', () => {
   it('Guests cannot browse the team or create in it; only Admins manage it', () => {
     expect([canBrowseTeam('GUEST'), canBrowseTeam('MEMBER'), canBrowseTeam('ADMIN')]).toEqual([false, true, true]);
-    expect([canCreateInTeam('GUEST'), canCreateInTeam('MEMBER'), canCreateInTeam('ADMIN')]).toEqual([false, true, true]);
+    expect([canCreateInTeam('GUEST'), canCreateInTeam('MEMBER'), canCreateInTeam('ADMIN')]).toEqual([false, false, true]);
     expect([canManageTeam('GUEST'), canManageTeam('MEMBER'), canManageTeam('ADMIN')]).toEqual([false, false, true]);
   });
 });

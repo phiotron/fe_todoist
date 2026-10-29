@@ -6,6 +6,7 @@
     "cancelTask": "Cancel the review request for {{name}}",
     "pendingTask": "{{name}} is waiting for review",
     "lockedDone": "{{name}} is completed",
+    "lockedDoneToast": "Only team admins can reopen a completed task",
     "approve": "Approve",
     "reject": "Return",
     "approved": "Approved",

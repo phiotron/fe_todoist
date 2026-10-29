@@ -39,8 +39,9 @@ export function canBrowseTeam(role: WorkspaceRole): boolean {
   return role !== 'GUEST';
 }
 
+/** AccessPolicy (ADR 0007): only an Admin creates team projects / folders and renames or deletes folders. */
 export function canCreateInTeam(role: WorkspaceRole): boolean {
-  return role !== 'GUEST';
+  return role === 'ADMIN';
 }
 
 /** Workspace / folder name limit of the server (WorkspaceNameRequest, FolderRequest). */

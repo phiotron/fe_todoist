@@ -8,13 +8,13 @@ import { useReviewCount } from './useReview';
 
 /**
  * Card of the Team tab that opens the review screen. Admin: always (number of tasks waiting). Member / Guest: only
- * while one of their own requests waits. Nothing while loading or when the list failed (the Team tab stays quiet).
+ * while one of their own requests waits. Counts only the tasks of THIS team (the role and the number belong together). Nothing while loading or when the list failed (the Team tab stays quiet).
  */
-export function ReviewCard({ isAdmin }: { isAdmin: boolean }) {
+export function ReviewCard({ workspaceId, isAdmin, isGuest = false }: { workspaceId: string; isAdmin: boolean; isGuest?: boolean }) {
   const styles = useThemedStyles(createStyles);
   const { palette } = useTheme();
   const { t } = useTranslation();
-  const { count, more, isPending, isError } = useReviewCount();
+  const { count, more, isPending, isError } = useReviewCount(workspaceId, isGuest);
   if (isPending || isError || (!isAdmin && count === 0)) return null;
   const summary = count === 0 ? t('review.cardNone') : more ? t('review.cardCountMore', { n: count }) : t('review.cardCount', { n: count });
   return (

@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { authApi } from '../../api/auth';
 import { meQueryKey } from '../auth/session';
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSnackbar } from '../../components/Snackbar';
 import type { Project } from '../../api/models';
 import { projectsApi } from '../../api/projects';
 import { queryKeys } from '../../api/queryKeys';
@@ -25,6 +27,8 @@ export interface TaskRowEnv {
   nameLabel: (projectId: string | null | undefined, projectName: string | null | undefined) => string;
   capabilitiesOf: (projectId: string | undefined) => ProjectCapabilities;
   originOf: (projectId: string) => ProjectOrigin;
+  /** PERM: a Member / Guest pressed the circle of a completed team task (locked): tell them why. One handler per list. */
+  explainLockedDone: () => void;
 }
 
 const TaskRowEnvContext = createContext<TaskRowEnv | null>(null);
@@ -52,7 +56,13 @@ export function TaskRowEnvProvider({ fetchLists, children }: { fetchLists: boole
   const meId = useQuery({ queryKey: meQueryKey, queryFn: authApi.me, enabled: false }).data?.id ?? null;
   const online = useIsOnline();
   const nameLabel = useProjectNameLabel();
-  const value = useMemo(() => createEnv(projects, workspaces, online, nameLabel, meId), [projects, workspaces, online, nameLabel, meId]);
+  const { t } = useTranslation();
+  const snackbar = useSnackbar();
+  const explainLockedDone = useCallback(() => snackbar.show({ message: t('review.lockedDoneToast') }), [snackbar, t]);
+  const value = useMemo(
+    () => createEnv(projects, workspaces, online, nameLabel, meId, explainLockedDone),
+    [projects, workspaces, online, nameLabel, meId, explainLockedDone],
+  );
   return <TaskRowEnvContext.Provider value={value}>{children}</TaskRowEnvContext.Provider>;
 }
 
@@ -62,6 +72,7 @@ function createEnv(
   online: boolean,
   nameLabel: TaskRowEnv['nameLabel'],
   meId: string | null,
+  explainLockedDone: () => void,
 ): TaskRowEnv {
   const byId = new Map<string, Project>();
   for (const project of projects ?? []) byId.set(project.id, project);
@@ -69,6 +80,7 @@ function createEnv(
     online,
     meId,
     nameLabel,
+    explainLockedDone,
     capabilitiesOf: (projectId) => capabilitiesOf(projectId ? byId.get(projectId) : undefined),
     originOf: (projectId) => projectOrigin(byId.get(projectId), workspaces),
   };
