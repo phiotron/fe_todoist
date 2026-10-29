@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { CommentResponse, CommentTarget } from '../../api/comments';
@@ -8,6 +8,7 @@ import { ErrorText } from '../../components/ErrorText';
 import { QueryStateView } from '../../components/QueryStateView';
 import { StateView } from '../../components/StateView';
 import { ListRow } from '../../components/ListRow';
+import { useDayStableNow } from '../../lib/dayStableNow';
 import { useNow } from '../../lib/useNow';
 import { type, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
@@ -25,12 +26,15 @@ interface CommentThreadProps {
   showTitle?: boolean;
 }
 
+const NO_NAMES: string[] = [];
+const ignoreLongPress = () => undefined;
+
 /** The comments of a task or a project, oldest first, with the composer under them (plan M8b F1 + F3). */
 export function CommentThread({ target, readOnly, showTitle = false }: CommentThreadProps) {
   const styles = useThemedStyles(createCommentThreadStyles);
   const { t } = useTranslation();
-  const now = useNow();
   const timeZone = useUserTimeZone();
+  const now = useDayStableNow(useNow(), timeZone);
   const query = useComments(target);
   const people = useMentionable(target, (query.data ?? []).some((comment) => comment.mentionUserIds.length > 0));
   const actions = useCommentActions(target);
@@ -38,11 +42,23 @@ export function CommentThread({ target, readOnly, showTitle = false }: CommentTh
   const [deleting, setDeleting] = useState<CommentResponse | null>(null);
 
   const names = useMemo(() => new Map((people.data ?? []).map((person) => [person.id, person.name])), [people.data]);
-  const comments = query.data ?? [];
-
-  function toggle(comment: CommentResponse, emoji: string, add: boolean) {
-    void actions.toggleReaction(comment.id, emoji, add);
-  }
+  const comments = useMemo(() => query.data ?? [], [query.data]);
+  // PERF4: stable props so every CommentItem (React.memo) stays still when the thread re-renders (sheet opened, tick).
+  const mentionNamesOf = useMemo(
+    () =>
+      new Map(
+        comments.map((comment) => [
+          comment.id,
+          comment.mentionUserIds.map((id) => names.get(id)).filter((name): name is string => name !== undefined),
+        ]),
+      ),
+    [comments, names],
+  );
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
+  const toggle = useCallback((comment: CommentResponse, emoji: string, add: boolean) => {
+    void actionsRef.current.toggleReaction(comment.id, emoji, add);
+  }, []);
 
   const reactionOf = (comment: CommentResponse, emoji: string) => comment.reactions.find((reaction) => reaction.emoji === emoji);
 
@@ -64,9 +80,9 @@ export function CommentThread({ target, readOnly, showTitle = false }: CommentTh
             comment={comment}
             now={now}
             timeZone={timeZone}
-            mentionNames={comment.mentionUserIds.map((id) => names.get(id)).filter((name): name is string => name !== undefined)}
+            mentionNames={mentionNamesOf.get(comment.id) ?? NO_NAMES}
             readOnly={readOnly}
-            onLongPress={readOnly ? () => undefined : setSelected}
+            onLongPress={readOnly ? ignoreLongPress : setSelected}
             onToggleReaction={toggle}
           />
         ))

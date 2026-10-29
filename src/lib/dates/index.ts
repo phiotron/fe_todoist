@@ -36,10 +36,20 @@ function formatterFor(timeZone: string): Intl.DateTimeFormat {
   return format;
 }
 
+// PERF4: formatToParts is slow (ICU) and a list asks for the same few instants again and again (a notification row
+// twice per render, 200 rows per minute tick, 500 activity events per grouping). Bounded memory: cleared when full.
+const PARTS_CACHE_MAX = 4000;
+const partsCache = new Map<string, Record<string, string>>();
+
 function partsInZone(instant: Date, timeZone: string): Record<string, string> {
+  const key = `${instant.getTime()}|${timeZone}`;
+  const hit = partsCache.get(key);
+  if (hit) return hit;
   const format = formatterFor(timeZone);
   const parts: Record<string, string> = {};
   for (const part of format.formatToParts(instant)) parts[part.type] = part.value;
+  if (partsCache.size >= PARTS_CACHE_MAX) partsCache.clear();
+  partsCache.set(key, parts);
   return parts;
 }
 
