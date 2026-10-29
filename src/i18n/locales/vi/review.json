@@ -24,6 +24,15 @@
     "emptyMine": "Bạn chưa có công việc nào đang chờ duyệt",
     "readOnlyHint": "Quản trị viên nhóm sẽ duyệt hoặc trả lại các công việc này.",
     "notPending": "Công việc này không còn chờ duyệt nữa. Danh sách đã được làm mới.",
-    "cancelRequest": "Huỷ yêu cầu duyệt"
+    "cancelRequest": "Huỷ yêu cầu duyệt",
+    "notRestorable": "Không thể hoàn tác: việc đã thay đổi",
+    "select": "Chọn",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "Đã chọn {{n}}",
+    "approveN": "Duyệt ({{n}})",
+    "rejectN": "Trả lại ({{n}})",
+    "approvedMany": "Đã duyệt {{n}} công việc",
+    "rejectedMany": "Đã trả lại {{n}} công việc",
+    "selectRow": "Chọn {{name}}"
   }
 }

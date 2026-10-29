@@ -1,14 +1,16 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../../api/describeError';
+import type { Task } from '../../api/models';
 import { projectsApi } from '../../api/projects';
 import { queryKeys } from '../../api/queryKeys';
 import { reviewApi } from '../../api/review';
+import { applyTaskChange } from '../../api/taskCache';
+import { tasksApi } from '../../api/tasks';
 import { workspacesApi, type WorkspaceMemberResponse } from '../../api/workspaces';
-import { SNACKBAR_DURATION_MS, useSnackbar } from '../../components/Snackbar';
+import { useSnackbar } from '../../components/Snackbar';
 import { useDataMutation } from '../../lib/useDataMutation';
-import { useReopenTask } from '../tasks/useTaskActions';
 import { useTaskList } from '../tasks/useTaskList';
 import { useTeamProjects, useWorkspaces } from '../team/useTeam';
 
@@ -63,26 +65,64 @@ function combineNames(results: readonly { data?: readonly WorkspaceMemberRespons
   return names;
 }
 
+interface BatchResult {
+  done: Task[];
+  failures: { task: Task; error: unknown }[];
+}
+
 /**
- * Admin actions. Approve goes at once (Undo = reopen). Return has no undo endpoint (only the requester can ask again),
- * so it is DEFERRED for the Undo window: the row is hidden, the request is sent when the toast runs out, Undo cancels it.
- * Leaving the screen sends the waiting returns immediately. A failure brings the row back and shows the message.
+ * Runs `send` for each task ONE AFTER ANOTHER (never n requests at once). Offline each call is queued by the sync
+ * interceptor in this very order (reject, then restore); online each one waits for the previous. One task failing does
+ * not stop the others. Used inside ONE data mutation, so the lists are refreshed once for the whole batch.
+ */
+async function runEach(tasks: readonly Task[], send: (task: Task) => Promise<unknown>): Promise<BatchResult> {
+  const result: BatchResult = { done: [], failures: [] };
+  for (const task of tasks) {
+    try {
+      await send(task);
+      result.done.push(task);
+    } catch (error) {
+      result.failures.push({ task, error });
+    }
+  }
+  return result;
+}
+
+/** Undo of a return needs who asked and when (kept from the task BEFORE it was returned). */
+function restorable(task: Task): task is Task & { reviewRequestedBy: string; reviewRequestedAt: string } {
+  return !!task.reviewRequestedBy && !!task.reviewRequestedAt;
+}
+
+/**
+ * Admin actions on one or many tasks (a single row is a batch of one). Both go at once, no deferral:
+ *  - Approve: Undo = reopen the tasks just approved.
+ *  - Return: Undo = `task_review_restore` (real undo, back to PENDING with the original requester / time).
+ * Rows are hidden while the request runs; a failed one comes back and its message is shown.
  */
 export function useReviewActions() {
   const { t } = useTranslation();
   const snackbar = useSnackbar();
-  const approve = useDataMutation((taskId: string) => reviewApi.approve(taskId)).mutateAsync;
-  const reject = useDataMutation((taskId: string) => reviewApi.reject(taskId)).mutateAsync;
-  const reopen = useReopenTask().mutateAsync;
+  const queryClient = useQueryClient();
+  const approve = useDataMutation((tasks: readonly Task[]) => runEach(tasks, (task) => reviewApi.approve(task.id))).mutateAsync;
+  const reject = useDataMutation((tasks: readonly Task[]) => runEach(tasks, (task) => reviewApi.reject(task.id))).mutateAsync;
+  const restore = useDataMutation((tasks: readonly Task[]) =>
+    runEach(tasks.filter(restorable), (task) =>
+      reviewApi.restore(task.id, { requestedBy: task.reviewRequestedBy as string, requestedAt: task.reviewRequestedAt as string }),
+    ),
+  ).mutateAsync;
+  const reopen = useDataMutation((tasks: readonly Task[]) =>
+    runEach(tasks, async (task) => applyTaskChange(queryClient, await tasksApi.reopen(task.id))),
+  ).mutateAsync;
   const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
-  const setHiddenId = useCallback((id: string, value: boolean) => {
+  const setHiddenTasks = useCallback((tasks: readonly Task[], value: boolean) => {
+    if (tasks.length === 0) return;
     setHidden((previous) => {
-      if (previous.has(id) === value) return previous;
       const next = new Set(previous);
-      if (value) next.add(id);
-      else next.delete(id);
+      for (const task of tasks) {
+        if (value) next.add(task.id);
+        else next.delete(task.id);
+      }
       return next;
     });
   }, []);
@@ -91,68 +131,82 @@ export function useReviewActions() {
     [snackbar],
   );
 
-  const onApprove = useCallback(
-    (taskId: string) => {
-      setHiddenId(taskId, true);
-      approve(taskId).then(
-        () =>
-          snackbar.show({
-            message: t('review.approved'),
-            actionLabel: t('common.undo'),
-            onAction: () => {
-              reopen({ taskId }).catch(showError);
-            },
-          }),
-        (failure: unknown) => {
-          setHiddenId(taskId, false);
-          showError(failure);
+  /** Undo step shared by both: run `undo` on the tasks, show the first failure (409 `review-not-restorable` ...). */
+  const undoWith = useCallback(
+    (undo: (tasks: readonly Task[]) => Promise<BatchResult>, tasks: readonly Task[], showBack: boolean) => {
+      undo(tasks).then(
+        (result) => {
+          if (showBack) setHiddenTasks(result.done, false);
+          if (result.failures.length > 0) showError(result.failures[0].error);
         },
+        showError,
       );
     },
-    [approve, reopen, setHiddenId, showError, snackbar, t],
+    [setHiddenTasks, showError],
   );
 
-  const send = useCallback(
-    (taskId: string) => {
-      timers.current.delete(taskId);
-      reject(taskId).catch((failure: unknown) => {
-        setHiddenId(taskId, false);
+  const run = useCallback(
+    async (tasks: readonly Task[], kind: 'approve' | 'reject') => {
+      if (tasks.length === 0) return;
+      setHiddenTasks(tasks, true);
+      let result: BatchResult;
+      try {
+        result = await (kind === 'approve' ? approve : reject)(tasks);
+      } catch (failure) {
+        setHiddenTasks(tasks, false);
         showError(failure);
-      });
-    },
-    [reject, setHiddenId, showError],
-  );
-
-  const onReject = useCallback(
-    (taskId: string) => {
-      setHiddenId(taskId, true);
-      timers.current.set(taskId, setTimeout(() => send(taskId), SNACKBAR_DURATION_MS));
-      snackbar.show({
-        message: t('review.rejected'),
-        actionLabel: t('common.undo'),
-        onAction: () => {
-          const timer = timers.current.get(taskId);
-          if (timer === undefined) return; // already sent
-          clearTimeout(timer);
-          timers.current.delete(taskId);
-          setHiddenId(taskId, false);
-        },
-      });
-    },
-    [send, setHiddenId, snackbar, t],
-  );
-
-  const sendRef = useRef(send);
-  sendRef.current = send;
-  useEffect(
-    () => () => {
-      for (const [taskId, timer] of timers.current) {
-        clearTimeout(timer);
-        sendRef.current(taskId);
+        return;
       }
+      setHiddenTasks(result.failures.map((failure) => failure.task), false);
+      if (result.done.length === 0) {
+        if (result.failures.length > 0) showError(result.failures[0].error);
+        return;
+      }
+      const single = result.done.length === 1;
+      const approving = kind === 'approve';
+      const undoable = approving ? result.done : result.done.filter(restorable);
+      const message = approving
+        ? single ? t('review.approved') : t('review.approvedMany', { n: result.done.length })
+        : single ? t('review.rejected') : t('review.rejectedMany', { n: result.done.length });
+      snackbar.show({
+        message,
+        ...(undoable.length > 0
+          ? { actionLabel: t('common.undo'), onAction: () => undoWith(approving ? reopen : restore, undoable, !approving) }
+          : {}),
+      });
+      if (result.failures.length > 0) showError(result.failures[0].error);
     },
-    [],
+    [approve, reject, reopen, restore, setHiddenTasks, showError, snackbar, t, undoWith],
   );
 
-  return { hidden, onApprove, onReject };
+  const approveTasks = useCallback((tasks: readonly Task[]) => void run(tasks, 'approve'), [run]);
+  const rejectTasks = useCallback((tasks: readonly Task[]) => void run(tasks, 'reject'), [run]);
+  const onApprove = useCallback((task: Task) => approveTasks([task]), [approveTasks]);
+  const onReject = useCallback((task: Task) => rejectTasks([task]), [rejectTasks]);
+
+  return { hidden, onApprove, onReject, approveTasks, rejectTasks };
+}
+
+/** Multi-select state of the review screen (long press / "Chọn"). Plain state, one per screen, nothing per row. */
+export function useReviewSelection() {
+  const [selecting, setSelecting] = useState(false);
+  const [ids, setIds] = useState<ReadonlySet<string>>(() => new Set());
+  const start = useCallback((taskId?: string) => {
+    setSelecting(true);
+    setIds(new Set(taskId ? [taskId] : []));
+  }, []);
+  const toggle = useCallback((taskId: string) => {
+    setIds((current) => {
+      const next = new Set(current);
+      if (next.has(taskId)) next.delete(taskId);
+      else next.add(taskId);
+      return next;
+    });
+  }, []);
+  const selectAll = useCallback((all: readonly string[]) => setIds(new Set(all)), []);
+  const clear = useCallback(() => {
+    setSelecting(false);
+    setIds(new Set());
+  }, []);
+  return { selecting, ids, start, toggle, selectAll, clear };
 }

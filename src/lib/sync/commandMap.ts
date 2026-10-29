@@ -104,6 +104,8 @@ export const ROUTES: readonly Route[] = [
     pattern: new RegExp(`${API}/tasks/${SEG}/review/reject$`),
     build: (params) => ({ type: 'task_review_reject', args: { taskId: decoded(params)[0] } }),
   },
+  // Undo of a return: the REST body IS the command args beside the id (backend contract)
+  { method: 'POST', pattern: new RegExp(`${API}/tasks/${SEG}/review/restore$`), build: onId('task_review_restore') },
   // labels
   { method: 'POST', pattern: new RegExp(`${API}/labels$`), build: create('label_add') },
   { method: 'PATCH', pattern: new RegExp(`${API}/labels/${SEG}$`), build: onId('label_update') },

@@ -9,7 +9,7 @@ const REVIEW_KEYS = [
   'review.pending', 'review.requested', 'review.cancelled', 'review.cancelTask', 'review.cancelRequest', 'review.pendingTask',
   'review.lockedDone', 'review.lockedDoneToast', 'review.approve', 'review.reject', 'review.approved', 'review.rejected', 'review.title', 'review.mineTitle',
   'review.cardCount', 'review.cardCountMore', 'review.cardNone', 'review.cardMine', 'review.requestedBy', 'review.requestedByMe',
-  'review.unknownPerson', 'review.empty', 'review.emptyMine', 'review.readOnlyHint', 'review.notPending',
+  'review.unknownPerson', 'review.empty', 'review.emptyMine', 'review.readOnlyHint', 'review.notPending', 'review.notRestorable', 'review.select', 'review.selectAll', 'review.selectedCount', 'review.approveN', 'review.rejectN', 'review.approvedMany', 'review.rejectedMany', 'review.selectRow',
   'notifications.review.requested', 'notifications.review.approved', 'notifications.review.rejected',
   ...['REVIEW_REQUESTED', 'REVIEW_APPROVED', 'REVIEW_REJECTED', 'REVIEW_CANCELLED'].flatMap((event) => [
     `activity.event.TASK.${event}`,

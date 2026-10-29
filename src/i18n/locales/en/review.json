@@ -24,6 +24,15 @@
     "emptyMine": "None of your tasks are waiting for review",
     "readOnlyHint": "Team admins will approve or return these tasks.",
     "notPending": "This task is no longer waiting for review. The list was refreshed.",
-    "cancelRequest": "Cancel review request"
+    "cancelRequest": "Cancel review request",
+    "notRestorable": "Cannot undo: the task has changed",
+    "select": "Select",
+    "selectAll": "Select all",
+    "selectedCount": "{{n}} selected",
+    "approveN": "Approve ({{n}})",
+    "rejectN": "Return ({{n}})",
+    "approvedMany": "Approved {{n}} tasks",
+    "rejectedMany": "Returned {{n}} tasks",
+    "selectRow": "Select {{name}}"
   }
 }

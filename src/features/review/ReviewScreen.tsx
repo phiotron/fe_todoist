@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,7 @@ import { StateView } from '../../components/StateView';
 import { SubHeader } from '../../components/SubHeader';
 import { useDayStableNow } from '../../lib/dayStableNow';
 import { useNow } from '../../lib/useNow';
-import { gutter, type, useThemedStyles } from '../../theme';
+import { gutter, type, useTheme, useThemedStyles } from '../../theme';
 import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
@@ -18,7 +19,8 @@ import { capabilitiesOf } from '../projects/projectCapabilities';
 import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { useProjects } from '../projects/useProjects';
 import { useWorkspaces } from '../team/useTeam';
-import { useRequesterNames, useReviewActions, useReviewList } from './useReview';
+import { ReviewSelectionBar } from './ReviewSelectionBar';
+import { useRequesterNames, useReviewActions, useReviewList, useReviewSelection } from './useReview';
 
 const taskId = (task: Task) => task.id;
 
@@ -28,17 +30,45 @@ interface ReviewRowProps {
   requested: string;
   projectName: string;
   canReview: boolean;
-  onApprove: (taskId: string) => void;
-  onReject: (taskId: string) => void;
+  /** Multi-select mode: the row shows a checkbox instead of Duyệt / Trả lại, and a press ticks it. */
+  selecting: boolean;
+  selected: boolean;
+  onApprove: (task: Task) => void;
+  onReject: (task: Task) => void;
+  onToggle: (taskId: string) => void;
+  onStartSelect: (taskId: string) => void;
 }
 
 /** One pending task: name, who asked and when, project; an Admin gets Duyệt / Trả lại. */
-const ReviewRow = memo(function ReviewRow({ task, requested, projectName, canReview, onApprove, onReject }: ReviewRowProps) {
+const ReviewRow = memo(function ReviewRow({ task, requested, projectName, canReview, selecting, selected, onApprove, onReject, onToggle, onStartSelect }: ReviewRowProps) {
   const styles = useThemedStyles(createStyles);
+  const { palette } = useTheme();
   const { t } = useTranslation();
+  const onPress = () => {
+    if (!selecting) router.push(`/task/${task.id}`);
+    else if (canReview) onToggle(task.id);
+  };
   return (
     <View testID={`review-row-${task.id}`} style={styles.row}>
-      <Pressable accessibilityRole="button" onPress={() => router.push(`/task/${task.id}`)} style={styles.main}>
+      <Pressable
+        testID={`review-open-${task.id}`}
+        accessibilityRole="button"
+        onPress={onPress}
+        onLongPress={canReview && !selecting ? () => onStartSelect(task.id) : undefined}
+        style={styles.main}
+      >
+        {selecting && canReview ? (
+          <Feather
+            testID={`review-check-${task.id}`}
+            accessibilityRole="checkbox"
+            accessibilityLabel={t('review.selectRow', { name: task.content })}
+            accessibilityState={{ checked: selected }}
+            name={selected ? 'check-square' : 'square'}
+            size={22}
+            color={selected ? palette.acc : palette.mute}
+            style={styles.check}
+          />
+        ) : null}
         <Text style={styles.title} numberOfLines={2}>
           {task.content}
         </Text>
@@ -49,10 +79,10 @@ const ReviewRow = memo(function ReviewRow({ task, requested, projectName, canRev
           {projectName}
         </Text>
       </Pressable>
-      {canReview ? (
+      {canReview && !selecting ? (
         <View style={styles.actions}>
-          <AppButton testID={`review-approve-${task.id}`} size="sm" label={t('review.approve')} onPress={() => onApprove(task.id)} />
-          <AppButton testID={`review-reject-${task.id}`} size="sm" variant="outline" label={t('review.reject')} onPress={() => onReject(task.id)} />
+          <AppButton testID={`review-approve-${task.id}`} size="sm" label={t('review.approve')} onPress={() => onApprove(task)} />
+          <AppButton testID={`review-reject-${task.id}`} size="sm" variant="outline" label={t('review.reject')} onPress={() => onReject(task)} />
         </View>
       ) : null}
     </View>
@@ -69,7 +99,8 @@ export function ReviewScreen() {
   const timeZone = useUserTimeZone();
   const now = useDayStableNow(useNow(), timeZone);
   const { query, tasks } = useReviewList();
-  const { hidden, onApprove, onReject } = useReviewActions();
+  const { hidden, onApprove, onReject, approveTasks, rejectTasks } = useReviewActions();
+  const selection = useReviewSelection();
   const names = useRequesterNames();
   const me = useMe().data?.id;
   const { byId } = useProjects();
@@ -78,6 +109,17 @@ export function ReviewScreen() {
   const isAdmin = teams.some((team) => team.role === 'ADMIN');
 
   const rows = useMemo(() => tasks.filter((task) => !hidden.has(task.id)), [tasks, hidden]);
+  const canReviewTask = useCallback((task: Task) => capabilitiesOf(byId.get(task.projectId)).canReview === true, [byId]);
+  const reviewable = useMemo(() => rows.filter(canReviewTask), [rows, canReviewTask]);
+  // only rows still on the list count (a row can vanish after a refresh)
+  const picked = useMemo(() => reviewable.filter((task) => selection.ids.has(task.id)), [reviewable, selection.ids]);
+  const { selecting, ids: selectedIds } = selection;
+  const selectAll = useCallback(() => selection.selectAll(reviewable.map(taskId)), [selection, reviewable]);
+  const finishBatch = (run: (tasks: readonly Task[]) => void) => () => {
+    const tasks = picked;
+    selection.clear();
+    run(tasks);
+  };
   const renderItem = useCallback(
     ({ item }: { item: Task }) => {
       const time = item.reviewRequestedAt ? stampLabel(item.reviewRequestedAt, now, timeZone) : '';
@@ -88,18 +130,33 @@ export function ReviewScreen() {
           task={item}
           requested={mine ? t('review.requestedByMe', { time }) : t('review.requestedBy', { name: who, time })}
           projectName={projectLabel(item.projectId, item.projectName)}
-          canReview={capabilitiesOf(byId.get(item.projectId)).canReview === true}
+          canReview={canReviewTask(item)}
+          selecting={selecting}
+          selected={selectedIds.has(item.id)}
           onApprove={onApprove}
           onReject={onReject}
+          onToggle={selection.toggle}
+          onStartSelect={selection.start}
         />
       );
     },
-    [me, names, now, timeZone, projectLabel, byId, onApprove, onReject, t],
+    [me, names, now, timeZone, projectLabel, canReviewTask, selecting, selectedIds, onApprove, onReject, selection.toggle, selection.start, t],
   );
 
   return (
     <View testID="review-screen" style={styles.fill}>
-      <SubHeader title={isAdmin ? t('review.title') : t('review.mineTitle')} onBack={() => router.back()} testID="review-header" />
+      <SubHeader
+        title={selecting ? t('review.selectedCount', { n: picked.length }) : isAdmin ? t('review.title') : t('review.mineTitle')}
+        onBack={() => (selecting ? selection.clear() : router.back())}
+        testID="review-header"
+        right={
+          selecting ? (
+            <AppButton testID="review-select-done" size="sm" variant="ghost" label={t('common.done')} onPress={selection.clear} />
+          ) : isAdmin && reviewable.length > 0 ? (
+            <AppButton testID="review-select" size="sm" variant="ghost" label={t('review.select')} onPress={() => selection.start()} />
+          ) : undefined
+        }
+      />
       {isAdmin ? null : <Text style={styles.hint}>{t('review.readOnlyHint')}</Text>}
       {query.isPending || query.isError ? (
         <QueryStateView query={query} testID="review-state" />
@@ -107,6 +164,7 @@ export function ReviewScreen() {
         <FlatList
           testID="review-list"
           data={rows}
+          extraData={selectedIds}
           keyExtractor={taskId}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
@@ -124,6 +182,9 @@ export function ReviewScreen() {
           ListFooterComponent={query.isFetchingNextPage ? <ActivityIndicator testID="review-more" /> : undefined}
         />
       )}
+      {selecting ? (
+        <ReviewSelectionBar count={picked.length} onSelectAll={selectAll} onApprove={finishBatch(approveTasks)} onReject={finishBatch(rejectTasks)} />
+      ) : null}
     </View>
   );
 }
@@ -135,6 +196,7 @@ function createStyles(palette: Palette) {
     list: { paddingHorizontal: gutter, paddingBottom: 48, flexGrow: 1 },
     row: { paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: palette.line },
     main: { gap: 2 },
+    check: { marginBottom: 4 },
     title: { ...type.taskTitle, color: palette.ink },
     meta: { ...type.meta, color: palette.mute },
     actions: { flexDirection: 'row', gap: 8 },

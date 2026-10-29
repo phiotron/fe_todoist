@@ -42,6 +42,13 @@ describe('commandMap — review commands', () => {
     expect(mapRequest('POST', '/api/v1/tasks/t1/review/approve', undefined, newId)).toEqual({ type: 'task_review_approve', args: { taskId: 't1' } });
     expect(mapRequest('POST', '/api/v1/tasks/t%201/review/reject', undefined, newId)).toEqual({ type: 'task_review_reject', args: { taskId: 't 1' } });
   });
+  it('maps restore to task_review_restore with { id, requestedBy, requestedAt }', () => {
+    const body = { requestedBy: 'u-binh', requestedAt: NOW };
+    expect(mapRequest('POST', '/api/v1/tasks/t%201/review/restore', body, newId)).toEqual({
+      type: 'task_review_restore',
+      args: { id: 't 1', requestedBy: 'u-binh', requestedAt: NOW },
+    });
+  });
 });
 
 describe('applyOptimistic — tick by role', () => {
@@ -80,6 +87,20 @@ describe('applyOptimistic — approve / reject', () => {
     expect(items(qc, queryKeys.tasks.list({ view: 'review' })).map((t) => t.id)).toEqual(['t2']);
     expect(items(qc, queryKeys.tasks.list({ view: 'today' })).map((t) => [t.id, t.reviewStatus, t.completedAt])).toEqual([['t1', 'NONE', null]]);
   });
+  it('restore after reject: back to PENDING with the old requester, and the row is in the review list again', () => {
+    const qc = setup(ADMIN, { reviewStatus: 'PENDING', reviewRequestedBy: 'u-binh', reviewRequestedAt: '2026-10-29T02:30:00Z' });
+    applyOptimistic(qc, { type: 'task_review_reject', args: { taskId: 't1' } }, NOW);
+    expect(items(qc, queryKeys.tasks.list({ view: 'review' })).map((t) => t.id)).toEqual(['t2']);
+    applyOptimistic(qc, { type: 'task_review_restore', args: { id: 't1', requestedBy: 'u-binh', requestedAt: '2026-10-29T02:30:00Z' } }, NOW);
+    expect(items(qc, queryKeys.tasks.list({ view: 'review' })).map((t) => t.id).sort()).toEqual(['t1', 't2']);
+    expect(items(qc, queryKeys.tasks.list({ view: 'today' }))[0]).toMatchObject({
+      reviewStatus: 'PENDING', reviewRequestedBy: 'u-binh', reviewRequestedAt: '2026-10-29T02:30:00Z', completedAt: null,
+    });
+  });
+  it('restore of an unknown task does not throw', () => {
+    const qc = setup(ADMIN);
+    expect(() => applyOptimistic(qc, { type: 'task_review_restore', args: { id: 'zz', requestedBy: 'u', requestedAt: NOW } }, NOW)).not.toThrow();
+  });
   it('an unknown task does not throw', () => {
     const qc = setup(ADMIN);
     expect(() => applyOptimistic(qc, { type: 'task_review_approve', args: { taskId: 'zz' } }, NOW)).not.toThrow();
@@ -87,6 +108,12 @@ describe('applyOptimistic — approve / reject', () => {
 });
 
 describe('impactOfWrite — review writes stay narrow', () => {
+  it('restore only edits state (no productivity, no reminders, not "all")', () => {
+    const restore = impactOfWrite('POST', '/api/v1/tasks/t1/review/restore', { requestedBy: 'u', requestedAt: NOW });
+    expect(restore.roots).not.toBe('all');
+    expect([...(restore.roots as Set<string>)]).not.toContain('productivity');
+    expect(restore.reminders).toBe(false);
+  });
   it('approve completes (productivity, reminders); reject only edits state', () => {
     const approve = impactOfWrite('POST', '/api/v1/tasks/t1/review/approve', undefined);
     const reject = impactOfWrite('POST', '/api/v1/tasks/t1/review/reject', undefined);
@@ -121,6 +148,16 @@ describe('interceptor — review while offline', () => {
     expect(queue.size()).toBe(1);
     expect(queue.peek(1)[0]).toMatchObject({ type: 'task_review_approve', args: { taskId: 't1' } });
     expect(items(qc, queryKeys.tasks.list({ view: 'review' })).map((t) => t.id)).toEqual(['t2']);
+  });
+  it('offline reject then restore are queued in that order, args intact, and the cache ends PENDING', () => {
+    const { qc, queue, intercept } = build(false);
+    intercept('/api/v1/tasks/t1/review/reject', { method: 'POST' });
+    intercept('/api/v1/tasks/t1/review/restore', { method: 'POST', body: { requestedBy: 'u-binh', requestedAt: NOW } });
+    expect(queue.peek(5).map((c) => [c.type, c.args])).toEqual([
+      ['task_review_reject', { taskId: 't1' }],
+      ['task_review_restore', { id: 't1', requestedBy: 'u-binh', requestedAt: NOW }],
+    ]);
+    expect(items(qc, queryKeys.tasks.list({ view: 'review' })).map((t) => t.id).sort()).toEqual(['t1', 't2']);
   });
   it('connected with an empty queue: plain REST (null), nothing queued', () => {
     const { queue, intercept } = build(true);

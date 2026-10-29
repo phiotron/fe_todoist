@@ -80,6 +80,8 @@ function conflictMessage(error: ApiError): string {
       return i18n.t('errors.inProgress');
     case 'review-not-pending':
       return i18n.t('review.notPending');
+    case 'review-not-restorable':
+      return i18n.t('review.notRestorable');
     case 'label-name-taken':
       return i18n.t('errors.labelNameTaken');
     default:

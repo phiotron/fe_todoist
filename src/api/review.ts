@@ -1,5 +1,10 @@
 import { apiFetch } from './client';
 
+export interface ReviewRestoreBody {
+  requestedBy: string;
+  requestedAt: string;
+}
+
 const base = (taskId: string) => `/api/v1/tasks/${encodeURIComponent(taskId)}/review`;
 
 /**
@@ -10,4 +15,10 @@ const base = (taskId: string) => `/api/v1/tasks/${encodeURIComponent(taskId)}/re
 export const reviewApi = {
   approve: (taskId: string) => apiFetch<unknown>(`${base(taskId)}/approve`, { method: 'POST' }),
   reject: (taskId: string) => apiFetch<unknown>(`${base(taskId)}/reject`, { method: 'POST' }),
+  /**
+   * Real Undo of a return (backend contract, ADAPTER: one place to change). Admin only (403 `team-admin-only`); only an
+   * open task with review NONE (409 `review-not-restorable`). Puts the task back to PENDING with the ORIGINAL requester
+   * and time, which the caller took from the task before returning it.
+   */
+  restore: (taskId: string, body: ReviewRestoreBody) => apiFetch<unknown>(`${base(taskId)}/restore`, { method: 'POST', body }),
 };

@@ -189,6 +189,14 @@ function removeFromReviewLists(queryClient: QueryClient, taskId: string) {
   );
 }
 
+/** Undo of a return: the task is pending again, so it is back in the Pending-review lists (once; the server orders them). */
+function addToReviewLists(queryClient: QueryClient, task: Task) {
+  queryClient.setQueriesData(
+    { queryKey: queryKeys.tasks.all, predicate: (q) => q.queryKey[1] === 'list' && listParams(q.queryKey).view === 'review' },
+    (data: unknown) => (findTask(data, task.id) ? data : appendToLastPage(data, task)),
+  );
+}
+
 // ---------- apply ----------
 
 const TASK_FIELDS = [
@@ -503,6 +511,20 @@ export function applyOptimistic(queryClient: QueryClient, command: MappedCommand
       removeFromReviewLists(queryClient, taskId);
       if (approving) removeTaskFromOpenLists(queryClient, new Set([taskId]));
       return before ? { task: { ...before, ...patch }, cascaded: [] } : undefined;
+    }
+    case 'task_review_restore': {
+      const before = cachedTask(queryClient, id as string);
+      const patch = {
+        reviewStatus: 'PENDING',
+        reviewRequestedBy: str(args.requestedBy) ?? null,
+        reviewRequestedAt: str(args.requestedAt) ?? null,
+        updatedAt: nowIso,
+      };
+      queryClient.setQueriesData({ queryKey: queryKeys.tasks.all }, patchById(id as string, patch));
+      if (!before) return undefined;
+      const task = { ...before, ...patch } as Task;
+      addToReviewLists(queryClient, task);
+      return { task, cascaded: [] };
     }
     case 'task_move': {
       const projectId = str(args.projectId) ?? '';
