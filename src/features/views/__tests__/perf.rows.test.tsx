@@ -4,6 +4,7 @@ import { Profiler, type ReactElement } from 'react';
 import { StyleSheet } from 'react-native';
 import type { Project, Task } from '../../../api/models';
 import { queryKeys } from '../../../api/queryKeys';
+import { SnackbarProvider } from '../../../components/Snackbar';
 import { jsonResponse } from '../../../test/http';
 import { inboxProject, makeProject, makeTask, page } from '../../../test/m1Fixtures';
 import { makeSharedProject } from '../../../test/m8aFixtures';
@@ -17,7 +18,8 @@ import { TodayScreen } from '../TodayScreen';
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => true) },
 }));
-jest.mock('../../../lib/useNow', () => ({ useNow: () => new Date('2026-10-23T03:00:00Z') }));
+const mockNow = new Date('2026-10-23T03:00:00Z');
+jest.mock('../../../lib/useNow', () => ({ useNow: () => mockNow }));
 jest.mock('../../auth/useUserTimeZone', () => ({
   useUserTimeZone: () => 'Asia/Ho_Chi_Minh',
   deviceTimeZone: () => 'Asia/Ho_Chi_Minh',
@@ -32,6 +34,7 @@ jest.mock('../../tasks/Checkbox', () => {
 // A device lays rows out, so FlatList's window grows until it covers the screen ± windowSize; jest has no layout and
 // stops at initialNumToRender. This stand-in draws every row (what the device ends up with when the window is wide).
 let mockRenderAll = false;
+let mockListProps: Record<string, unknown> = {};
 jest.mock('react-native/Libraries/Lists/FlatList', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -49,9 +52,10 @@ jest.mock('react-native/Libraries/Lists/FlatList', () => {
       </View>
     );
   });
-  const Switch = React.forwardRef((props: object, ref: unknown) =>
-    mockRenderAll ? <All ref={ref} {...props} /> : <actual.default ref={ref} {...props} />,
-  );
+  const Switch = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+    mockListProps = props;
+    return mockRenderAll ? <All ref={ref} {...props} /> : <actual.default ref={ref} {...props} />;
+  });
   return { __esModule: true, default: Switch };
 });
 
@@ -77,12 +81,14 @@ export interface PerfResult {
   deleteMutationHooks: number;
   projectsRequests: number;
   styleSheetCreates: number;
+  renderPhaseWarnings: string[];
 }
 
 async function measureScenario(scenario: string, ui: ReactElement, tasks: Task[], extraRoutes: object = {}): Promise<PerfResult> {
   let projectsRequests = 0;
   const queryClient = createTestQueryClient();
   const stats = { commits: 0, actualMs: 0 };
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
   const styleSpy = jest.spyOn(StyleSheet, 'create');
   const deleteSpy = jest.spyOn(taskActions, 'useDeleteTask');
   mockCounts.rowRenders = 0;
@@ -117,7 +123,9 @@ async function measureScenario(scenario: string, ui: ReactElement, tasks: Task[]
     deleteMutationHooks: deleteSpy.mock.calls.length,
     projectsRequests,
     styleSheetCreates: styleSpy.mock.calls.length,
+    renderPhaseWarnings: errorSpy.mock.calls.map((call) => String(call[0]).slice(0, 160)).filter((m) => m.includes('Cannot update')),
   };
+  errorSpy.mockRestore();
   console.log(`PERF ${JSON.stringify(result)}`);
   return result;
 }
@@ -144,5 +152,45 @@ function expectBudget(r: PerfResult, rows: number) {
   expect(r.workspacesObservers).toBeLessThanOrEqual(4);
   expect(r.netInfoSubscriptions).toBeLessThanOrEqual(20); // a few per screen, none per row (was 108 / 317)
   expect(r.styleSheetCreates).toBeLessThanOrEqual(60); // styles are built once per palette, not per component
+  expect(r.renderPhaseWarnings).toEqual([]);
   expect(r.rowRenders).toBeLessThanOrEqual(rows * 2); // a row draws at most twice (first draw + project data arrives)
 }
+
+describe('perf: list stays cheap while it is used', () => {
+  jest.setTimeout(120000);
+  beforeEach(() => { mockRenderAll = true; });
+  afterAll(() => { mockRenderAll = false; });
+
+  it('a parent redraw (display change, minute tick, selection) does not redraw rows that did not change', async () => {
+    const tasks = manyTasks(100, (i) => PROJECTS[i % 3]);
+    const queryClient = createTestQueryClient();
+    const rendered = await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY'], []),
+      'GET /api/v1/tasks': () => jsonResponse(200, page(tasks)),
+      'GET /api/v1/projects': () => jsonResponse(200, [inboxProject, mine, team]),
+      'GET /api/v1/workspaces': () => jsonResponse(200, []),
+    }, queryClient);
+    await screen.findByText('Việc 0');
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+    const before = mockCounts.rowRenders;
+    await rendered.rerender(<SnackbarProvider><TodayScreen /></SnackbarProvider>);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    expect(mockCounts.rowRenders - before).toBe(0);
+  });
+
+  it('the list is windowed: few rows at first, a bounded window around the screen', async () => {
+    mockRenderAll = false;
+    await renderSignedIn(<TodayScreen />, {
+      ...viewOptionsRoutes(['TODAY'], []),
+      'GET /api/v1/tasks': () => jsonResponse(200, page(manyTasks(100, (i) => PROJECTS[i % 3]))),
+      'GET /api/v1/projects': () => jsonResponse(200, [inboxProject, mine, team]),
+      'GET /api/v1/workspaces': () => jsonResponse(200, []),
+    });
+    await screen.findByText('Việc 0');
+    const props = mockListProps as Record<string, number | boolean>;
+    expect(props.initialNumToRender).toBeLessThanOrEqual(12);
+    expect(props.windowSize).toBeLessThanOrEqual(7); // default 21 = 10 screens each way = the whole list drawn
+    expect(props.maxToRenderPerBatch).toBeLessThanOrEqual(8);
+    expect(props.removeClippedSubviews).toBe(true);
+  });
+});
