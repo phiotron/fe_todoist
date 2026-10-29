@@ -113,6 +113,8 @@ function taskWrite(method: string, rest: string[], body: unknown): WriteImpact {
     return impactOf(TASK_EDIT_ROOTS, keysOf(body).some((k) => !REMINDER_NEUTRAL_TASK_FIELDS.has(k)));
   }
   if (action === 'close' || action === 'reopen') return impactOf(TASK_ROOTS, true);
+  // REVIEW: approve completes the task (counts, reminders); reject only flips the review state back.
+  if (action === 'review') return rest[2] === 'approve' ? impactOf(TASK_ROOTS, true) : impactOf(TASK_EDIT_ROOTS, false);
   if (action === 'reminders') return impactOf(TASK_EDIT_ROOTS, true);
   if (action === 'comments') return impactOf(COMMENT_ROOTS, false);
   if (action === 'move') return impactOf(TASK_EDIT_ROOTS, false);

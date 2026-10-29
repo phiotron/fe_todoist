@@ -93,6 +93,17 @@ export const ROUTES: readonly Route[] = [
   { method: 'POST', pattern: new RegExp(`${API}/tasks/${SEG}/close$`), build: onId('task_close') },
   { method: 'POST', pattern: new RegExp(`${API}/tasks/${SEG}/reopen$`), build: onId('task_reopen') },
   { method: 'POST', pattern: new RegExp(`${API}/tasks/${SEG}/move$`), build: onId('task_move') },
+  // REVIEW (Cho duyet): the REST path has no body; the command payload is { taskId } (backend contract)
+  {
+    method: 'POST',
+    pattern: new RegExp(`${API}/tasks/${SEG}/review/approve$`),
+    build: (params) => ({ type: 'task_review_approve', args: { taskId: decoded(params)[0] } }),
+  },
+  {
+    method: 'POST',
+    pattern: new RegExp(`${API}/tasks/${SEG}/review/reject$`),
+    build: (params) => ({ type: 'task_review_reject', args: { taskId: decoded(params)[0] } }),
+  },
   // labels
   { method: 'POST', pattern: new RegExp(`${API}/labels$`), build: create('label_add') },
   { method: 'PATCH', pattern: new RegExp(`${API}/labels/${SEG}$`), build: onId('label_update') },

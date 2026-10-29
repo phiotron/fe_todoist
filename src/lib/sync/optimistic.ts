@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { Task } from '../../api/models';
 import { queryKeys } from '../../api/queryKeys';
+import { tickOutcome, type ReviewCapabilities } from '../review';
 import type { MappedCommand } from './commandMap';
 
 /**
@@ -126,6 +127,7 @@ export function buildTask(queryClient: QueryClient, args: Rec, nowIso: string): 
     projectName: projectName(queryClient, projectId),
     parentContent: parent?.content ?? null,
     labelIds: Array.isArray(args.labelIds) ? (args.labelIds as string[]) : [],
+    ...NO_REVIEW,
   } as unknown as Task;
 }
 
@@ -161,6 +163,30 @@ function buildSection(args: Rec, nowIso: string): Rec {
     createdAt: nowIso,
     updatedAt: nowIso,
   };
+}
+
+// ---------- REVIEW (Cho duyet) ----------
+
+const NO_REVIEW = { reviewStatus: 'NONE', reviewRequestedBy: null, reviewRequestedAt: null } as const;
+
+/** PENDING (a request from me; the server stamps the real user id) or NONE (cancelled). */
+function reviewPatch(request: boolean, nowIso: string): Record<string, unknown> {
+  return request
+    ? { reviewStatus: 'PENDING', reviewRequestedAt: nowIso, updatedAt: nowIso }
+    : { ...NO_REVIEW, updatedAt: nowIso };
+}
+
+function capabilitiesFor(queryClient: QueryClient, projectId: string): ReviewCapabilities | undefined {
+  const capabilities = cachedRecord(queryClient, queryKeys.projects.all, projectId)?.capabilities;
+  return capabilities !== null && typeof capabilities === 'object' ? (capabilities as ReviewCapabilities) : undefined;
+}
+
+/** The Pending-review lists (GET tasks?view=review) lose the task once it is approved / returned. */
+function removeFromReviewLists(queryClient: QueryClient, taskId: string) {
+  queryClient.setQueriesData(
+    { queryKey: queryKeys.tasks.all, predicate: (q) => q.queryKey[1] === 'list' && listParams(q.queryKey).view === 'review' },
+    removeById(new Set([taskId])),
+  );
 }
 
 // ---------- apply ----------
@@ -453,11 +479,30 @@ export function applyOptimistic(queryClient: QueryClient, command: MappedCommand
     case 'task_close':
     case 'task_reopen': {
       const closing = command.type === 'task_close';
-      const completedAt = closing ? nowIso : null;
       const before = cachedTask(queryClient, id) ?? buildTask(queryClient, args, nowIso);
-      queryClient.setQueriesData({ queryKey: queryKeys.tasks.all }, patchById(id, { completedAt }));
+      // REVIEW: in a team project a Member's tick asks for review (PENDING, still open) and ticking again cancels it.
+      const outcome = closing ? tickOutcome(before, capabilitiesFor(queryClient, before.projectId)) : 'COMPLETE';
+      if (outcome !== 'COMPLETE') {
+        const patch = reviewPatch(outcome === 'REQUEST', nowIso);
+        queryClient.setQueriesData({ queryKey: queryKeys.tasks.all }, patchById(id, patch));
+        return { task: { ...before, ...patch }, cascaded: [] };
+      }
+      const completedAt = closing ? nowIso : null;
+      const patch = { completedAt, ...NO_REVIEW };
+      queryClient.setQueriesData({ queryKey: queryKeys.tasks.all }, patchById(id, patch));
       if (closing) removeTaskFromOpenLists(queryClient, new Set([id]));
-      return { task: { ...before, completedAt }, cascaded: [] };
+      return { task: { ...before, ...patch }, cascaded: [] };
+    }
+    case 'task_review_approve':
+    case 'task_review_reject': {
+      const taskId = str(args.taskId) ?? '';
+      const approving = command.type === 'task_review_approve';
+      const before = cachedTask(queryClient, taskId);
+      const patch = approving ? { completedAt: nowIso, ...NO_REVIEW } : { ...NO_REVIEW };
+      queryClient.setQueriesData({ queryKey: queryKeys.tasks.all }, patchById(taskId, patch));
+      removeFromReviewLists(queryClient, taskId);
+      if (approving) removeTaskFromOpenLists(queryClient, new Set([taskId]));
+      return before ? { task: { ...before, ...patch }, cascaded: [] } : undefined;
     }
     case 'task_move': {
       const projectId = str(args.projectId) ?? '';
