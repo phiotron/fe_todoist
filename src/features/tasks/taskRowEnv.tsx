@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { authApi } from '../../api/auth';
+import { meQueryKey } from '../auth/session';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { Project } from '../../api/models';
 import { projectsApi } from '../../api/projects';
@@ -17,6 +19,8 @@ import type { ProjectCapabilities } from '../../api/projects';
  */
 export interface TaskRowEnv {
   online: boolean;
+  /** REVIEW: the signed-in user's id (read from the cache, no request): whose pending request a row shows. */
+  meId: string | null;
   /** Same function the Inbox-name label uses (follows the app language). */
   nameLabel: (projectId: string | null | undefined, projectName: string | null | undefined) => string;
   capabilitiesOf: (projectId: string | undefined) => ProjectCapabilities;
@@ -45,9 +49,10 @@ export function TaskRowEnvProvider({ fetchLists, children }: { fetchLists: boole
     staleTime: ORIGIN_STALE_MS,
     enabled: fetchLists,
   }).data;
+  const meId = useQuery({ queryKey: meQueryKey, queryFn: authApi.me, enabled: false }).data?.id ?? null;
   const online = useIsOnline();
   const nameLabel = useProjectNameLabel();
-  const value = useMemo(() => createEnv(projects, workspaces, online, nameLabel), [projects, workspaces, online, nameLabel]);
+  const value = useMemo(() => createEnv(projects, workspaces, online, nameLabel, meId), [projects, workspaces, online, nameLabel, meId]);
   return <TaskRowEnvContext.Provider value={value}>{children}</TaskRowEnvContext.Provider>;
 }
 
@@ -56,11 +61,13 @@ function createEnv(
   workspaces: readonly WorkspaceResponse[] | undefined,
   online: boolean,
   nameLabel: TaskRowEnv['nameLabel'],
+  meId: string | null,
 ): TaskRowEnv {
   const byId = new Map<string, Project>();
   for (const project of projects ?? []) byId.set(project.id, project);
   return {
     online,
+    meId,
     nameLabel,
     capabilitiesOf: (projectId) => capabilitiesOf(projectId ? byId.get(projectId) : undefined),
     originOf: (projectId) => projectOrigin(byId.get(projectId), workspaces),

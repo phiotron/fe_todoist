@@ -78,6 +78,8 @@ function conflictMessage(error: ApiError): string {
       return i18n.t('errors.taskCompleted');
     case 'idempotency-in-progress':
       return i18n.t('errors.inProgress');
+    case 'review-not-pending':
+      return i18n.t('review.notPending');
     case 'label-name-taken':
       return i18n.t('errors.labelNameTaken');
     default:

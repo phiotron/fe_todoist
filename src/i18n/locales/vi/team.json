@@ -4,7 +4,7 @@
     "loadFailed": "Không tải được nhóm",
     "adminOnly": {
       "notice": "Chỉ quản trị viên nhóm mới chỉnh sửa được",
-      "error": "Chỉ quản trị viên nhóm mới chỉnh sửa được. Bạn chỉ có thể đánh dấu hoàn thành công việc."
+      "error": "Chỉ quản trị viên nhóm mới chỉnh sửa hoặc mở lại được công việc. Khi bạn đánh dấu hoàn thành, yêu cầu duyệt sẽ được gửi tới quản trị viên."
     },
     "tabs": {
       "active": "Đang hoạt động",

@@ -107,6 +107,12 @@ function TaskRowView({
   const completeOnly = capabilities.canCompleteTasks && !capabilities.canEditTasks;
   const selectOptions = completeOnly ? { completeOnly: true } : undefined;
   const completed = task.completedAt !== null;
+  // REVIEW: pending = asked for review (still open). A Member may cancel only their own request, and cannot reopen a
+  // completed task of a team project (only admins complete there); an admin's circle is never locked.
+  const pending = task.reviewStatus === 'PENDING';
+  const mineRequest = pending && env.meId !== null && task.reviewRequestedBy === env.meId;
+  const lockedPending = completeOnly && pending && env.meId !== null && !mineRequest;
+  const lockedDone = completeOnly && completed;
   const selecting = selection?.active === true;
   const selected = selection?.ids.has(task.id) === true;
   // Completed tasks (Completed tasks block) and read-only rows cannot be selected: batch SCHEDULE / MOVE would answer 409 task-completed.
@@ -121,7 +127,7 @@ function TaskRowView({
 
   function run(action: SwipeAction) {
     if (action === 'COMPLETE' && !completed) {
-      if (!uncompletable) onToggle(task);
+      if (!uncompletable && !lockedPending) onToggle(task);
     }
     else if (action === 'SCHEDULE') onSchedule?.(task);
     else if (action === 'REMINDERS') openTaskReminders(router, task.id);
@@ -146,8 +152,19 @@ function TaskRowView({
           testID={`task-toggle-${task.id}`}
           priority={task.priority}
           checked={completed}
-          label={completed ? t('taskList.reopenTask', { name: task.content }) : t('taskList.complete', { name: task.content })}
-          disabled={readOnly || selecting || toggleDisabled || !online}
+          pending={pending}
+          label={
+            lockedDone
+              ? t('review.lockedDone', { name: task.content })
+              : completed
+                ? t('taskList.reopenTask', { name: task.content })
+                : mineRequest
+                  ? t('review.cancelTask', { name: task.content })
+                  : lockedPending
+                    ? t('review.pendingTask', { name: task.content })
+                    : t('taskList.complete', { name: task.content })
+          }
+          disabled={readOnly || selecting || toggleDisabled || !online || lockedPending || lockedDone}
           onPress={() => onToggle(task)}
         />
       )}

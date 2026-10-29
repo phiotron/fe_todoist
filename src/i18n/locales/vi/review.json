@@ -1,0 +1,29 @@
+{
+  "review": {
+    "pending": "Chờ duyệt",
+    "requested": "Đã gửi yêu cầu duyệt",
+    "cancelled": "Đã huỷ yêu cầu duyệt",
+    "cancelTask": "Huỷ yêu cầu duyệt {{name}}",
+    "pendingTask": "{{name}} đang chờ duyệt",
+    "lockedDone": "{{name}} đã hoàn thành",
+    "approve": "Duyệt",
+    "reject": "Trả lại",
+    "approveTask": "Duyệt {{name}}",
+    "rejectTask": "Trả lại {{name}}",
+    "approved": "Đã duyệt",
+    "rejected": "Đã trả lại",
+    "title": "Chờ duyệt",
+    "mineTitle": "Đang chờ duyệt của tôi",
+    "cardCount": "{{n}} công việc đang chờ duyệt",
+    "cardCountMore": "Hơn {{n}} công việc đang chờ duyệt",
+    "cardNone": "Không có công việc nào đang chờ duyệt",
+    "cardMine": "Đang chờ duyệt của tôi",
+    "requestedBy": "{{name}} yêu cầu · {{time}}",
+    "requestedByMe": "Bạn yêu cầu · {{time}}",
+    "unknownPerson": "Một thành viên",
+    "empty": "Không có công việc nào chờ duyệt",
+    "emptyMine": "Bạn chưa có công việc nào đang chờ duyệt",
+    "readOnlyHint": "Quản trị viên nhóm sẽ duyệt hoặc trả lại các công việc này.",
+    "notPending": "Công việc này không còn chờ duyệt nữa. Danh sách đã được làm mới."
+  }
+}

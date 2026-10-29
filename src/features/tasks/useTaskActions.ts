@@ -35,7 +35,8 @@ export function useCloseTask() {
     const change = await tasksApi.close(taskId, body);
     applyTaskChange(queryClient, change);
     // M12: the "Task complete tone" setting of this device (on by default); silent without the native module.
-    if (getDeviceSettings().completionTone) playCompletionTone();
+    // REVIEW: a request for review is not a completion: no tone.
+    if (getDeviceSettings().completionTone && change.task.reviewStatus !== 'PENDING') playCompletionTone();
     return change;
   });
 }
@@ -131,6 +132,7 @@ export function useCompleteWithUndo() {
   const completedMessage = useCallback(
     (change: TaskChangeResponse, forever: boolean) => {
       const task = change.task;
+      if (task.reviewStatus === 'PENDING') return t('review.requested');
       if (task.isRecurring && task.completedAt === null) {
         const day = taskDateKey(task);
         if (day) {
@@ -147,19 +149,28 @@ export function useCompleteWithUndo() {
    * them the call is a plain close (the server then follows the `resetSubtasks` setting). Undo is the same in every case.
    */
   const complete = useCallback(
-    (taskId: string, options: { onError?: (error: unknown) => void; forever?: boolean; resetSubtasks?: boolean } = {}) => {
+    (
+      taskId: string,
+      options: { onError?: (error: unknown) => void; forever?: boolean; resetSubtasks?: boolean; wasPending?: boolean } = {},
+    ) => {
       const body: CloseTaskRequest = {};
       if (options.forever) body.forever = true;
       if (options.resetSubtasks !== undefined) body.resetSubtasks = options.resetSubtasks;
       closeTask(Object.keys(body).length > 0 ? { taskId, body } : taskId).then(
-        (change) =>
+        (change) => {
+          // REVIEW: the server answered PENDING (a Member's tick) or cancelled my pending request. Both are undone by the
+          // same close: it flips between the two states (an Admin's tick completes instead, Undo = reopen as usual).
+          const review = change.task.reviewStatus === 'PENDING' || (options.wasPending === true && change.task.completedAt === null);
           snackbar.show({
-            message: completedMessage(change, options.forever === true),
+            message: options.wasPending && change.task.reviewStatus !== 'PENDING' && change.task.completedAt === null
+              ? t('review.cancelled')
+              : completedMessage(change, options.forever === true),
             actionLabel: t('common.undo'),
             onAction: () => {
-              reopenTask({ taskId, undo: true }).catch(showError);
+              (review ? closeTask(taskId) : reopenTask({ taskId, undo: true })).catch(showError);
             },
-          }),
+          });
+        },
         (failure: unknown) => options.onError?.(failure),
       );
     },
@@ -197,13 +208,17 @@ export function useCompleteWithUndo() {
   };
 }
 
-/** Circle / swipe: complete an open task (with Undo), reopen a completed one (plain reopen). */
+/**
+ * Circle / swipe: complete an open task (with Undo), reopen a completed one (plain reopen). REVIEW: in a team project a
+ * Member's tick asks for review, and ticking my pending task again cancels the request (the server decides; see lib/review).
+ */
 export function useToggleTask() {
   const { complete, pendingId, errorMessage } = useCompleteWithUndo();
   const reopen = useReopenTask();
   const reopenTask = reopen.mutate;
   const toggle = useCallback(
-    (task: Task) => (task.completedAt ? reopenTask({ taskId: task.id }) : complete(task.id)),
+    (task: Task) =>
+      task.completedAt ? reopenTask({ taskId: task.id }) : complete(task.id, { wasPending: task.reviewStatus === 'PENDING' }),
     [complete, reopenTask],
   );
   const reopenError = reopen.error ? describeError(reopen.error).message : undefined;

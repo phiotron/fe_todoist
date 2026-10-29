@@ -35,6 +35,12 @@ export function TaskMeta({ task, now, timeZone, showProject, showCompletedTime =
   const tone = dueTone(task, now, timeZone, palette);
   const completedTime = showCompletedTime && task.completedAt ? nowLocal(parseInstant(task.completedAt), timeZone).slice(11, 16) : null;
   const items = [
+    task.reviewStatus === 'PENDING' ? (
+      <View key="review" style={styles.item} testID={`task-review-${task.id}`}>
+        <Feather name="clock" size={size.iconSmall - 2} color={palette.vio} />
+        <Text style={[type.meta, styles.review]}>{t('review.pending')}</Text>
+      </View>
+    ) : null,
     completedTime ? (
       <Text key="completed-at" style={styles.text} testID={`task-completed-at-${task.id}`}>
         {completedTime}
@@ -145,5 +151,6 @@ function createTaskMetaStyles(palette: Palette) {
     meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 12, rowGap: 4, marginTop: 4 },
     item: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     text: { ...type.meta, color: palette.mute },
+    review: { color: palette.vio },
   });
 }

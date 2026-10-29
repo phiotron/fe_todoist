@@ -18,7 +18,11 @@
         "UNCOMPLETED": "Bạn đã mở lại công việc: {{name}}",
         "DELETED": "Bạn đã xoá công việc: {{name}}",
         "ARCHIVED": "Bạn đã lưu trữ công việc: {{name}}",
-        "UNARCHIVED": "Bạn đã khôi phục công việc: {{name}}"
+        "UNARCHIVED": "Bạn đã khôi phục công việc: {{name}}",
+        "REVIEW_REQUESTED": "Bạn đã gửi yêu cầu duyệt công việc: {{name}}",
+        "REVIEW_APPROVED": "Bạn đã duyệt công việc: {{name}}",
+        "REVIEW_REJECTED": "Bạn đã trả lại công việc: {{name}}",
+        "REVIEW_CANCELLED": "Bạn đã huỷ yêu cầu duyệt công việc: {{name}}"
       },
       "PROJECT": {
         "ADDED": "Bạn đã thêm dự án: {{name}}",
@@ -46,7 +50,11 @@
       "UNCOMPLETED": "Đã mở lại",
       "DELETED": "Đã xoá",
       "ARCHIVED": "Đã lưu trữ",
-      "UNARCHIVED": "Đã khôi phục"
+      "UNARCHIVED": "Đã khôi phục",
+      "REVIEW_REQUESTED": "Đã gửi yêu cầu duyệt",
+      "REVIEW_APPROVED": "Đã duyệt",
+      "REVIEW_REJECTED": "Đã trả lại",
+      "REVIEW_CANCELLED": "Đã huỷ yêu cầu duyệt"
     },
     "inProject": "trong {{project}}",
     "filterPerson": "Người",
@@ -59,7 +67,11 @@
         "UNCOMPLETED": "{{who}} đã mở lại công việc: {{name}}",
         "DELETED": "{{who}} đã xoá công việc: {{name}}",
         "ARCHIVED": "{{who}} đã lưu trữ công việc: {{name}}",
-        "UNARCHIVED": "{{who}} đã khôi phục công việc: {{name}}"
+        "UNARCHIVED": "{{who}} đã khôi phục công việc: {{name}}",
+        "REVIEW_REQUESTED": "{{who}} đã gửi yêu cầu duyệt công việc: {{name}}",
+        "REVIEW_APPROVED": "{{who}} đã duyệt công việc: {{name}}",
+        "REVIEW_REJECTED": "{{who}} đã trả lại công việc: {{name}}",
+        "REVIEW_CANCELLED": "{{who}} đã huỷ yêu cầu duyệt công việc: {{name}}"
       },
       "PROJECT": {
         "ADDED": "{{who}} đã thêm dự án: {{name}}",

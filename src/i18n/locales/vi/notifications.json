@@ -30,6 +30,11 @@
         "INVITATION_ACCEPTED": "Lời mời của tôi được chấp nhận"
       },
       "notYet": "Chưa có hiệu lực"
+    },
+    "review": {
+      "requested": "{{name}} yêu cầu bạn duyệt một công việc",
+      "approved": "{{name}} đã duyệt công việc của bạn",
+      "rejected": "{{name}} đã trả lại công việc của bạn"
     }
   }
 }

@@ -18,7 +18,11 @@
         "UNCOMPLETED": "You reopened a task: {{name}}",
         "DELETED": "You deleted a task: {{name}}",
         "ARCHIVED": "You archived a task: {{name}}",
-        "UNARCHIVED": "You restored a task: {{name}}"
+        "UNARCHIVED": "You restored a task: {{name}}",
+        "REVIEW_REQUESTED": "You requested review of the task: {{name}}",
+        "REVIEW_APPROVED": "You approved the task: {{name}}",
+        "REVIEW_REJECTED": "You returned the task: {{name}}",
+        "REVIEW_CANCELLED": "You cancelled the review request for the task: {{name}}"
       },
       "PROJECT": {
         "ADDED": "You added a project: {{name}}",
@@ -46,7 +50,11 @@
       "UNCOMPLETED": "Reopened",
       "DELETED": "Deleted",
       "ARCHIVED": "Archived",
-      "UNARCHIVED": "Restored"
+      "UNARCHIVED": "Restored",
+      "REVIEW_REQUESTED": "Review requested",
+      "REVIEW_APPROVED": "Approved",
+      "REVIEW_REJECTED": "Returned",
+      "REVIEW_CANCELLED": "Review cancelled"
     },
     "inProject": "in {{project}}",
     "filterPerson": "Person",
@@ -59,7 +67,11 @@
         "UNCOMPLETED": "{{who}} reopened the task: {{name}}",
         "DELETED": "{{who}} deleted the task: {{name}}",
         "ARCHIVED": "{{who}} archived the task: {{name}}",
-        "UNARCHIVED": "{{who}} restored the task: {{name}}"
+        "UNARCHIVED": "{{who}} restored the task: {{name}}",
+        "REVIEW_REQUESTED": "{{who}} requested review of the task: {{name}}",
+        "REVIEW_APPROVED": "{{who}} approved the task: {{name}}",
+        "REVIEW_REJECTED": "{{who}} returned the task: {{name}}",
+        "REVIEW_CANCELLED": "{{who}} cancelled the review request for the task: {{name}}"
       },
       "PROJECT": {
         "ADDED": "{{who}} added the project: {{name}}",

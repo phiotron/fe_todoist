@@ -4,7 +4,7 @@
     "loadFailed": "Could not load the team",
     "adminOnly": {
       "notice": "Only team admins can make changes",
-      "error": "Only team admins can make changes here. You can only complete tasks."
+      "error": "Only team admins can edit or reopen tasks here. Completing a task sends a review request to the admins."
     },
     "tabs": {
       "active": "Active",

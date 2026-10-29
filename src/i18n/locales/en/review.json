@@ -1,0 +1,29 @@
+{
+  "review": {
+    "pending": "Pending review",
+    "requested": "Review request sent",
+    "cancelled": "Review request cancelled",
+    "cancelTask": "Cancel the review request for {{name}}",
+    "pendingTask": "{{name}} is waiting for review",
+    "lockedDone": "{{name}} is completed",
+    "approve": "Approve",
+    "reject": "Return",
+    "approveTask": "Approve {{name}}",
+    "rejectTask": "Return {{name}}",
+    "approved": "Approved",
+    "rejected": "Returned",
+    "title": "Pending review",
+    "mineTitle": "My requests waiting for review",
+    "cardCount": "{{n}} tasks waiting for review",
+    "cardCountMore": "More than {{n}} tasks waiting for review",
+    "cardNone": "Nothing is waiting for review",
+    "cardMine": "My requests waiting for review",
+    "requestedBy": "{{name}} asked · {{time}}",
+    "requestedByMe": "You asked · {{time}}",
+    "unknownPerson": "A member",
+    "empty": "Nothing is waiting for review",
+    "emptyMine": "None of your tasks are waiting for review",
+    "readOnlyHint": "Team admins will approve or return these tasks.",
+    "notPending": "This task is no longer waiting for review. The list was refreshed."
+  }
+}

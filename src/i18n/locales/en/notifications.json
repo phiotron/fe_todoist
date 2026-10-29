@@ -30,6 +30,11 @@
         "INVITATION_ACCEPTED": "My invitation is accepted"
       },
       "notYet": "Not active yet"
+    },
+    "review": {
+      "requested": "{{name}} asked you to review a task",
+      "approved": "{{name}} approved your task",
+      "rejected": "{{name}} returned your task"
     }
   }
 }
