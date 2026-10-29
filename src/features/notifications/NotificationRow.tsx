@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NotificationResponse } from '../../api/notifications';
@@ -15,7 +16,7 @@ interface NotificationRowProps {
 }
 
 /** One inbox entry (M-Notifications): avatar, sentence, comment excerpt, task / project and time; unread = accent dot. */
-export function NotificationRow({ item, now, timeZone, onPress }: NotificationRowProps) {
+export const NotificationRow = memo(function NotificationRow({ item, now, timeZone, onPress }: NotificationRowProps) {
   const styles = useThemedStyles(createNotificationRowStyles);
   const { t } = useTranslation();
   const projectLabel = useProjectNameLabel();
@@ -47,7 +48,7 @@ export function NotificationRow({ item, now, timeZone, onPress }: NotificationRo
       {item.isRead ? null : <View testID={`notification-unread-${item.id}`} accessibilityLabel={t('notifications.unreadDot')} style={styles.dot} />}
     </Pressable>
   );
-}
+});
 
 function createNotificationRowStyles(palette: Palette) {
   return StyleSheet.create({
