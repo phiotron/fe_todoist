@@ -14,6 +14,7 @@ import { Checkbox } from './Checkbox';
 import { TaskRowEnvProvider, useTaskRowEnv, type TaskRowEnv } from './taskRowEnv';
 import { useTaskSelection } from './selection';
 import { swipeSide, useSwipeSettings, type SwipeAction } from './swipe';
+import { useSwipeArmed } from './swipeArming';
 import { TaskMeta } from './TaskMeta';
 import { displayContent, isUncompletable } from './uncompletable';
 import { useDeleteTaskSwipe } from './useDeleteTaskSwipe';
@@ -102,6 +103,7 @@ function TaskRowView({
   const swipe = useSwipeSettings();
   const { requestDelete, dialog } = useDeleteTaskSwipe();
   const swipeRef = useRef<SwipeableMethods>(null);
+  const armed = useSwipeArmed(env.arming, task.id);
   // PERM: task of a team project where I am a Member / Guest → tick only (no other swipe; selection offers only Complete)
   const capabilities = env.capabilitiesOf(task.projectId);
   const completeOnly = capabilities.canCompleteTasks && !capabilities.canEditTasks;
@@ -206,7 +208,7 @@ function TaskRowView({
     </Pressable>
   );
 
-  if (readOnly || completed || selecting || !online || (completeOnly && swipeRight === 'NONE' && swipeLeft === 'NONE')) return row;
+  if (!armed || readOnly || completed || selecting || !online || (completeOnly && swipeRight === 'NONE' && swipeLeft === 'NONE')) return row;
   const renderPanel = (action: SwipeAction) => {
     const look = swipeLookFor(palette)[action];
     if (!look) return null;

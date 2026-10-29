@@ -13,6 +13,7 @@ import { capabilitiesOf } from '../projects/projectCapabilities';
 import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { projectOrigin, type ProjectOrigin } from './projectOrigin';
 import type { ProjectCapabilities } from '../../api/projects';
+import type { SwipeArming } from './swipeArming';
 
 /**
  * Everything a task row reads from shared data, looked up ONCE per list instead of once per row (perf: on a 300 task
@@ -29,6 +30,8 @@ export interface TaskRowEnv {
   originOf: (projectId: string) => ProjectOrigin;
   /** PERM: a Member / Guest pressed the circle of a completed team task (locked): tell them why. One handler per list. */
   explainLockedDone: () => void;
+  /** Perf: lists hand the swipe gesture only to settled rows (swipeArming.ts); null = every row is swipeable. */
+  arming: SwipeArming | null;
 }
 
 const TaskRowEnvContext = createContext<TaskRowEnv | null>(null);
@@ -40,7 +43,15 @@ const ORIGIN_STALE_MS = 5 * 60 * 1000;
  * when they are missing (a cold start must not show team tasks without their team name). Without it the lists are only
  * read from the cache (capabilities: Browse, the drawer and Quick Add load them).
  */
-export function TaskRowEnvProvider({ fetchLists, children }: { fetchLists: boolean; children: ReactNode }) {
+export function TaskRowEnvProvider({
+  fetchLists,
+  arming = null,
+  children,
+}: {
+  fetchLists: boolean;
+  arming?: SwipeArming | null;
+  children: ReactNode;
+}) {
   const projects = useQuery({
     queryKey: queryKeys.projects.list(false),
     queryFn: () => projectsApi.list(false),
@@ -60,8 +71,8 @@ export function TaskRowEnvProvider({ fetchLists, children }: { fetchLists: boole
   const snackbar = useSnackbar();
   const explainLockedDone = useCallback(() => snackbar.show({ message: t('review.lockedDoneToast') }), [snackbar, t]);
   const value = useMemo(
-    () => createEnv(projects, workspaces, online, nameLabel, meId, explainLockedDone),
-    [projects, workspaces, online, nameLabel, meId, explainLockedDone],
+    () => createEnv(projects, workspaces, online, nameLabel, meId, explainLockedDone, arming),
+    [projects, workspaces, online, nameLabel, meId, explainLockedDone, arming],
   );
   return <TaskRowEnvContext.Provider value={value}>{children}</TaskRowEnvContext.Provider>;
 }
@@ -73,6 +84,7 @@ function createEnv(
   nameLabel: TaskRowEnv['nameLabel'],
   meId: string | null,
   explainLockedDone: () => void,
+  arming: SwipeArming | null,
 ): TaskRowEnv {
   const byId = new Map<string, Project>();
   for (const project of projects ?? []) byId.set(project.id, project);
@@ -81,6 +93,7 @@ function createEnv(
     meId,
     nameLabel,
     explainLockedDone,
+    arming,
     capabilitiesOf: (projectId) => capabilitiesOf(projectId ? byId.get(projectId) : undefined),
     originOf: (projectId) => projectOrigin(byId.get(projectId), workspaces),
   };
