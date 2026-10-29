@@ -3,6 +3,8 @@ const {
   GRADLE_NETWORK_TIMEOUT_MS,
   addCmakeObjectPathMax,
   setGradleNetworkTimeout,
+  addWorkManagerProguardRules,
+  WORKMANAGER_PROGUARD_RULES,
 } = require('../androidBuildFixes');
 
 const BUILD_GRADLE = `android {
@@ -57,5 +59,39 @@ describe('setGradleNetworkTimeout', () => {
   it('is idempotent', () => {
     const once = setGradleNetworkTimeout(WRAPPER);
     expect(setGradleNetworkTimeout(once)).toBe(once);
+  });
+});
+
+describe('addWorkManagerProguardRules', () => {
+  it('appends the 3 WorkManager/Room keep rules', () => {
+    const out = addWorkManagerProguardRules('-keep class a.B\n');
+    expect(WORKMANAGER_PROGUARD_RULES).toHaveLength(3);
+    expect(out).toContain('-keep class * extends androidx.room.RoomDatabase');
+    expect(out).toContain('-keep class androidx.work.impl.WorkDatabase_Impl { *; }');
+    expect(out).toContain('-keep class androidx.work.impl.** { *; }');
+    expect(out.startsWith('-keep class a.B\n')).toBe(true);
+  });
+
+  it('is idempotent', () => {
+    const once = addWorkManagerProguardRules('');
+    expect(addWorkManagerProguardRules(once)).toBe(once);
+  });
+});
+
+describe('shouldAllowCleartext', () => {
+  const { shouldAllowCleartext, setCleartextTraffic } = require('../androidBuildFixes');
+  it('is on only for an explicit flag or an http:// API URL', () => {
+    expect(shouldAllowCleartext({ TASKLY_ALLOW_CLEARTEXT: '1' })).toBe(true);
+    expect(shouldAllowCleartext({ EXPO_PUBLIC_API_URL: 'http://localhost:8080' })).toBe(true);
+    expect(shouldAllowCleartext({ EXPO_PUBLIC_API_URL: 'https://api.example.com' })).toBe(false);
+    expect(shouldAllowCleartext({})).toBe(false);
+  });
+  it('sets the attribute on <application> when enabled, leaves it alone otherwise', () => {
+    const on = { manifest: { application: [{ $: {} }] } };
+    setCleartextTraffic(on, true);
+    expect(on.manifest.application[0].$['android:usesCleartextTraffic']).toBe('true');
+    const off = { manifest: { application: [{ $: {} }] } };
+    setCleartextTraffic(off, false);
+    expect(off.manifest.application[0].$['android:usesCleartextTraffic']).toBeUndefined();
   });
 });

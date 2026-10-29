@@ -35,7 +35,42 @@ function setGradleNetworkTimeout(properties) {
   return `${base}${line}\n`;
 }
 
+// R8 strips androidx.work.impl.WorkDatabase_Impl (only reached by reflection) and the release build crashes on launch
+// with "Failed to create an instance of class androidx.work.impl.WorkDatabase".
+const PROGUARD_MARKER = '# Taskly: WorkManager (Room) keep rules';
+const WORKMANAGER_PROGUARD_RULES = [
+  '-keep class * extends androidx.room.RoomDatabase',
+  '-keep class androidx.work.impl.WorkDatabase_Impl { *; }',
+  '-keep class androidx.work.impl.** { *; }',
+];
+
+/** Appends the WorkManager keep rules to proguard-rules.pro (idempotent). */
+function addWorkManagerProguardRules(proguard) {
+  if (proguard.includes(PROGUARD_MARKER)) return proguard;
+  const base = proguard.length === 0 || proguard.endsWith('\n') ? proguard : `${proguard}\n`;
+  return `${base}\n${PROGUARD_MARKER}\n${WORKMANAGER_PROGUARD_RULES.join('\n')}\n`;
+}
+
+// Release builds block plain HTTP (only src/debug/AndroidManifest.xml allows it), so an APK that talks to
+// http://localhost:8080 through `adb reverse` shows an empty app. Opt in at prebuild time; a real release build
+// (https API URL, no flag) is left untouched.
+function shouldAllowCleartext(env) {
+  return env.TASKLY_ALLOW_CLEARTEXT === '1' || /^http:\/\//i.test(env.EXPO_PUBLIC_API_URL || '');
+}
+
+/** Sets android:usesCleartextTraffic on <application> of the xml2js manifest when enabled. */
+function setCleartextTraffic(manifest, enabled) {
+  if (!enabled) return manifest;
+  const app = manifest.manifest.application && manifest.manifest.application[0];
+  if (app) app.$['android:usesCleartextTraffic'] = 'true';
+  return manifest;
+}
+
 module.exports = {
+  shouldAllowCleartext,
+  setCleartextTraffic,
+  WORKMANAGER_PROGUARD_RULES,
+  addWorkManagerProguardRules,
   CMAKE_OBJECT_PATH_MAX_ARG,
   GRADLE_NETWORK_TIMEOUT_MS,
   addCmakeObjectPathMax,

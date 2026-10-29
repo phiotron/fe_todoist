@@ -39,6 +39,13 @@ nếu không kết nối kẹt ở `SYN_SENT`. Taskly không xin quyền này; t
 **chạy lại mỗi lần bật emulator** (kiểm bằng `adb reverse --list`). Metro (cổng 8081) thường được Expo CLI tự
 `adb reverse`; nếu app không tải được bundle thì chạy thêm `adb reverse tcp:8081 tcp:8081`.
 
+### Bản release gọi HTTP (localhost qua adb reverse)
+Bản release mặc định chặn HTTP không mã hoá (chỉ bản debug được phép), nên APK release gọi `http://localhost:8080` sẽ
+trống dữ liệu. `plugins/withAndroidBuildFixes.js` thêm `android:usesCleartextTraffic="true"` khi chạy `expo prebuild`
+**chỉ nếu** đặt `TASKLY_ALLOW_CLEARTEXT=1` hoặc `EXPO_PUBLIC_API_URL` bắt đầu bằng `http://`. Bản phát hành thật (API
+`https://`, không đặt cờ) không bị bật. Cùng plugin cũng thêm luật R8 giữ `androidx.work.impl.WorkDatabase_Impl`
+(không có luật này bản release sập ngay khi mở).
+
 ## Đăng nhập Google (cần Web client ID)
 Thư viện `@react-native-google-signin/google-signin` (v16) có mã native: sau khi cài / nâng nó phải build lại bằng
 `npx expo run:android` (APK cũ mở JS mới sẽ báo thiếu module native). Không dùng plugin config của thư viện trong

@@ -37,3 +37,6 @@ coverage/
 Thumbs.db
 *.log
 npm-debug.*
+
+# Gradle build output of local native modules
+modules/*/android/build/
