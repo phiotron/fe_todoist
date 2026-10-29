@@ -136,6 +136,9 @@ describe('PERF rowcost (project screen)', () => {
     };
     console.log(`ROWCOST ${JSON.stringify(result)}`);
     expect(rowsInTree).toBeGreaterThan(250);
+    // budgets (regression guards, measured at 7 hosts / 76 hooks with the swipe mocked as one view)
+    expect(hosts(row)).toBeLessThanOrEqual(7);
+    expect(total).toBeLessThanOrEqual(80);
     // budgets: a row costs its own render only; a selection tap must not redraw the other rows
     expect(mountRenders).toBeLessThanOrEqual(N);
     expect(selectToggle).toBeLessThanOrEqual(3); // the toggled row (+ slack), was 299
