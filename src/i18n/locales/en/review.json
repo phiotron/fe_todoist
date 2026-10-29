@@ -8,8 +8,6 @@
     "lockedDone": "{{name}} is completed",
     "approve": "Approve",
     "reject": "Return",
-    "approveTask": "Approve {{name}}",
-    "rejectTask": "Return {{name}}",
     "approved": "Approved",
     "rejected": "Returned",
     "title": "Pending review",
@@ -24,6 +22,7 @@
     "empty": "Nothing is waiting for review",
     "emptyMine": "None of your tasks are waiting for review",
     "readOnlyHint": "Team admins will approve or return these tasks.",
-    "notPending": "This task is no longer waiting for review. The list was refreshed."
+    "notPending": "This task is no longer waiting for review. The list was refreshed.",
+    "cancelRequest": "Cancel review request"
   }
 }

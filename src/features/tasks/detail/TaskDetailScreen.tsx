@@ -26,6 +26,7 @@ import { EmailAddressDialog } from '../../email/EmailAddressDialog';
 import { openQuickAdd } from '../../quickAdd/quickAddTarget';
 import { childrenOf } from '../../subtasks/tree';
 import { CommentThread } from '../../comments/CommentThread';
+import { useMe } from '../../auth/session';
 import { Checkbox } from '../Checkbox';
 import { useCompleteWithUndo, useDeleteTask, useDuplicateTask, useReopenTask } from '../useTaskActions';
 import { Breadcrumb } from './Breadcrumb';
@@ -50,6 +51,11 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
   const { task, draft, base } = editor;
   // completed / archived project or section → read-only (spec 5.7, 12.10); archived additionally locks the circle and Delete.
   const access = useTaskAccess(task);
+  // REVIEW: my pending request is cancelled by the circle; someone else's pending / a completed task of a team project is locked for a Member.
+  const meId = useMe().data?.id;
+  const pending = task?.reviewStatus === 'PENDING';
+  const mineRequest = pending && meId !== undefined && task?.reviewRequestedBy === meId;
+  const circleLocked = access.teamLimited && ((pending && !mineRequest && meId !== undefined) || (task?.completedAt ?? null) !== null);
   const move = useTaskMove(task);
   const depth = useTaskDepth(task);
   const subtasks = useSubtasks(taskId);
@@ -232,9 +238,14 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
             testID="task-toggle"
             priority={draft.priority}
             checked={completed}
-            label={completed ? t('taskDetail.reopen') : t('taskDetail.complete')}
-            disabled={access.archived || !online}
-            onPress={() => (completed ? void reopen.mutateAsync({ taskId }).catch(onActionError) : complete(taskId, { onError: onActionError }))}
+            pending={pending}
+            label={mineRequest ? t('review.cancelRequest') : completed ? t('taskDetail.reopen') : t('taskDetail.complete')}
+            disabled={access.archived || !online || circleLocked}
+            onPress={() =>
+              completed
+                ? void reopen.mutateAsync({ taskId }).catch(onActionError)
+                : complete(taskId, { onError: onActionError, wasPending: pending })
+            }
           />
           <TextInput
             testID="task-content"

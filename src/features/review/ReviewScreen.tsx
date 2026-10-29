@@ -14,6 +14,7 @@ import type { Palette } from '../../theme/palette';
 import { useMe } from '../auth/session';
 import { useUserTimeZone } from '../auth/useUserTimeZone';
 import { stampLabel } from '../comments/commentTime';
+import { capabilitiesOf } from '../projects/projectCapabilities';
 import { useProjectNameLabel } from '../projects/useProjectNameLabel';
 import { useProjects } from '../projects/useProjects';
 import { useWorkspaces } from '../team/useTeam';
@@ -87,7 +88,7 @@ export function ReviewScreen() {
           task={item}
           requested={mine ? t('review.requestedByMe', { time }) : t('review.requestedBy', { name: who, time })}
           projectName={projectLabel(item.projectId, item.projectName)}
-          canReview={byId.get(item.projectId)?.capabilities?.canReview === true}
+          canReview={capabilitiesOf(byId.get(item.projectId)).canReview === true}
           onApprove={onApprove}
           onReject={onReject}
         />
