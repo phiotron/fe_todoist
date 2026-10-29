@@ -22,6 +22,15 @@ describe('queryClient', () => {
   });
 });
 
+describe('query lifetimes (PERF3)', () => {
+  it('results that are never persisted leave memory after 5 minutes; everything else keeps the day', () => {
+    expect(queryClient.getQueryDefaults(['search', 'tasks', { q: 'a' }]).gcTime).toBe(5 * 60 * 1000);
+    expect(queryClient.getQueryDefaults(['activity', 'list', {}]).gcTime).toBe(5 * 60 * 1000);
+    expect(queryClient.getQueryDefaults(['tasks', 'list', {}]).gcTime).toBeUndefined();
+    expect(queryClient.getDefaultOptions().queries?.gcTime).toBe(PERSIST_MAX_AGE_MS);
+  });
+});
+
 describe('offline writes (spec 5.6)', () => {
   afterEach(() => {
     onlineManager.setOnline(true);

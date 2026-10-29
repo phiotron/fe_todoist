@@ -96,3 +96,14 @@ describe('query cache persister', () => {
     expect(removeClient).toHaveBeenCalled();
   });
 });
+
+describe('persisted cache keys (PERF3)', () => {
+  it('writes under the v2 key and removeClient also drops the unbudgeted cache an older version left', async () => {
+    const removeItem = jest.fn(async () => undefined);
+    const storage = { getItem: async () => null, setItem: async () => undefined, removeItem };
+    const persister = createQueryPersister(storage, fakeAppState('active'));
+    await persister.removeClient();
+    expect(removeItem).toHaveBeenCalledWith('taskly.queryCache.v2');
+    expect(removeItem).toHaveBeenCalledWith('taskly.queryCache');
+  });
+});
